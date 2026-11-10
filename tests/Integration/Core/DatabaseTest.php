@@ -9,10 +9,10 @@ use App\Core\Database;
 use App\Core\Env;
 use PDO;
 use PDOException;
-use PHPUnit\Framework\TestCase;
 use RuntimeException;
+use Tests\Integration\IntegrationTestCase;
 
-final class DatabaseTest extends TestCase
+final class DatabaseTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -26,6 +26,11 @@ final class DatabaseTest extends TestCase
         Config::definir($config);
 
         parent::setUp();
+    }
+
+    protected function iniciarTransacaoExterna(): bool
+    {
+        return false;
     }
 
     public function testConectaAoBancoDeTeste(): void
