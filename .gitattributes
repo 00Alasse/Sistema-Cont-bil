@@ -1,0 +1,8 @@
+# Normaliza finais de linha (evita diffs falsos entre Windows e hospedagem Linux)
+* text=auto eol=lf
+
+*.bat text eol=crlf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary

@@ -1,0 +1,15 @@
+# Usado quando a raiz do projeto é publicada diretamente
+# (ex.: C:\xampp\htdocs\tributo ou hospedagem sem DocumentRoot configurável).
+# Tudo é redirecionado internamente para public/, de modo que app/, config/,
+# storage/, vendor/ e .env nunca ficam acessíveis pelo navegador.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Sem mod_rewrite, bloqueia tudo (falha segura).
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

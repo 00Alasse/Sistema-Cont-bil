@@ -1,0 +1,9 @@
+# Envia toda requisição que não seja um arquivo existente (CSS, JS, imagens)
+# para o ponto único de entrada.
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
