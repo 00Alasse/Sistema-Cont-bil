@@ -25,10 +25,10 @@
 
 | # | Premissa | Consequência |
 |---|----------|--------------|
-| P1 | Ambiente local: **XAMPP com PHP 8.2.12 e MariaDB 10.4.32** (verificado nesta máquina) | Todo SQL deve funcionar em **MariaDB 10.4** e também em **MySQL 8.0.16+** (hospedagem) |
+| P1 | Ambiente local: **XAMPP com PHP 8.2.12 e MariaDB 10.4.32** (versões instaladas conferidas nesta máquina) | Todo SQL deve funcionar em **MariaDB 10.4** e também em **MySQL 8.0.16+** (hospedagem) |
 | P2 | Hospedagem compartilhada com PHP 8.2+ e MySQL/MariaDB, provavelmente **sem SSH** | O deploy envia a pasta `vendor/` já gerada (`--no-dev`); o banco é importado via phpMyAdmin; o SQL **não** contém `CREATE DATABASE` |
-| P3 | A versão local é a alternativa garantida para a apresentação | Seed completo e comando de reconstrução do banco com um passo |
-| P4 | Prazo de cerca de 7 dias, com desenvolvimento assistido por várias IAs | Tarefas pequenas, com posse exclusiva de arquivos e contratos fixos (ver [AGENTS.md](../AGENTS.md)) |
+| P3 | A versão local é o **plano principal** da apresentação; a publicação é condicional (ADR-020) | Seed completo e comando de reconstrução do banco com um passo |
+| P4 | Prazo de cerca de 7 dias, com desenvolvimento assistido por várias IAs; o limite é a capacidade de revisão (ADR-022) | Tarefas pequenas, com posse exclusiva de arquivos e contratos fixos (ver [AGENTS.md](../AGENTS.md)); núcleo reduzido com ordem de inclusão |
 | P5 | Quem desenvolve é estudante e precisa explicar o código | Sem framework; classes pequenas; nomes de domínio em português; comentários explicando o "porquê" |
 | P6 | Escritórios são criados pelo seed (sem cadastro self-service) | Não existe super-administrador na R1 |
 | P7 | Todos os dados de exemplo são fictícios | E-mails `@exemplo.test`, CNPJs gerados com dígito verificador válido sem correspondência real |
@@ -517,7 +517,7 @@ Aviso: *"Alertas gerenciais baseados nos dados registrados. Não constituem orie
 | `composer test` | Todas as suítes do PHPUnit |
 | `composer test:unit` | Somente os testes unitários (não precisam do banco) |
 | `composer check` | lint + análise + testes; **obrigatório antes de cada commit** |
-| `vendor/bin/phpunit --coverage-text` | Cobertura (requer Xdebug ou PCOV; configurado na tarefa Q01) |
+| `vendor/bin/phpunit --coverage-text` | Cobertura (requer Xdebug ou PCOV, hoje ausentes no XAMPP; configurado na tarefa Q07, opcional) |
 
 ### 12.2 Níveis
 
@@ -533,8 +533,13 @@ Aviso: *"Alertas gerenciais baseados nos dados registrados. Não constituem orie
 
 **Datas:** testes que dependem de "hoje" injetam `RelogioFixo`.
 
-### 12.3 Critérios de cobertura e de pronto
+### 12.3 Critérios de pronto e de cobertura (revisão 2, ver ADR-021)
 
-- Cobertura de linhas **≥ 80%** em `app/Services`, `app/Support`, `app/Core/Validator.php`, `app/Core/Csrf.php`, `app/Core/Paginacao.php` e `app/Models`.
-- Controllers e Views: cobertos por E2E; **cada fluxo da seção 11 tem ao menos um teste E2E**.
-- Cada tarefa entrega os próprios testes; **nenhum commit com `composer check` falhando**.
+**Obrigatórios (critério de entrega):**
+- Cada tarefa entrega os próprios testes: caminho feliz, falhas de validação e, quando acessa dados, **isolamento entre escritórios**.
+- Suíte de segurança da Q01 verde (ARCHITECTURE §8 e §12.2, linha "Segurança").
+- Fluxos do núcleo (§11.1, §11.2, §11.6 e §11.7) com ao menos um teste E2E cada; fluxos de módulos S, quando implementados, também.
+- **Nenhum commit com `composer check` falhando.**
+
+**Objetivo secundário (Q07, não bloqueia commits nem a entrega):**
+- Cobertura de linhas de **80%** em `app/Services`, `app/Support`, `app/Core/Validator.php`, `app/Core/Csrf.php`, `app/Core/Paginacao.php` e `app/Models`, medida com Xdebug ou PCOV. O valor obtido é informado no README, mesmo se abaixo da meta.

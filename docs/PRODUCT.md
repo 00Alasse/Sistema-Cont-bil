@@ -71,19 +71,19 @@ flowchart TB
 
 ## 5. Avaliação de viabilidade por funcionalidade
 
-Legenda de prioridade na primeira entrega (≈ 7 dias): **M** = obrigatória (Must), **S** = planejada se o cronograma permitir (Should), **C** = só com folga (Could), **F** = versão futura.
+Legenda de prioridade na primeira entrega (≈ 7 dias): **M** = obrigatória (Must, núcleo); **S** = planejada (Should): entra na entrega conforme a ordem de inclusão e a velocidade medida, senão vai para a continuação R1.1; **C** = só com folga (Could); **F** = versão futura.
 
 | Área | Funcionalidade | Complexidade | Depende de | Prioridade |
 |------|----------------|:------------:|------------|:----------:|
 | Fundação | Login, sessões, perfis, isolamento por escritório, segurança | Média | — | **M** |
 | Fundação | Módulos contratáveis por escritório | Baixa | Fundação | **M** |
 | 1 | CRUD de empresas com busca, filtros e paginação | Baixa | Fundação | **M** |
-| 1 | Gestão de usuários (admin) | Baixa | Empresas | **M** |
+| 1 | Gestão de usuários (admin) | Baixa | Empresas | S (usuários de demonstração vêm do seed) |
 | 1 | Página "Plano e módulos" do escritório | Baixa | Fundação | C |
 | 2 | Catálogo de tipos de obrigação + vínculo com empresas | Baixa | Empresas | **M** |
 | 2 | CRUD de obrigações com filtros | Média | Tipos | **M** |
 | 2 | Fluxo de status e histórico de entregas | Média | Obrigações | **M** |
-| 2 | Gerador de obrigações por competência | Média | Obrigações | **M** |
+| 2 | Gerador de obrigações por competência | Média | Obrigações | S (primeira inclusão) |
 | 2 | Calendário mensal de vencimentos | Baixa | Obrigações | C |
 | 3 | Solicitações de documento (lado do escritório) | Média | Empresas, Obrigações | S |
 | 3 | Upload e download seguros | Média/alta (segurança) | Solicitações | S |
@@ -115,13 +115,14 @@ Legenda de prioridade na primeira entrega (≈ 7 dias): **M** = obrigatória (Mu
 | — | IA (resumos, classificação automática de lançamentos) | Alta | Base de dados madura | F (v3) |
 | — | Aplicativo móvel | Alta | API | F (v3) |
 
-**Leitura do quadro:** o MVP da entrega acadêmica cobre **todas as seis áreas**, mas com profundidade diferente. Fiscal, Indicadores e a Fundação são completos e obrigatórios. Documentos, BPO e Consultivo entram em versão essencial, em faixas de trabalho paralelas, com uma ordem de corte definida caso o prazo aperte (ver [ROADMAP.md](ROADMAP.md#4-ordem-de-corte)).
+**Leitura do quadro (revisão 2):** o **produto** contempla as seis áreas, todas especificadas e com cartões de implementação prontos. A **entrega acadêmica** garante o núcleo (Fundação, Empresas, Fiscal essencial, Índice de Regularidade e Painel), estimado em cerca de 6 dias considerando o tempo de revisar e entender o código. Documentos, BPO e Consultivo entram **um bloco por vez**, conforme a velocidade medida nos primeiros dias (ver [ROADMAP.md §4](ROADMAP.md#4-núcleo-obrigatório-e-ordem-de-inclusão)). O que não couber segue para a continuação R1.1 **sem sair do plano**, e é apresentado como roadmap, nunca como funcionalidade pronta.
 
 ## 6. Releases
 
 | Release | Objetivo | Conteúdo |
 |---------|----------|----------|
-| **R1: Entrega acadêmica** (≈ 7 dias) | Demonstrar a plataforma completa em versão essencial, com qualidade e segurança | Fundação, Cadastros, Fiscal, Índice, Painel (M) + Documentos/Portal, BPO essencial, Consultivo essencial, Relatório (S) + teste com usuário e 2 melhorias |
+| **R1: Entrega acadêmica** (≈ 7 dias) | Demonstrar o núcleo com qualidade e segurança, e a visão completa como roadmap | **Garantido:** Fundação, Empresas, Fiscal essencial, Índice, Painel, suíte de segurança, teste com usuário real e 2 melhorias. **Conforme a velocidade:** gerador de competência, Documentos/Portal, BPO essencial, Consultivo essencial, Relatório. **Condicional:** publicação em hospedagem |
+| **R1.1: Continuação pós-entrega** | Completar a plataforma essencial | Blocos S que não couberem na R1, na mesma ordem de inclusão, + medição de cobertura |
 | **v1.1: Piloto** | Uso real por 1 a 3 escritórios | Lembretes por e-mail, recorrência de lançamentos, cliente lança despesas e comprovantes, CSV/PDF, 2FA, painel do super-administrador |
 | **v1.2: BPO avançado** | Profundidade no módulo pago | OFX e conciliação, DRE gerencial, orçamento × realizado, centros de custo |
 | **v2: Produto comercial** | Venda self-service | Cadastro e teste gratuito, cobrança da assinatura, honorários do escritório, API REST, NF-e (XML) |

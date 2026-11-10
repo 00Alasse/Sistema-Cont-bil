@@ -2,14 +2,14 @@
 
 > Cada tarefa abaixo é um **cartão autocontido**: outra IA (ou pessoa) consegue executá-la lendo
 > apenas [AGENTS.md](../AGENTS.md), o cartão e as seções indicadas em "Ler".
-> **Situação do plano:** aguardando aprovação. Só a T00 foi executada.
+> **Situação do plano:** revisão 2, aguardando aprovação. Só a T00 foi executada; nenhuma funcionalidade nem tabela de banco existe no projeto.
 
 ## Sumário
 
 1. [Como usar este roadmap](#1-como-usar-este-roadmap)
 2. [Divisão de trabalho entre as ferramentas de IA](#2-divisão-de-trabalho-entre-as-ferramentas-de-ia)
-3. [Cronograma de 7 dias e faixas paralelas](#3-cronograma-de-7-dias-e-faixas-paralelas)
-4. [Ordem de corte](#4-ordem-de-corte)
+3. [Cronograma de 7 dias](#3-cronograma-de-7-dias)
+4. [Núcleo obrigatório e ordem de inclusão](#4-núcleo-obrigatório-e-ordem-de-inclusão)
 5. [Posse de arquivos](#5-posse-de-arquivos)
 6. [Quadro de situação](#6-quadro-de-situação)
 7. [Cartões das tarefas](#7-cartões-das-tarefas)
@@ -18,9 +18,9 @@
 
 ## 1. Como usar este roadmap
 
-**Legenda de situação:** ⬜ planejada · 🟨 em andamento · 🟦 em revisão · ✅ concluída · ✂️ cortada (adiada para versão futura)
+**Legenda de situação:** ⬜ planejada · 🟨 em andamento · 🟦 em revisão · ✅ concluída · ⏭️ adiada para a continuação pós-entrega (R1.1)
 
-**Prioridade:** **M** obrigatória · **S** planejada · **C** só com folga (ver [PRODUCT.md §5](PRODUCT.md#5-avaliação-de-viabilidade-por-funcionalidade)).
+**Prioridade:** **M** obrigatória (núcleo) · **S** planejada, entra conforme a ordem de inclusão (§4.2) · **C** só com folga · **Cond.** condicional a fatores externos (ver [PRODUCT.md §5](PRODUCT.md#5-avaliação-de-viabilidade-por-funcionalidade)).
 
 **Criticidade (define quem implementa e quem revisa):**
 
@@ -61,21 +61,50 @@
 
 **Independência de ferramenta:** nenhuma regra fica "na memória" de uma IA. Tudo está em `AGENTS.md` (lido pelo Claude via `CLAUDE.md` e pelo Copilot via `.github/copilot-instructions.md`) e nestes cartões. Qualquer IA pode substituir outra.
 
-## 3. Cronograma de 7 dias e faixas paralelas
+## 3. Cronograma de 7 dias
 
-> Gargalo real: **a sua revisão e compreensão**, não a geração de código. Recomenda-se no máximo **duas faixas simultâneas**.
+> **Revisão 2:** a primeira versão previa cerca de 44 tarefas em 7 dias, com várias por dia em duas faixas. Isso
+> desconsiderava o tempo de revisar, testar e **entender** cada entrega. Este cronograma parte da capacidade de
+> revisão, não da velocidade de geração das IAs (ver DECISIONS ADR-022).
 
-| Dia | Faixa 1 (principal) | Faixa 2 (paralela) | Portão ao final do dia |
-|-----|---------------------|--------------------|------------------------|
-| **D1** | T00 ✅ · F01 · F02 · F03 · F04 | — | Banco reconstrói com 1 comando; Router testado |
-| **D2** | F05 · F06 · F07 · F08 · F09 · F10 | — | Login funcionando no navegador, com layout e perfis |
-| **D3** | C01 · C02 · Q02 (publicação inicial) | FI01 · FI02 · FI03 | CRUD de empresas no ar (local e hospedagem) |
-| **D4** | FI04 · FI05 · DO01 · GE01 · GE02 | FN01 · FN02 · FN03 | **Portão de escopo:** núcleo M pronto? Se não, aplicar a ordem de corte |
-| **D5** | DO02 · DO03 · GE03 | FN04 · FN05 · CO01 · CO02 · CO03 | **Congelamento de funcionalidades** à noite |
-| **D6** | Q01 · Q03 (teste com usuário, manhã) · Q04 · Q05 | GE04 · tarefas C, se tudo estiver verde | Melhorias do teste implementadas |
-| **D7** | Q06 (publicação final, documentação, ensaio) | — | Reserva: **nenhuma funcionalidade nova** |
+### 3.1 Estimativa de esforço por tarefa (hipótese a medir nos dias 1 e 2)
 
-**Dependências entre faixas:**
+| Criticidade | Gerar e ajustar | Revisão por IA | Ler, testar e entender | Total aproximado |
+|:-----------:|:---------------:|:--------------:|:----------------------:|:----------------:|
+| 🔒 | 45 min | 45 min | 60 min | **≈ 2h30** |
+| ◆ | 30 min | 30 min | 45 min | **≈ 1h45** |
+| ○ | 20 min | 10 min | 20 min | **≈ 50 min** |
+
+Some ainda **≈ 45 min por dia** de rotina: reconstruir o banco, navegar pelo sistema, atualizar o §6 e fazer o merge. Com 7 a 8 horas produtivas por dia, a capacidade realista é de **2 a 4 tarefas por dia**.
+
+**Consequência:** o **núcleo M** (22 tarefas além da T00: ≈ 44 h de tarefas, somando teste com usuário, melhorias e documentação, + ≈ 5 h de rotina) ocupa sozinho cerca de **6 dias de 8 horas**, deixando por volta de 1 dia de folga para imprevistos. Os módulos S **continuam no plano do produto**, mas só entram na entrega acadêmica se a velocidade medida permitir (§4). Caso contrário, viram a continuação pós-entrega (R1.1, ver PRODUCT §6).
+
+### 3.2 Plano base (somente o núcleo M)
+
+| Dia | Tarefas | Ponto de verificação ao final do dia (concreto e testável) |
+|-----|---------|-------------------------------------------------------------|
+| **D1** | Preparação · F01 · F02 · F03 | `php bin/db.php rebuild` cria o banco; `composer check` verde; **você explica** `Env`, `Database::transacao` e o Validator |
+| **D2** | F04 · F05 · F06 | Uma rota inexistente mostra a página 404 pelo Kernel; o Model base filtra por escritório (teste) |
+| **D3** | F07 · F08 · F09 | Login e logout no navegador com os usuários do seed; cliente recebe 403 em rota do escritório |
+| **D4** | F10 · C01 | CRUD de empresas completo no navegador, com busca, filtros e paginação · **Ponto de decisão B** |
+| **D5** | FI01 · FI02 · FI03 · FI04 | Obrigações cadastradas, filtradas e com status alterado; histórico visível |
+| **D6** | GE01 · GE02 · Q01 · Q03 (teste com usuário, à tarde) | Painel e Índice funcionando; suíte de segurança verde · **Congelamento de funcionalidades** |
+| **D7** | Q04 · Q05 · Q06 · Q02 (só se as condições forem atendidas) | Melhorias implementadas; README final; `rebuild` local ensaiado como plano principal da apresentação |
+
+**Preparação (D1, antes da F01), sem código:**
+- instalar o Composer e habilitar `extension=zip`; mover o projeto para `C:\xampp\htdocs\tributo`;
+- **agendar o participante do teste com usuário** (Q03) para o D6 ou o D7 (é a dependência externa mais arriscada);
+- verificar se há uma hospedagem disponível (informação para a decisão do Q02, sem configurar nada ainda).
+
+### 3.3 Regras de ritmo
+
+1. **Uma tarefa só termina quando você consegue explicar cada arquivo em até 2 minutos.** Sem isso, ela continua 🟦 em revisão.
+2. **No máximo uma tarefa 🔒 em revisão por vez.** Faixa paralela, só para tarefas ○ ou para tarefas S já liberadas no §4.
+3. **Nunca comece uma tarefa S** enquanto houver uma tarefa M vermelha (`composer check` falhando) ou em revisão.
+4. **Tarefa que passar de 2× a estimativa:** pare, peça ao Opus para dividi-la ou reduza o escopo do cartão (registrando a redução). Não "empurre" um núcleo instável.
+5. **Fim de cada dia:** `php bin/db.php rebuild` → navegar pelos fluxos prontos → `composer check` → atualizar o §6 → anotar as horas gastas por tarefa (para medir a velocidade real).
+
+**Dependências entre tarefas:**
 
 ```mermaid
 flowchart LR
@@ -87,32 +116,76 @@ flowchart LR
     FN03 --> FN06
     FI03 --> DO01 --> DO02 --> DO03
     FI04 --> GE01
-    DO01 --> GE01 --> GE02 --> GE03
+    DO01 -.opcional.-> GE01
+    GE01 --> GE02 --> GE03
     C01 --> CO01 --> CO02 --> CO03 --> CO04
-    FN05 --> CO03
+    FN05 -.opcional.-> CO03
     GE01 --> CO03
+    C02 --> DO03
     DO03 --> FN07
     FN05 --> FN07
     GE03 --> GE04
-    C01 --> Q02
     C02 --> C03
     GE02 --> Q01
-    DO03 --> Q01
     Q01 --> Q03 --> Q04 --> Q05 --> Q06
+    Q01 --> Q07
+    GE02 -.condicional.-> Q02
 ```
 
-## 4. Ordem de corte
+## 4. Núcleo obrigatório e ordem de inclusão
 
-Se o portão do D4 ou do D5 não for atingido, corte **nesta ordem** (marque ✂️ e mova para a v1.1):
+### 4.1 Núcleo M (sempre entregue)
 
-1. CO04 · FN07 · FN06 · FI06 · C03 (todas C)
-2. GE04 (relatório mensal)
-3. CO03 → CO02 → CO01 (consultivo inteiro)
-4. FN05 → FN04 → FN03 → FN02 → FN01 (BPO inteiro)
-5. DO03 → DO02 → DO01 (documentos inteiro)
+T00, F01–F10, C01, FI01–FI04, GE01, GE02, Q01, Q03, Q04, Q05, Q06.
 
-**Núcleo intocável (M):** T00, F01–F10, C01, C02, FI01–FI05, GE01, GE02, Q01–Q06.
-Com o núcleo M, todos os requisitos acadêmicos estão atendidos (CRUDs de Empresas e Obrigações, busca, filtros, paginação, login, painel, Índice de Regularidade como funcionalidade inovadora, segurança, SQL, README, teste com usuário e 2 melhorias).
+Ele atende todos os requisitos acadêmicos:
+
+| Requisito da disciplina | Onde é atendido |
+|-------------------------|-----------------|
+| 2 entidades relacionadas com CRUD completo | Empresas (C01) e Obrigações (FI03), relacionadas por FK |
+| Listagens com busca, filtros e paginação | C01, FI03 (F06 fornece a base) |
+| Login com sessão | F07, F08 |
+| Painel com indicadores | GE02 |
+| Funcionalidade inovadora | Índice de Regularidade (GE01) |
+| Validação no servidor com mensagens por campo | F02 + todos os formulários |
+| SQL Injection, XSS, CSRF, hash de senhas | F06, F05/F10, F07, F08 + Q01 |
+| Script SQL com dados de exemplo | F03, FI01 (`database/tributo.sql` gerado) |
+| README com instalação e usuários de teste | T00 → Q06 |
+| Teste com usuário real + 2 melhorias | Q03, Q04, Q05 |
+
+**Mudanças em relação à revisão 1:** C02 (usuários) e FI05 (gerador) saíram do núcleo e viraram as primeiras inclusões S. Os usuários de demonstração vêm do seed, e as obrigações podem ser criadas manualmente e pelo seed. Q02 (publicação) passou a ser **condicional** (condições no cartão Q02), e a medição de cobertura virou uma tarefa própria e secundária (Q07).
+
+### 4.2 Ordem de inclusão das tarefas S (substitui a "ordem de corte")
+
+Os módulos S **não são descartados**: entram **nesta ordem**, um bloco por vez, somente quando o ponto de decisão permitir. O que não entrar fica marcado ⏭️ (continuação pós-entrega, R1.1), sem perder o cartão.
+
+| Ordem | Bloco | Tarefas | Por que nesta posição |
+|:-----:|-------|---------|-----------------------|
+| 1 | Gerador de competência | FI05 | Pequeno, dá muito valor à demonstração da rotina fiscal |
+| 2 | Documentos e portal | C02 → DO01 → DO02 → DO03 | Proposta de venda mais forte ("fim do WhatsApp"); exige usuários CLIENTE (C02) |
+| 3 | Visão 360º | GE03 | Pequena; integra o que existir |
+| 4 | BPO financeiro essencial | FN01 → FN02 → FN03 → FN04 → FN05 | Módulo comercial pago; grande (≈ 10 h) |
+| 5 | Consultivo essencial | CO01 → CO02 → CO03 | Depende de dados fiscais e, de preferência, financeiros |
+| 6 | Relatório mensal | GE04 | Fica melhor com os blocos 4 e 5 prontos |
+| 7 | Tarefas C | FI06, C03, FN06, FN07, CO04, Q07 | Só com folga real |
+
+### 4.3 Pontos de decisão
+
+| Ponto | Quando | Pergunta | Se **sim** | Se **não** |
+|-------|--------|----------|------------|------------|
+| **A** | Fim do D2 | F01–F06 concluídas **e compreendidas**? | Seguir o plano base | Todas as tarefas S passam para depois da entrega; avaliar com o Opus uma simplificação de F09/F10 |
+| **B** | Fim do D4 | C01 concluída e velocidade medida ≥ 3 tarefas/dia? | Liberar o bloco 1 (FI05) em faixa paralela no D5 | Seguir só o núcleo; nenhuma S até o congelamento |
+| **C** | Meio do D6 | GE02 pronta com ≥ 0,5 dia de folga projetada até o fim do D7? | Liberar o próximo bloco da ordem de inclusão, **apenas se couber antes do congelamento** | Congelar; dedicar o restante ao teste, às melhorias e à documentação |
+| **Congelamento** | Fim do D6 | — | Depois daqui: só Q03–Q06, correções de bugs e Q02 condicional | — |
+
+### 4.4 Simplificações permitidas dentro do núcleo (último recurso)
+
+Se até o núcleo correr risco, reduza o escopo **sem retirar requisitos acadêmicos**, registrando a redução no cartão:
+
+- **GE02:** apenas os indicadores de obrigações e a distribuição por semáforo (sem carga por responsável nem cartões de módulos).
+- **F10:** CSS mínimo; layout de impressão e partials não usados ficam para depois.
+- **FI04:** manter a matriz de transições completa (é regra de negócio testada), mas o histórico pode ser uma lista simples.
+- **Testes E2E:** priorizar os fluxos do núcleo e os testes de segurança da Q01; E2E de telas secundárias podem virar roteiro manual documentado.
 
 ## 5. Posse de arquivos
 
@@ -127,7 +200,7 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | Financeiro (FN) | `*/Financeiro/**`, `app/Support/Dinheiro.php`, `app/Views/financeiro/**`, `config/modules/financeiro.php`, `database/{schema,seeds}/04_financeiro.sql`, `tests/Support/FabricaFinanceiro.php` |
 | Gestão (GE) | `*/Gestao/**`, `app/Views/gestao/**`, `config/modules/gestao.php`, `config/regras/regularidade.php` |
 | Consultivo (CO) | `*/Consultivo/**`, `app/Views/consultivo/**`, `config/modules/consultivo.php`, `config/regras/radar.php`, `database/{schema,seeds}/05_consultivo.sql`, `tests/Support/FabricaConsultivo.php` |
-| Qualidade (Q) | `tests/Integration/Seguranca/**`, `tests/E2E/**` (novos arquivos), `docs/TESTE-USUARIO.md`, `bin/cobertura.php` |
+| Qualidade (Q) | `tests/Integration/Seguranca/**`, `tests/E2E/**` (novos arquivos), `docs/TESTE-USUARIO.md`, `docs/PUBLICACAO.md`, `bin/cobertura.php` |
 
 `*/Modulo/**` = `app/Controllers/Modulo/**`, `app/Models/Modulo/**`, `app/Services/Modulo/**`, `tests/Unit/Modulo/**`, `tests/Integration/Modulo/**`.
 
@@ -156,17 +229,17 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | F09 | Middlewares de perfil e de módulo | M | 🔒 | Fundação | F08 | ⬜ |
 | F10 | Layouts, menu dinâmico, flash, partials, CSS e JS | M | ○ | Fundação | F09 | ⬜ |
 | C01 | CRUD de empresas | M | ◆ | Cadastro | F10 | ⬜ |
-| C02 | Usuários e "meu perfil" | M | 🔒 | Cadastro | C01 | ⬜ |
+| C02 | Usuários e "meu perfil" | S | 🔒 | Cadastro | C01 | ⬜ |
 | C03 | Página "Plano e módulos" | C | ○ | Cadastro | C02 | ⬜ |
 | FI01 | Schema, seeds e fábrica do fiscal | M | ◆ | Fiscal | C01 | ⬜ |
 | FI02 | Tipos de obrigação e vínculo com empresas | M | ○ | Fiscal | FI01 | ⬜ |
 | FI03 | CRUD de obrigações com filtros | M | ◆ | Fiscal | FI02 | ⬜ |
 | FI04 | Fluxo de status e histórico | M | ◆ | Fiscal | FI03 | ⬜ |
-| FI05 | Gerador de obrigações por competência | M | ◆ | Fiscal | FI04 | ⬜ |
+| FI05 | Gerador de obrigações por competência | S | ◆ | Fiscal | FI04 | ⬜ |
 | FI06 | Calendário de vencimentos | C | ○ | Fiscal | FI03 | ⬜ |
 | DO01 | Schema e solicitações de documento | S | ◆ | Documentos | FI03 | ⬜ |
 | DO02 | Upload e download seguros | S | 🔒 | Documentos | DO01 | ⬜ |
-| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02 | ⬜ |
+| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02, C02 | ⬜ |
 | GE01 | Índice de Regularidade | M | ◆ | Gestão | FI04, DO01* | ⬜ |
 | GE02 | Painel do escritório | M | ◆ | Gestão | GE01 | ⬜ |
 | GE03 | Visão geral 360º da empresa | S | ○ | Gestão | GE02 | ⬜ |
@@ -182,12 +255,13 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | CO02 | Plano de ação | S | ◆ | Consultivo | CO01 | ⬜ |
 | CO03 | Radar de alertas e oportunidades | S | ◆ | Consultivo | CO02, GE01, FN05* | ⬜ |
 | CO04 | Radar da carteira | C | ○ | Consultivo | CO03 | ⬜ |
-| Q01 | Suíte de segurança consolidada e cobertura | M | 🔒 | Qualidade | GE02 (+DO03 se existir) | ⬜ |
-| Q02 | Publicação na hospedagem (inicial) | M | ◆ | Qualidade | C01 | ⬜ |
-| Q03 | Roteiro e execução do teste com usuário | M | ○ | Qualidade | Q01 | ⬜ |
+| Q01 | Suíte de segurança consolidada | M | 🔒 | Qualidade | GE02 (+DO03 se existir) | ⬜ |
+| Q02 | Publicação em hospedagem | Cond. | ◆ | Qualidade | GE02 + hospedagem disponível | ⬜ |
+| Q03 | Roteiro e execução do teste com usuário real | M | ○ | Qualidade | Q01 (agendamento no D1) | ⬜ |
 | Q04 | Melhoria 1 vinda do teste | M | — | Qualidade | Q03 | ⬜ |
 | Q05 | Melhoria 2 vinda do teste | M | — | Qualidade | Q03 | ⬜ |
-| Q06 | Publicação final, documentação e ensaio | M | ○ | Qualidade | Q05 | ⬜ |
+| Q06 | Documentação final e ensaio da apresentação local | M | ○ | Qualidade | Q05 | ⬜ |
+| Q07 | Medição de cobertura (meta de 80%, objetivo secundário) | C | ○ | Qualidade | Q01 | ⬜ |
 
 \* Dependência opcional: a regra correspondente é omitida se o módulo não existir (ver o cartão).
 
@@ -202,6 +276,7 @@ Os caminhos de teste seguem `tests/<Nível>/<Modulo>/<Classe>Test.php`.
 
 #### T00 — Estrutura inicial e documentação ✅
 Concluída. Estrutura de pastas, `composer.json` (PSR-4, PHPUnit 11, PHPStan 2), `.gitignore`, `.env.example`, `.env.production.example`, `.htaccess` (raiz e `public/`), `public/index.php` provisório, `bin/lint.php`, `phpunit.xml`, `phpstan.neon`, `tests/Unit/AmbienteTest.php`, documentação em `docs/`, `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`.
+**Não inclui nada de banco de dados:** nenhum arquivo `.sql`, nenhum `bin/db.php` e nenhum teste de banco. `database/schema/` e `database/seeds/` contêm apenas `.gitkeep`. O banco começa a ser implementado na F03. A verificação manual do DDL feita durante a T00 está descrita em [DATABASE.md §8](DATABASE.md#8-situação-da-implementação-e-da-validação).
 Commit: `chore: configurar estrutura inicial do projeto`.
 
 #### F01 — Configuração por ambiente, PDO e relógio · M · ◆
@@ -239,7 +314,7 @@ Commit: `chore: configurar estrutura inicial do projeto`.
   - `bin/db.php build`: gera `database/tributo.sql` (cabeçalho com data e aviso "arquivo gerado", `SET FOREIGN_KEY_CHECKS=0`, `DROP TABLE IF EXISTS` de todas as tabelas encontradas nos `CREATE TABLE`, em ordem inversa, schema, seeds, `SET FOREIGN_KEY_CHECKS=1`). **Sem `CREATE DATABASE`**.
   - `IntegrationTestCase`: no `setUpBeforeClass`, chama `BancoDeTeste::preparar()` (recria `tributo_test` só com o schema, **uma vez por execução**); `setUp` abre uma transação e `tearDown` faz rollback.
 - **Aceite:** `php bin/db.php rebuild` cria o banco local com os dados; `php bin/db.php build` gera um arquivo importável no phpMyAdmin; os testes unitários continuam rodando sem banco.
-- **Testes:** SchemaNucleoTest (FK composta rejeita cliente com empresa de outro escritório; CHECK de cliente sem empresa; e-mail duplicado; CNPJ duplicado no mesmo escritório e permitido em outro); TributoSqlAtualizadoTest (gera em memória e compara com o arquivo versionado).
+- **Testes:** SchemaNucleoTest (FK composta rejeita cliente com empresa de outro escritório e responsável de outro escritório; CHECK de cliente sem empresa; e-mail duplicado; CNPJ duplicado no mesmo escritório e permitido em outro). Estes testes **automatizam** as verificações manuais do núcleo descritas em DATABASE §8.2. TributoSqlAtualizadoTest (gera em memória e compara com o arquivo versionado).
 - **Commit:** `feat: adicionar banco do núcleo e ferramenta de reconstrução`
 - **Branch:** `feat/f03-banco-nucleo`
 
@@ -317,7 +392,8 @@ Commit: `chore: configurar estrutura inicial do projeto`.
 - **Commit:** `feat: adicionar cadastro de empresas com busca e paginação`
 - **Branch:** `feat/c01-empresas`
 
-#### C02 — Usuários e "meu perfil" · M · 🔒
+#### C02 — Usuários e "meu perfil" · S · 🔒
+> Fora do núcleo desde a revisão 2: os usuários de demonstração vêm do seed. Primeira tarefa do bloco 2 (Documentos e portal), que precisa criar usuários CLIENTE.
 - **Ler:** API §2 (perfil) e §3.2; ARCHITECTURE §7, §11.7.
 - **Arquivos:** `app/Controllers/Cadastro/{UsuarioController,PerfilController}.php`, `app/Services/Cadastro/UsuarioService.php`, `app/Views/cadastro/usuarios/{index,form}.php`, `app/Views/cadastro/perfil/show.php`, `config/modules/cadastro.php`, `tests/Integration/Cadastro/UsuarioServiceTest.php`, `tests/E2E/UsuarioAdminTest.php`. Usa `Models/Nucleo/Usuario` (sem alterar sua interface; métodos novos de listagem ficam em `app/Models/Cadastro/UsuarioConsulta.php`).
 - **Escopo:** API §3.2; o último ADMIN não pode ser desativado nem rebaixado (`SELECT ... FOR UPDATE`); ninguém desativa a si mesmo; CLIENTE exige empresa do escritório; trocar a própria senha exige a senha atual; a senha nunca é exibida nem registrada em log.
@@ -338,7 +414,7 @@ Commit: `chore: configurar estrutura inicial do projeto`.
 - **Ler:** DATABASE §4.2, §7.
 - **Arquivos:** `database/schema/02_fiscal.sql`, `database/seeds/02_fiscal.sql`, `database/tributo.sql` (gerado), `tests/Support/FabricaFiscal.php`, `tests/Integration/Fiscal/SchemaFiscalTest.php`.
 - **Escopo:** DDL copiado sem alterações; seeds com ~8 tipos marcados "Exemplo — confira o prazo vigente na fonte oficial" (na `descricao`), vínculos e 6 meses de obrigações em todos os status, incluindo atrasadas; a fábrica cria tipo, vínculo e obrigação com padrões válidos.
-- **Testes:** FK composta (obrigação com empresa de outro escritório), CHECK de competência, CHECK de entrega, chave única de competência.
+- **Testes:** FK composta (obrigação com empresa de outro escritório), CHECK de competência, CHECK de entrega, chave única de competência, exclusão de empresa com obrigações bloqueada (automatizam as verificações manuais do fiscal em DATABASE §8.2).
 - **Commit:** `feat: adicionar estrutura de dados do módulo fiscal`
 - **Branch:** `feat/fi01-schema-fiscal`
 
@@ -365,7 +441,8 @@ Commit: `chore: configurar estrutura inicial do projeto`.
 - **Commit:** `feat: adicionar fluxo de status das obrigações com histórico`
 - **Branch:** `feat/fi04-status-obrigacao`
 
-#### FI05 — Gerador de obrigações por competência · M · ◆
+#### FI05 — Gerador de obrigações por competência · S · ◆
+> Fora do núcleo desde a revisão 2: obrigações podem ser criadas manualmente (FI03) e pelo seed. Bloco 1 da ordem de inclusão (primeira tarefa S a entrar).
 - **Ler:** ARCHITECTURE §10.3; API §4.2 (gerar).
 - **Arquivos:** `app/Services/Fiscal/GeradorObrigacoesService.php`, `app/Controllers/Fiscal/GeradorController.php`, `app/Views/fiscal/gerador/form.php`, `config/modules/fiscal.php`, `tests/Integration/Fiscal/GeradorObrigacoesServiceTest.php`, `tests/E2E/GerarCompetenciaTest.php`.
 - **Testes:** gera N; a segunda execução gera 0 e ignora N; empresa inativa e tipo inativo são ignorados; TRIMESTRAL só em 03, 06, 09 e 12; responsável padrão aplicado; vencimento em fevereiro.
@@ -438,7 +515,7 @@ Commit: `chore: configurar estrutura inicial do projeto`.
 - **Ler:** DATABASE §4.4, §7; ARCHITECTURE §6 item 8.
 - **Arquivos:** `database/schema/04_financeiro.sql`, `database/seeds/04_financeiro.sql`, `database/tributo.sql` (gerado), `app/Support/Dinheiro.php`, `tests/Unit/Support/DinheiroTest.php`, `tests/Support/FabricaFinanceiro.php`, `tests/Integration/Financeiro/SchemaFinanceiroTest.php`.
 - **Escopo:** DDL sem alterações; `Dinheiro` imutável em centavos (`deDecimal`, `deEntradaBr`, `paraDecimal`, `formatar` → `R$ 1.234,56`, `somar`, `subtrair`, `ehPositivo`); seeds com os cenários da DATABASE §7 (resultado negativo e concentração de receita).
-- **Testes:** `Dinheiro` (`0,1 + 0,2`, negativos, `1.234.567,89`, entradas inválidas lançam exceção, arredondamento); schema (conta de outra empresa, baixa sem conta, valor zero, categoria com grupo incompatível).
+- **Testes:** `Dinheiro` (`0,1 + 0,2`, negativos, `1.234.567,89`, entradas inválidas lançam exceção, arredondamento); schema (conta de outra empresa, baixa sem conta, valor zero, categoria com grupo incompatível; automatizam as verificações manuais do financeiro em DATABASE §8.2).
 - **Commit:** `feat: adicionar estrutura de dados do BPO financeiro`
 - **Branch:** `feat/fn01-schema-financeiro`
 
@@ -513,31 +590,54 @@ Commit: `chore: configurar estrutura inicial do projeto`.
 
 ### Qualidade e entrega
 
-#### Q01 — Suíte de segurança consolidada e cobertura · M · 🔒
+#### Q01 — Suíte de segurança consolidada · M · 🔒
 - **Ler:** ARCHITECTURE §8, §12.
-- **Arquivos:** `tests/Integration/Seguranca/{IsolamentoRotasTest,CsrfRotasTest,XssTest,SqlInjectionTest,EscaladaPerfilTest,ModuloNaoContratadoTest,SessaoTest,HeadersTest}.php`, `bin/cobertura.php`, `composer.json` (script `coverage`), `README.md` (seção sobre como habilitar o Xdebug no XAMPP).
-- **Escopo:** testes **parametrizados pela tabela de rotas** (toda rota com `{id}` testada com o ID de outro escritório → 404; todo POST sem token → 419); `bin/cobertura.php` lê o clover e falha abaixo de 80% nas pastas da ARCHITECTURE §12.3; instruções para habilitar o Xdebug (`php_xdebug.dll`) ou o PCOV.
-- **Commit:** `test: adicionar suíte consolidada de segurança e cobertura`
+- **Arquivos:** `tests/Integration/Seguranca/{IsolamentoRotasTest,CsrfRotasTest,XssTest,SqlInjectionTest,EscaladaPerfilTest,ModuloNaoContratadoTest,SessaoTest,HeadersTest}.php`.
+- **Escopo:** testes **parametrizados pela tabela de rotas** registradas (toda rota com `{id}` testada com o ID de outro escritório → 404; todo POST sem token → 419); XSS armazenado escapado; SQLi nos filtros e na ordenação; escalada de perfil (colaborador → ADMIN, cliente → escritório); módulo não contratado; sessão (regeneração no login, logout invalida, cookie `HttpOnly`/`SameSite`); senhas armazenadas com hash; headers. Cobre automaticamente as rotas dos módulos S que existirem.
+- **Aceite:** todos os testes verdes; **é critério de entrega** (não pode ser cortado nem simplificado).
+- **Commit:** `test: adicionar suíte consolidada de segurança`
 - **Branch:** `test/q01-seguranca`
 
-#### Q02 — Publicação na hospedagem · M · ◆
+#### Q02 — Publicação em hospedagem · Cond. · ◆
+- **Condições para iniciar (todas):** (1) núcleo M funcionando localmente (GE02 concluída); (2) hospedagem disponível e gratuita ou já paga, com PHP ≥ 8.2, MySQL ≥ 8.0.16 ou MariaDB ≥ 10.4, `.htaccess` com mod_rewrite e HTTPS; (3) congelamento já feito ou folga de ≥ 0,5 dia.
+- **Limite de tempo:** **2 horas.** Se não funcionar dentro do limite, registrar o problema encontrado em `docs/PUBLICACAO.md`, marcar ⏭️ e apresentar localmente (plano principal previsto no trabalho).
 - **Ler:** ARCHITECTURE §9.
-- **Arquivos:** `README.md` (seção "Publicação"), `docs/PUBLICACAO.md` (checklist detalhado).
-- **Escopo:** escolher a hospedagem (PHP ≥ 8.2, MySQL ≥ 8.0.16 ou MariaDB ≥ 10.4, `.htaccess` com mod_rewrite, HTTPS); `composer install --no-dev --optimize-autoloader` em uma cópia limpa; enviar os arquivos (sem `tests/`, `docs/` opcional, sem `.env`); criar o `.env` de produção; importar `database/tributo.sql`; permissão de escrita em `storage/`; testar login, 404, `/.env` (deve ser negado), `/app/` (negado), headers. Repetir a publicação no Q06.
+- **Arquivos:** `README.md` (seção "Publicação"), `docs/PUBLICACAO.md` (checklist e resultado).
+- **Escopo:** `composer install --no-dev --optimize-autoloader` em uma cópia limpa; enviar os arquivos (sem `tests/`, sem `.env`); criar o `.env` de produção; importar `database/tributo.sql`; permissão de escrita em `storage/`; testar login, página 404, `/.env` e `/app/` negados e headers presentes.
+- **Nunca:** alterar código funcional para "fazer funcionar na hospedagem" sem uma tarefa de correção própria e testada.
 - **Commit:** `docs: documentar publicação em hospedagem compartilhada`
 - **Branch:** `docs/q02-publicacao`
 
-#### Q03 — Roteiro e execução do teste com usuário · M · ○
+#### Q03 — Roteiro e execução do teste com usuário real · M · ○
+- **Agendamento:** no **D1** (Preparação), para o D6 à tarde ou o D7 de manhã. Sessão de 45 a 60 minutos, presencial ou por videochamada com compartilhamento de tela do sistema local.
+- **Participante principal (pelo menos 1, obrigatório):** um destes perfis:
+  1. **contador(a) em atividade**;
+  2. **profissional de escritório contábil** (ex.: assistente fiscal, contábil ou de departamento pessoal);
+  3. **empresário(a) que utiliza serviços contábeis** (cliente de escritório).
+- **Avaliadores complementares (opcionais):** estudantes de Ciências Contábeis ou colegas. **Não substituem o participante principal**; os achados deles são registrados em seção separada e têm peso menor na escolha das melhorias.
 - **Arquivos:** `docs/TESTE-USUARIO.md`.
-- **Escopo:** perfil do participante (idealmente contador(a) ou estudante de Ciências Contábeis); consentimento simples; 5 tarefas cronometradas (ex.: cadastrar empresa, gerar competência, marcar entrega, solicitar documento e o cliente enviar, interpretar o painel ou o Índice); perguntas pós-teste (facilidade de 1 a 5, o que mudaria, pagaria?); registro de observações; priorização dos achados (impacto × esforço); escolha das 2 melhorias (Q04 e Q05), com justificativa. Usar apenas dados fictícios do seed.
+- **Escopo:**
+  - perfil do participante descrito sem dados pessoais identificáveis (ex.: "contadora, 12 anos de experiência, escritório com cerca de 80 clientes"), com consentimento simples registrado;
+  - **roteiro por perfil**: escritório (perfis 1 e 2): cadastrar empresa, encontrar obrigações atrasadas com filtros, mudar o status de uma obrigação para entregue, interpretar o painel e o Índice de Regularidade (+ gerar competência e solicitar documento, se FI05 e DO existirem). Empresário (perfil 3): entender o painel e o Índice da própria empresa, avaliar se as informações ajudariam a acompanhar o escritório (+ enviar documento pelo portal, se DO03 existir);
+  - tempo e sucesso por tarefa, dificuldades observadas, falas relevantes;
+  - perguntas pós-teste: facilidade (1 a 5), utilidade no dia a dia, o que mudaria, se usaria ou recomendaria, se pagaria (sem pedir valores);
+  - priorização dos achados (impacto × esforço) e **escolha das 2 melhorias (Q04 e Q05)**, cada uma cabendo em até meio dia, com justificativa;
+  - apenas dados fictícios do seed; nenhum dado real de clientes do participante.
+- **Plano B:** se o participante principal desmarcar, reagendar com outro perfil principal (por videochamada). Avaliação feita só por estudantes **não** cumpre o requisito; nesse caso, registrar a situação e comunicar o professor.
 - **Commit:** `docs: registrar roteiro e resultados do teste com usuário`
 - **Branch:** `docs/q03-teste-usuario`
 
 #### Q04 / Q05 — Melhorias vindas do teste · M
-Cartões escritos **depois** da Q03, no mesmo formato, com testes. Commits: `feat: <melhoria>` ou `fix: <melhoria>`. Branches: `feat/q04-<nome>`, `feat/q05-<nome>`.
+Cartões escritos **depois** da Q03, no mesmo formato, com testes. Cada melhoria deve caber em até meio dia; se a melhor sugestão for grande, implementar uma fatia dela e registrar o restante como item futuro. Commits: `feat: <melhoria>` ou `fix: <melhoria>`. Branches: `feat/q04-<nome>`, `feat/q05-<nome>`.
 
-#### Q06 — Publicação final, documentação e ensaio · M · ○
+#### Q06 — Documentação final e ensaio da apresentação local · M · ○
 - **Arquivos:** `README.md`, `docs/ROADMAP.md` (situação final), `docs/API.md` §10, `docs/DECISIONS.md` (ADRs surgidos).
-- **Escopo:** README final (instalação local, publicação, usuários de teste, comandos, funcionalidades **realmente** prontas, capturas de tela); republicar; rodar `bin/db.php rebuild` localmente como plano B; roteiro de apresentação de 10 minutos (problema → demonstração → arquitetura → segurança → teste com usuário → visão comercial).
+- **Escopo:** README final (instalação local, usuários de teste, comandos, funcionalidades **realmente** prontas, capturas de tela; publicação somente se a Q02 tiver sido concluída); ensaiar a apresentação **no ambiente local** a partir de `php bin/db.php rebuild` (plano principal); se houver publicação, conferir que continua no ar; roteiro de 10 minutos (problema → demonstração → arquitetura → segurança → teste com usuário → visão comercial e próximos passos).
 - **Commit:** `docs: finalizar documentação da entrega`
 - **Branch:** `docs/q06-entrega`
+
+#### Q07 — Medição de cobertura · C · ○
+- **Arquivos:** `bin/cobertura.php`, `composer.json` (script `coverage`), `README.md` (como habilitar o Xdebug no XAMPP).
+- **Escopo:** habilitar o Xdebug (`php_xdebug.dll`, modo `coverage`) ou o PCOV; `bin/cobertura.php` lê o relatório clover e **informa** a cobertura das pastas da ARCHITECTURE §12.3, comparando com a meta de 80%. **Não bloqueia commits nem a entrega**; o número obtido é registrado no README.
+- **Commit:** `chore: adicionar medição de cobertura de testes`
+- **Branch:** `chore/q07-cobertura`

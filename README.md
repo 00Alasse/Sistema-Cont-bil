@@ -3,7 +3,7 @@
 Plataforma web para **escritórios de contabilidade e seus clientes**. Centraliza obrigações fiscais, pendências documentais, BPO financeiro, indicadores gerenciais e acompanhamento consultivo.
 
 > **Situação:** em desenvolvimento. Concluída a **T00**: estrutura inicial, configuração e documentação.
-> **Nenhuma funcionalidade de negócio está implementada ainda.** Andamento em [docs/ROADMAP.md](docs/ROADMAP.md#6-quadro-de-situação).
+> **Nenhuma funcionalidade de negócio está implementada ainda**, e o banco de dados também não: não há scripts SQL nem tabelas no projeto (a modelagem está especificada em [docs/DATABASE.md](docs/DATABASE.md)). Andamento em [docs/ROADMAP.md](docs/ROADMAP.md#6-quadro-de-situação).
 
 Projeto acadêmico da disciplina **Programação Web II**, planejado como produto SaaS com potencial comercial.
 
@@ -46,7 +46,7 @@ Visão completa do produto e do modelo comercial: [docs/PRODUCT.md](docs/PRODUCT
 
 ## Pré-requisitos
 
-- **XAMPP** com PHP **8.2 ou superior** e MariaDB/MySQL (testado com PHP 8.2.12 e MariaDB 10.4.32).
+- **XAMPP** com PHP **8.2 ou superior** e MariaDB/MySQL (ambiente de referência do desenvolvimento: PHP 8.2.12 e MariaDB 10.4.32).
 - Extensões do PHP habilitadas no `php.ini`: `pdo_mysql`, `mbstring`, `fileinfo`. Recomendada: `zip` (acelera o Composer; no XAMPP, basta remover o `;` da linha `extension=zip` em `C:\xampp\php\php.ini`).
 - **Composer 2**: instalador para Windows em <https://getcomposer.org/download/>; durante a instalação, aponte para `C:\xampp\php\php.exe`.
 - **Git**.
@@ -90,7 +90,7 @@ Visão completa do produto e do modelo comercial: [docs/PRODUCT.md](docs/PRODUCT
 
 ## Publicação em hospedagem
 
-Será documentada na tarefa **Q02**. Resumo do que está planejado: dependências geradas com `composer install --no-dev`, banco importado com `database/tributo.sql` pelo phpMyAdmin e `.env` de produção a partir de `.env.production.example`. Detalhes em [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-ambientes-local-testes-e-produção).
+**Planejada, mas condicional.** A forma principal de execução e apresentação é a **instalação local** acima. A publicação (tarefa **Q02**) só será feita se houver uma hospedagem compatível disponível e o sistema estiver estável localmente. O projeto já está preparado para ela: dependências geradas com `composer install --no-dev`, banco importado com `database/tributo.sql` pelo phpMyAdmin (arquivo gerado a partir da tarefa F03) e `.env` de produção a partir de `.env.production.example`. Detalhes em [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-ambientes-local-testes-e-produção) e [docs/DECISIONS.md, ADR-020](docs/DECISIONS.md).
 
 ## Comandos
 

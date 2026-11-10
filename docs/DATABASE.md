@@ -3,7 +3,9 @@
 > **Contrato do modelo de dados.** As tarefas copiam as definições deste documento para
 > `database/schema/NN_<modulo>.sql`. Qualquer mudança exige aprovação, atualização deste
 > documento e registro em [DECISIONS.md](DECISIONS.md).
-> Situação: **planejado**. Nenhuma tabela foi criada ainda (ver [ROADMAP.md](ROADMAP.md)).
+> Situação: **planejado, não implementado.** O repositório ainda não contém nenhum arquivo `.sql`
+> nem a ferramenta `bin/db.php`; `database/schema/` e `database/seeds/` têm apenas `.gitkeep`.
+> O DDL abaixo é uma **especificação**. Ver [§8](#8-situação-da-implementação-e-da-validação).
 
 ## 1. Princípios
 
@@ -522,3 +524,35 @@ CREATE TABLE acoes (
 | Consultivo | Acompanhamentos e ações em vários status |
 
 Os hashes de senha são gerados uma vez com `password_hash('Senha@123', PASSWORD_DEFAULT)` e gravados no seed.
+
+## 8. Situação da implementação e da validação
+
+### 8.1 O que existe no repositório
+
+| Item | Situação |
+|------|----------|
+| `database/schema/*.sql` | **Não existe.** Criado nas tarefas F03, FI01, DO01, FN01 e CO01 |
+| `database/seeds/*.sql` | **Não existe.** Criado nas mesmas tarefas |
+| `database/tributo.sql` | **Não existe.** Gerado a partir da F03 |
+| `bin/db.php` (rebuild/build) | **Não existe.** Criado na F03 |
+| Testes automatizados de banco | **Não existem.** O único teste atual é `tests/Unit/AmbienteTest.php` (versão do PHP, extensões e autoload) |
+
+### 8.2 Verificação manual feita durante a T00 (não versionada, não reproduzível pelo repositório)
+
+Para reduzir o risco de especificar um DDL incompatível com o XAMPP, foi feita **uma verificação pontual de viabilidade** do texto deste documento:
+
+1. Os blocos SQL das seções 4.1 a 4.5 **deste arquivo** foram extraídos para um arquivo temporário **fora do projeto** (pasta temporária da sessão de trabalho).
+2. Foi iniciada uma **instância temporária e separada** do MariaDB 10.4.32 do XAMPP (diretório de dados próprio na pasta temporária, porta 3399). O MySQL do XAMPP e seus bancos **não foram usados nem alterados**.
+3. O DDL foi executado em um banco descartável (`ddl_check`): as 16 tabelas foram criadas sem erro.
+4. Com 2 escritórios, 2 usuários, 3 empresas, 1 tipo de obrigação, 1 categoria e 2 contas inseridos manualmente, foram executados **14 comandos SQL manuais**, digitados no terminal. As 2 inserções válidas foram aceitas, e as 12 inválidas foram rejeitadas pelo banco:
+   - **Núcleo:** obrigação com empresa de outro escritório (FK composta); responsável de outro escritório; usuário CLIENTE sem empresa (CHECK); CLIENTE com empresa de outro escritório.
+   - **Fiscal:** competência fora do dia 01; status ENTREGUE sem `entregue_em`; obrigação duplicada na mesma competência; exclusão de empresa com registros vinculados.
+   - **Financeiro:** baixa com conta de outra empresa; baixa sem conta; valor zero; categoria de receita com grupo de despesa.
+5. A instância foi desligada. **Nenhum arquivo, script ou teste resultante foi adicionado ao repositório.**
+
+**O que essa verificação significa:** o DDL **especificado** é aceito pelo MariaDB 10.4.32 e as restrições de isolamento se comportam como projetado.
+**O que ela não significa:** que o banco esteja implementado ou entregue, ou que exista um teste automatizado. A compatibilidade com o MySQL 8 também **não** foi verificada.
+
+### 8.3 Como a verificação será incorporada de verdade
+
+As mesmas verificações passam a ser **testes automatizados versionados** nos cartões das tarefas de schema: F03 (núcleo), FI01 (fiscal) e FN01 (financeiro). Ao copiar o DDL para `database/schema/`, a tarefa deve executá-lo no MariaDB do XAMPP com `php bin/db.php rebuild`. Qualquer divergência encontrada é corrigida neste documento antes do merge.

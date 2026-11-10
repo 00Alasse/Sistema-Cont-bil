@@ -24,7 +24,11 @@
 | 016 | Idioma dos identificadores | Proposta |
 | 017 | Desenvolvimento com várias IAs: posse de arquivos e regras centralizadas | Proposta |
 | 018 | Renderização no servidor e JS progressivo, sem bibliotecas de gráficos | Proposta |
-| 019 | Estratégia de testes e análise estática | Proposta |
+| 019 | Estratégia de testes e análise estática | Proposta; meta de cobertura substituída pela ADR-021 |
+| 020 | Publicação em hospedagem condicional; apresentação local como plano principal | Proposta (rev. 2) |
+| 021 | Testes de segurança obrigatórios; cobertura de 80% como objetivo secundário | Proposta (rev. 2) |
+| 022 | Cronograma por capacidade de revisão, núcleo reduzido e ordem de inclusão | Proposta (rev. 2) |
+| 023 | Perfil do participante do teste com usuário | Proposta (rev. 2) |
 
 ---
 
@@ -41,7 +45,7 @@
 ### ADR-003 — Multi-tenant em banco compartilhado com FKs compostas
 - **Contexto:** cada escritório deve ver só os próprios dados; o projeto precisa ser simples de hospedar.
 - **Decisão:** um banco para todos; `escritorio_id` em toda tabela de negócio; `UNIQUE (id, escritorio_id)` e FKs compostas; o filtro por escritório é parâmetro obrigatório em todo método de model; o escritório vem só da sessão.
-- **Consequências:** (+) isolamento garantido também pelo banco (testado no MariaDB 10.4 durante a T00); (−) as FKs ficam mais verbosas; não se usa `ON DELETE SET NULL`.
+- **Consequências:** (+) isolamento garantido também pelo banco: o DDL especificado foi verificado manualmente no MariaDB 10.4.32 durante a T00, sem gerar arquivo ou teste no repositório (ver DATABASE §8.2); os testes automatizados virão na F03, FI01 e FN01; (−) as FKs ficam mais verbosas; não se usa `ON DELETE SET NULL`.
 
 ### ADR-004 — 404 para recursos de outro escritório
 - **Decisão:** acesso a um ID de outro escritório (ou de outra empresa, para o cliente) responde 404, nunca 403.
@@ -88,7 +92,7 @@
 ### ADR-014 — Compatibilidade MariaDB 10.4 e MySQL 8
 - **Contexto:** o XAMPP local tem MariaDB 10.4.32; a hospedagem pode ter MySQL 8.
 - **Decisão:** usar só recursos comuns: CHECK, FKs compostas, JSON simples, `DAYOFMONTH`. Charset e collation declarados por tabela. Sem procedures, triggers, `RETURNING` ou funções de janela.
-- **Consequências:** o DDL foi executado e testado no MariaDB 10.4.32 durante a T00.
+- **Consequências:** o DDL **especificado** em DATABASE §4 foi aceito pelo MariaDB 10.4.32 numa verificação manual e temporária durante a T00 (DATABASE §8.2). Não existe ainda implementação nem teste versionado, e a compatibilidade com o MySQL 8 **não** foi verificada: isso fica para a F03 (localmente) e a Q02 (hospedagem, se houver).
 
 ### ADR-015 — Controle administrativo, não tributário
 - **Decisão:** o sistema não calcula tributos, não determina obrigações por regime e não atesta regularidade fiscal. O catálogo de obrigações é do escritório; índices, alertas e relatórios exibem um aviso de caráter gerencial; os seeds marcam prazos como exemplo.
@@ -108,5 +112,38 @@
 - **Consequências:** simples, seguro e sem dependências de front-end; visual mais modesto.
 
 ### ADR-019 — Estratégia de testes e análise estática
-- **Decisão:** PHPUnit 11 (unitário, integração com MariaDB real `tributo_test`, E2E com `php -S` + cURL); PHPStan começando no nível 5 (meta: 6 após a R1); `composer check` obrigatório antes de cada commit; cobertura ≥ 80% na lógica de negócio (Xdebug ou PCOV, configurados na Q01).
+- **Decisão:** PHPUnit 11 (unitário, integração com MariaDB real `tributo_test`, E2E com `php -S` + cURL); PHPStan começando no nível 5 (meta: 6 após a R1); `composer check` obrigatório antes de cada commit; ~~cobertura ≥ 80% na lógica de negócio como critério~~ → **ver ADR-021**.
 - **Consequências:** sem Node nem navegador automatizado; os testes de integração exigem o MySQL do XAMPP ligado (os unitários não).
+
+---
+
+## Revisão 2 do planejamento
+
+### ADR-020 — Publicação em hospedagem condicional; apresentação local como plano principal
+- **Contexto:** a revisão 1 tratava a publicação (Q02) como obrigatória e a agendava para o D3, no meio do núcleo. O trabalho prevê a apresentação local como alternativa válida, e a disponibilidade de hospedagem não depende de quem desenvolve.
+- **Decisão:** a Q02 passa a ser **condicional**. Só é iniciada com o núcleo funcionando localmente (GE02), uma hospedagem disponível que atenda os requisitos, e o congelamento feito ou folga de ≥ 0,5 dia. Tem limite de 2 horas; se falhar, o problema é documentado e a apresentação é local. A arquitetura continua preparada para a publicação (ADR-013, `.env.production.example`, `tributo.sql` sem `CREATE DATABASE`).
+- **Consequências:** (+) a publicação não consome o tempo do núcleo; (−) problemas específicos da hospedagem (versão do MySQL, `.htaccess`) podem só aparecer tarde, aceitável porque a apresentação local é garantida.
+
+### ADR-021 — Testes de segurança obrigatórios; cobertura de 80% como objetivo secundário
+- **Contexto:** medir cobertura exige instalar e configurar o Xdebug ou o PCOV no XAMPP (hoje ausentes), e uma meta numérica rígida pode levar a testes feitos só para "subir o número", tomando tempo do núcleo.
+- **Decisão:**
+  - **Obrigatórios (critério de entrega, não podem ser cortados):** testes de cada cartão (caminho feliz, validação, isolamento entre escritórios) e a suíte de segurança Q01 (IDOR por rota, CSRF em todo POST, XSS, SQLi, escalada de perfil, sessão, senhas, headers e módulo não contratado).
+  - **Objetivo secundário (Q07, prioridade C):** medir a cobertura das pastas de lógica de negócio e buscar 80%. O número é informado no README; **não bloqueia commits nem a entrega**.
+- **Consequências:** (+) o esforço vai para os testes que protegem dados e regras; (−) a cobertura pode ficar abaixo de 80% ou não ser medida, o que será declarado com transparência.
+
+### ADR-022 — Cronograma por capacidade de revisão, núcleo reduzido e ordem de inclusão
+- **Contexto:** a revisão 1 planejava cerca de 44 tarefas em 7 dias com duas faixas paralelas. O gargalo real é a estudante revisar, testar e **entender** cada entrega (que precisará apresentar), não a geração de código pelas IAs.
+- **Decisão:**
+  - estimativa por criticidade (🔒 ≈ 2h30, ◆ ≈ 1h45, ○ ≈ 50 min) + rotina diária, com capacidade de 2 a 4 tarefas por dia, a ser **medida** no D1 e no D2;
+  - **núcleo M reduzido** ao que os requisitos acadêmicos exigem (C02 e FI05 passam para S), estimado em ≈ 6 dias;
+  - a "ordem de corte" é substituída por uma **ordem de inclusão**: os módulos S (Documentos, BPO, Consultivo, Relatório) permanecem no plano do produto e entram um bloco por vez, conforme os pontos de decisão A, B e C. O que não entrar fica ⏭️ na continuação pós-entrega (R1.1), com o cartão preservado;
+  - regras de ritmo: uma tarefa só termina quando cada arquivo pode ser explicado; uma tarefa 🔒 em revisão por vez; nenhuma S com uma M vermelha; tarefa acima de 2× a estimativa é dividida ou reduzida.
+- **Consequências:** (+) entrega acadêmica protegida, com uma visão de produto completa e honesta; (−) é provável que a entrega de 7 dias mostre só parte dos módulos S. A demonstração e a documentação apresentam os demais como roadmap, nunca como prontos.
+
+### ADR-023 — Perfil do participante do teste com usuário
+- **Contexto:** o trabalho exige teste com um **usuário real**. A revisão 1 admitia um estudante de Ciências Contábeis como participante principal.
+- **Decisão:** o participante principal (pelo menos 1) deve ser um **contador(a) em atividade**, um **profissional de escritório contábil** ou um **empresário(a) que utiliza serviços contábeis**. Estudantes são avaliadores complementares, com achados registrados à parte, e não substituem o participante principal. O agendamento acontece no D1; a sessão pode ser por videochamada com o sistema local.
+- **Consequências:** (+) resultados representativos do público-alvo e cumprimento do requisito; (−) depende da agenda de terceiros; por isso o agendamento é antecipado e há um plano de reagendamento.
+
+### Correção de registro (rev. 2)
+As ADR-003 e ADR-014 diziam que o DDL foi "testado durante a T00", o que podia sugerir um banco implementado. O texto foi corrigido para deixar claro que houve apenas uma **verificação manual, temporária e não versionada** do DDL especificado (DATABASE §8.2). Nenhum arquivo `.sql`, script de banco ou teste de banco existe no repositório até a F03.
