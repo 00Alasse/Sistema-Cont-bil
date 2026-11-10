@@ -221,7 +221,7 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | F01 | Configuração por ambiente, PDO e relógio | M | ◆ | Fundação | T00 | ✅ |
 | F02 | CNPJ e Validator com erros por campo | M | ◆ | Fundação | F01 | ✅ |
 | F03 | Banco do núcleo, seeds e ferramenta `bin/db.php` | M | 🔒 | Fundação | F02 | ✅ |
-| F04 | Request, Response, Router e Container | M | ◆ | Fundação | F01 | ⬜ |
+| F04 | Request, Response, Router e Container | M | ◆ | Fundação | F01 | 🟨 |
 | F05 | View, helpers, Kernel, carregador de módulos, páginas de erro | M | ◆ | Fundação | F04 | ⬜ |
 | F06 | Model base, paginação, filtros seguros e auditoria | M | 🔒 | Fundação | F03, F05 | ⬜ |
 | F07 | Sessão segura, CSRF e headers de segurança | M | 🔒 | Fundação | F05 | ⬜ |
