@@ -240,7 +240,7 @@ interface CartaoPainel
 | `app/Core/helpers.php` | Funções globais das views | `e(?string): string` · `url(string $caminho, array $query = []): string` · `csrf_campo(): string` · `antigo(string $campo, mixed $padrao = '')` · `erro_campo(array $erros, string $campo): string` · `dinheiro(int $centavos): string` · `data_br(?string): string` |
 | `Core\Session` | Sessão segura e flash | `iniciar()`, `obter()`, `definir()`, `remover()`, `regenerar()`, `destruir()`, `flash(string $tipo, string $msg)`, `consumirFlash(): array` |
 | `Core\Csrf` | Token por sessão | `token(): string`, `validar(?string $token): bool` (`hash_equals`) |
-| `Core\Validator` | Validação com erros por campo | `Validator::validar(array $dados, array $regras): array` (vazio = válido). Regras em string: `obrigatorio\|max:150\|email\|cnpj\|data\|competencia\|inteiro\|decimal\|em:A,B\|min:1\|depois_ou_igual:campo` |
+| `Core\Validator` | Validação com erros por campo | `Validator::validar(array $dados, array $regras): array<string, list<string>>` (vazio = válido). Cada chave de `$regras` é o nome do campo e recebe `rotulo` e `regras`; regras são separadas por `|` e podem ter parâmetros após `:`. |
 | `Core\Model` (base) | Acesso a dados | `protected PDO $db` · `buscarUm(string $sql, array $p): ?array` · `buscarTodos(string $sql, array $p): array` · `executar(string $sql, array $p): int` (linhas afetadas) · `inserir(string $sql, array $p): int` (id) · `paginar(string $sqlSelect, string $sqlCount, array $p, Paginacao $pg): Pagina` |
 | `Core\Paginacao` / `Core\Pagina` | Paginação | `Paginacao::deRequest(Request, int $porPagina = 20)`; `Pagina { itens, total, pagina, porPagina, totalPaginas }` |
 | `Core\UsuarioLogado` (readonly) | Contexto do usuário | `id`, `escritorioId`, `perfil`, `empresaId` (só CLIENTE), `nome`, `modulos` (array de códigos) · `ehAdmin()`, `ehCliente()`, `temModulo(string)` |
@@ -258,6 +258,44 @@ interface CartaoPainel
 | Qualquer outra | 500 | `erros/500` (detalhes só com `APP_DEBUG=true`); grava log em `storage/logs` |
 
 A validação **não** usa exceção: o controller chama `Validator::validar()` e, se houver erros, retorna `voltarComErros()` (422).
+
+Formato de `$regras`:
+
+```php
+$dados = [
+    'razao_social' => 'AB',
+    'email' => 'cliente-invalido',
+    'nome_fantasia' => '   ',
+];
+
+$regras = [
+    'razao_social' => [
+        'rotulo' => 'Razão social',
+        'regras' => 'obrigatorio|min:3|max:150',
+    ],
+    'email' => [
+        'rotulo' => 'E-mail',
+        'regras' => 'email',
+    ],
+    'nome_fantasia' => [
+        'rotulo' => 'Nome fantasia',
+        'regras' => 'min:3|max:150',
+    ],
+];
+
+$erros = Validator::validar($dados, $regras);
+```
+
+Cada regra separada por `|` é avaliada para o campo; o texto após `:` é seu parâmetro, como `min:3` e `max:150`. O parâmetro `em` contém opções separadas por vírgula, por exemplo `em:ATIVA,INATIVA`. Campos com valor vazio ou composto apenas por espaços são considerados vazios: se não tiverem `obrigatorio`, as demais regras são ignoradas. Os erros são agrupados pelo nome do campo, com uma lista de mensagens em português que usa o respectivo `rotulo`. No exemplo, o retorno é:
+
+```php
+[
+    'razao_social' => ['Razão social deve ter pelo menos 3 caracteres.'],
+    'email' => ['E-mail deve ser um endereço de e-mail válido.'],
+]
+```
+
+Assim, a assinatura pública permanece `Validator::validar(array $dados, array $regras): array`; rótulos e regras pertencem ao array de especificação de cada campo, sem terceiro parâmetro.
 
 ## 6. Convenções de código
 
