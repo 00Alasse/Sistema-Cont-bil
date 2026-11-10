@@ -2,35 +2,62 @@
 
 declare(strict_types=1);
 
-/**
- * Ponto único de entrada do sistema (front controller).
- *
- * Situação atual (T00): apenas confirma que as dependências foram instaladas.
- * O roteamento e o carregamento dos módulos serão implementados na tarefa F03.
- */
+use App\Core\Config;
+use App\Core\Container;
+use App\Core\Kernel;
+use App\Core\Modulos;
+use App\Core\Request;
+use App\Core\Router;
+use App\Core\View;
+use Throwable;
 
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
+$autoloadCarregado = false;
 
-if (!is_file($autoload)) {
+try {
+    if (!is_file($autoload)) {
+        throw new RuntimeException('O autoloader da aplicação não existe.');
+    }
+
+    require $autoload;
+    $autoloadCarregado = true;
+    require_once dirname(__DIR__) . '/app/Core/helpers.php';
+
+    $router = new Router();
+    $diretorioRaiz = dirname(__DIR__);
+    (new Modulos($router, $diretorioRaiz . '/config/modules'))->carregar();
+
+    $kernel = new Kernel(
+        $router,
+        new Container(),
+        new View($diretorioRaiz . '/app/Views')
+    );
+    $request = Request::capturar((string) Config::obter('app.base_path', ''));
+    $kernel->tratar($request)->enviar();
+} catch (Throwable $erro) {
+    $kernelDisponivel = class_exists(Kernel::class, false);
+    if (!$kernelDisponivel && $autoloadCarregado) {
+        try {
+            $kernelDisponivel = class_exists(Kernel::class);
+        } catch (Throwable) {
+        }
+    }
+
+    if (!$kernelDisponivel) {
+        error_log('Falha ao inicializar a aplicação.');
+    } else {
+        try {
+            Kernel::responderFalhaInicializacao($erro)->enviar();
+            return;
+        } catch (Throwable) {
+            error_log('Falha ao renderizar a resposta de erro da aplicação.');
+        }
+    }
+
     http_response_code(500);
-    header('Content-Type: text/plain; charset=UTF-8');
-    echo 'Dependências não instaladas. Execute "composer install" na pasta do projeto.';
-    exit;
+    header('Content-Type: text/html; charset=UTF-8');
+    echo '<!doctype html><html lang="pt-BR"><meta charset="UTF-8">'
+        . '<title>Erro interno</title><body><main><h1>Erro interno</h1>'
+        . '<p>Ocorreu um erro inesperado. Tente novamente mais tarde.</p>'
+        . '</main></body></html>';
 }
-
-require $autoload;
-
-header('Content-Type: text/html; charset=UTF-8');
-?>
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>-Tributo!</title>
-</head>
-<body>
-    <h1>-Tributo!</h1>
-    <p>Estrutura inicial instalada. As funcionalidades estão em desenvolvimento.</p>
-</body>
-</html>
