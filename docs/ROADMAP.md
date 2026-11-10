@@ -2,7 +2,7 @@
 
 > Cada tarefa abaixo é um **cartão autocontido**: outra IA (ou pessoa) consegue executá-la lendo
 > apenas [AGENTS.md](../AGENTS.md), o cartão e as seções indicadas em "Ler".
-> **Situação do plano:** revisão 2, aguardando aprovação. Só a T00 foi executada; nenhuma funcionalidade nem tabela de banco existe no projeto.
+> **Situação do plano:** revisão 2 aprovada; implementação em andamento. T00 e as tarefas F01–F03 estão concluídas; F04 será marcada em andamento após a criação de sua branch.
 
 ## Sumário
 
@@ -218,9 +218,9 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | ID | Tarefa | Prior. | Crit. | Faixa | Depende de | Situação |
 |----|--------|:------:|:-----:|-------|------------|:--------:|
 | T00 | Estrutura inicial e documentação | M | ○ | Fundação | — | ✅ |
-| F01 | Configuração por ambiente, PDO e relógio | M | ◆ | Fundação | T00 | ⬜ |
-| F02 | CNPJ e Validator com erros por campo | M | ◆ | Fundação | F01 | ⬜ |
-| F03 | Banco do núcleo, seeds e ferramenta `bin/db.php` | M | 🔒 | Fundação | F02 | ⬜ |
+| F01 | Configuração por ambiente, PDO e relógio | M | ◆ | Fundação | T00 | ✅ |
+| F02 | CNPJ e Validator com erros por campo | M | ◆ | Fundação | F01 | ✅ |
+| F03 | Banco do núcleo, seeds e ferramenta `bin/db.php` | M | 🔒 | Fundação | F02 | ✅ |
 | F04 | Request, Response, Router e Container | M | ◆ | Fundação | F01 | ⬜ |
 | F05 | View, helpers, Kernel, carregador de módulos, páginas de erro | M | ◆ | Fundação | F04 | ⬜ |
 | F06 | Model base, paginação, filtros seguros e auditoria | M | 🔒 | Fundação | F03, F05 | ⬜ |
