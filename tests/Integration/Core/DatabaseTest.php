@@ -33,7 +33,7 @@ final class DatabaseTest extends TestCase
         $conexao = $this->conexaoDisponivel();
 
         self::assertInstanceOf(PDO::class, $conexao);
-        self::assertSame('Tributo', $conexao->query("SELECT 'Tributo'")->fetchColumn());
+        self::assertSame('tributo_test', $conexao->query('SELECT DATABASE()')->fetchColumn());
     }
 
     public function testReverteTransacaoQuandoOcorreUmaExcecao(): void
