@@ -27,10 +27,10 @@ header('Content-Type: text/html; charset=UTF-8');
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tributo</title>
+    <title>-Tributo!</title>
 </head>
 <body>
-    <h1>Tributo</h1>
+    <h1>-Tributo!</h1>
     <p>Estrutura inicial instalada. As funcionalidades estão em desenvolvimento.</p>
 </body>
 </html>

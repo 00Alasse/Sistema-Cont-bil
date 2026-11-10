@@ -1,4 +1,4 @@
-# Arquitetura do Tributo
+# Arquitetura do -Tributo!
 
 > **Fonte de verdade técnica.** Toda implementação (humana ou por IA) segue este documento.
 > Mudanças aqui exigem aprovação e registro em [DECISIONS.md](DECISIONS.md).

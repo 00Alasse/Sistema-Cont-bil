@@ -1,4 +1,4 @@
-# Rotas do Tributo
+# Rotas do -Tributo!
 
 > **Contrato de rotas.** Cada módulo declara suas rotas em `config/modules/<modulo>.php`
 > (ver [ARCHITECTURE.md §4](ARCHITECTURE.md#4-módulos-e-o-contrato-de-extensão)).

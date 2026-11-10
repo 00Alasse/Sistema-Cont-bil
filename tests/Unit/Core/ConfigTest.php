@@ -33,11 +33,11 @@ final class ConfigTest extends TestCase
     public function testObtemValorUsandoNotacaoDePonto(): void
     {
         Config::definir([
-            'app' => ['nome' => 'Tributo'],
+            'app' => ['nome' => '-Tributo!'],
             'db' => ['host' => '127.0.0.1'],
         ]);
 
-        self::assertSame('Tributo', Config::obter('app.nome'));
+        self::assertSame('-Tributo!', Config::obter('app.nome'));
         self::assertSame('127.0.0.1', Config::obter('db.host'));
     }
 

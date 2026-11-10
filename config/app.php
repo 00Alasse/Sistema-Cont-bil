@@ -10,7 +10,7 @@ $bancoTeste = Env::obter('DB_TEST_DATABASE', 'tributo_test');
 
 $configuracoes = [
     'app' => [
-        'nome' => Env::obter('APP_NAME', 'Tributo'),
+        'nome' => Env::obter('APP_NAME', '-Tributo!'),
         'env' => $ambiente,
         'debug' => $debug,
         'url' => Env::obter('APP_URL', 'http://localhost/tributo'),

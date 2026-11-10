@@ -1,4 +1,4 @@
-# Instruções para o GitHub Copilot: projeto Tributo
+# Instruções para o GitHub Copilot: projeto -Tributo!
 
 As regras completas estão em `AGENTS.md` na raiz do repositório. Resumo obrigatório:
 

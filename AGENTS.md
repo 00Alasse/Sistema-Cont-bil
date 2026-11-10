@@ -1,11 +1,11 @@
-# AGENTS.md: regras para quem implementa ou revisa o Tributo
+# AGENTS.md: regras para quem implementa ou revisa o -Tributo!
 
 Este arquivo vale para **qualquer IA** (Claude, Copilot, Gemini, ChatGPT...) e para qualquer pessoa.
 Ele é a fonte única de regras de trabalho; `CLAUDE.md` e `.github/copilot-instructions.md` apontam para cá.
 
 ## 1. O projeto em poucas linhas
 
-- **Tributo:** plataforma web para escritórios de contabilidade (obrigações, documentos, BPO financeiro, indicadores e consultivo). Projeto acadêmico (Programação Web II) com potencial comercial.
+- **-Tributo!:** plataforma web para escritórios de contabilidade (obrigações, documentos, BPO financeiro, indicadores e consultivo). Projeto acadêmico (Programação Web II) com potencial comercial.
 - **Stack fixa:** PHP 8.2+ puro, MVC próprio, PDO, MariaDB 10.4 / MySQL 8, HTML + CSS + JS sem framework, sessões PHP, PHPUnit 11, PHPStan, Composer (só autoload e ferramentas de desenvolvimento). **Não introduza frameworks nem bibliotecas.**
 - **Ambiente local:** XAMPP (Windows). Produção: hospedagem compartilhada.
 - Quem desenvolve é **estudante** e precisa entender e apresentar o código: prefira clareza a esperteza.
@@ -82,7 +82,7 @@ composer check                   # lint + analyse + test: OBRIGATÓRIO antes de 
 ## 8. Prompt de execução (copie para a IA implementadora)
 
 ```text
-Você vai implementar UMA tarefa do projeto Tributo.
+Você vai implementar UMA tarefa do projeto -Tributo!.
 1. Leia AGENTS.md (regras), o cartão <ID> em docs/ROADMAP.md e as seções que ele indica em "Ler".
 2. Altere SOMENTE os arquivos listados no cartão. Se precisar de outro, pare e escreva "PEDIDO DE MUDANÇA".
 3. Entregue nesta ordem:
@@ -99,7 +99,7 @@ Cartão:
 ## 9. Prompt de revisão (copie para a IA revisora: Gemini, ChatGPT, Opus...)
 
 ```text
-Revise a implementação da tarefa <ID> do projeto Tributo (diff ou arquivos abaixo).
+Revise a implementação da tarefa <ID> do projeto -Tributo! (diff ou arquivos abaixo).
 Contexto: AGENTS.md e o cartão <ID> de docs/ROADMAP.md (colados abaixo).
 Verifique e classifique cada problema como CRÍTICO, ALTO, MÉDIO ou BAIXO:
 1. Critérios de aceite do cartão: cada um atendido? Aponte os que faltam.

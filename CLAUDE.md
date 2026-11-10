@@ -1,4 +1,4 @@
-# Tributo
+# -Tributo!
 
 As regras de trabalho deste projeto valem para todas as ferramentas e estão em AGENTS.md:
 

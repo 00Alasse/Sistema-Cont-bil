@@ -1,6 +1,6 @@
-# Tributo: visão de produto e visão comercial
+# -Tributo!: visão de produto e visão comercial
 
-> Documento de produto. Descreve **o que o Tributo pretende ser**, e não o que já está pronto.
+> Documento de produto. Descreve **a visão do -Tributo!**, e não o que já está pronto.
 > A situação de cada funcionalidade está em [ROADMAP.md](ROADMAP.md).
 
 ## 1. Problema
@@ -16,7 +16,7 @@ O resultado é risco de atraso, retrabalho operacional, honorários pressionados
 
 ## 2. Proposta de valor
 
-> **O Tributo transforma o escritório contábil em parceiro de gestão.** Ele organiza obrigações e pendências documentais em um só lugar e dá ao cliente um portal simples. Com isso, o escritório pode oferecer **BPO financeiro** e **acompanhamento consultivo** baseados em dados, criando novas receitas recorrentes.
+> **A plataforma -Tributo! transforma o escritório contábil em parceiro de gestão.** Ela organiza obrigações e pendências documentais em um só lugar e dá ao cliente um portal simples. Com isso, o escritório pode oferecer **BPO financeiro** e **acompanhamento consultivo** baseados em dados, criando novas receitas recorrentes.
 
 Público-alvo:
 
@@ -149,7 +149,7 @@ O sistema já nasce preparado para isso: a tabela `escritorio_modulos` liga e de
 
 ### 7.3 Concorrência (posicionamento honesto)
 
-Já existem no mercado ferramentas consolidadas de gestão de processos para escritórios contábeis e sistemas de BPO financeiro. O Tributo **não tenta substituir o sistema contábil** (escrituração, folha, apuração). A tese a validar é que o Tributo seja:
+Já existem no mercado ferramentas consolidadas de gestão de processos para escritórios contábeis e sistemas de BPO financeiro. A plataforma -Tributo! **não tenta substituir o sistema contábil** (escrituração, folha, apuração). A tese a validar é que ela seja:
 
 - mais **simples de implantar** para o escritório pequeno;
 - **integrado**: obrigações, documentos, financeiro e consultivo no mesmo cadastro de cliente;

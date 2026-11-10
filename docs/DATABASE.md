@@ -1,4 +1,4 @@
-# Banco de dados do Tributo
+# Banco de dados do -Tributo!
 
 > **Contrato do modelo de dados.** As tarefas copiam as definições deste documento para
 > `database/schema/NN_<modulo>.sql`. Qualquer mudança exige aprovação, atualização deste

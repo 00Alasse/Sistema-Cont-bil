@@ -1,4 +1,4 @@
-# Tributo
+# -Tributo!
 
 Plataforma web para **escritórios de contabilidade e seus clientes**. Centraliza obrigações fiscais, pendências documentais, BPO financeiro, indicadores gerenciais e acompanhamento consultivo.
 
@@ -22,7 +22,7 @@ Transformar o escritório contábil em **parceiro de gestão** dos clientes:
 - permitir que o escritório ofereça **BPO financeiro** (contas a pagar e a receber, fluxo de caixa);
 - gerar **indicadores** (Índice de Regularidade, painel da carteira, relatório mensal) e apoiar o **serviço consultivo** com um radar de alertas e um plano de ação.
 
-> O Tributo é uma ferramenta de **controle administrativo e gerencial**. Ele não calcula tributos, não determina obrigações legais e não atesta regularidade fiscal.
+> A plataforma -Tributo! é uma ferramenta de **controle administrativo e gerencial**. Ela não calcula tributos, não determina obrigações legais e não atesta regularidade fiscal.
 
 ## Público-alvo
 
