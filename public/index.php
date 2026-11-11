@@ -55,6 +55,13 @@ try {
     }
 
     http_response_code(500);
+    header('X-Frame-Options: DENY');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: same-origin');
+    header(
+        "Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self'; "
+        . "img-src 'self' data:; frame-ancestors 'none'; form-action 'self'"
+    );
     header('Content-Type: text/html; charset=UTF-8');
     echo '<!doctype html><html lang="pt-BR"><meta charset="UTF-8">'
         . '<title>Erro interno</title><body><main><h1>Erro interno</h1>'
