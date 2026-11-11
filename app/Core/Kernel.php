@@ -10,8 +10,11 @@ use App\Exceptions\CsrfException;
 use App\Exceptions\MetodoNaoPermitidoException;
 use App\Exceptions\ModuloInativoException;
 use App\Exceptions\NaoEncontradoException;
+use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Middleware\GuestMiddleware;
 use App\Middleware\SessaoMiddleware;
+use App\Services\Nucleo\AuthService;
 use DateTimeImmutable;
 use DateTimeZone;
 use LogicException;
@@ -42,6 +45,11 @@ final class Kernel
             => (new SessaoMiddleware())->tratar($r, $proximo);
         $this->middlewares['csrf'] = static fn (Request $r, callable $proximo): Response
             => (new CsrfMiddleware())->tratar($r, $proximo);
+        // O AuthService só é montado quando a rota usa o middleware (o banco não é aberto antes).
+        $this->middlewares['auth'] = static fn (Request $r, callable $proximo): Response
+            => (new AuthMiddleware(AuthService::padrao()))->tratar($r, $proximo);
+        $this->middlewares['guest'] = static fn (Request $r, callable $proximo): Response
+            => (new GuestMiddleware(AuthService::padrao()))->tratar($r, $proximo);
     }
 
     public function tratar(Request $request): Response

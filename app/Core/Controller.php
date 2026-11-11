@@ -25,12 +25,7 @@ class Controller
     protected function redirecionar(string $url, ?string $flashSucesso = null): Response
     {
         if ($flashSucesso !== null) {
-            $metodo = ['App\\Core\\Session', 'flash'];
-            if (!is_callable($metodo)) {
-                throw new \LogicException('A integração de sessão estará disponível após a tarefa F07.');
-            }
-
-            call_user_func($metodo, 'sucesso', $flashSucesso);
+            Session::atual()->flash('sucesso', $flashSucesso);
         }
 
         return Response::redirecionar(url($url));

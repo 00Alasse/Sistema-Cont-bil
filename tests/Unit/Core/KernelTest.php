@@ -245,7 +245,7 @@ PHP
     public function testMiddlewareNaoRegistradoFalhaFechado(): void
     {
         $router = new Router();
-        $router->adicionar('GET', '/', [\App\Controllers\InicioController::class, 'index'], ['auth']);
+        $router->adicionar('GET', '/', [\App\Controllers\InicioController::class, 'index'], ['nao-registrado']);
 
         $response = $this->kernel($router)->tratar(new Request('GET', '/'));
 
