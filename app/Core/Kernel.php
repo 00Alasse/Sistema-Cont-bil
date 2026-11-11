@@ -10,6 +10,8 @@ use App\Exceptions\CsrfException;
 use App\Exceptions\MetodoNaoPermitidoException;
 use App\Exceptions\ModuloInativoException;
 use App\Exceptions\NaoEncontradoException;
+use App\Middleware\CsrfMiddleware;
+use App\Middleware\SessaoMiddleware;
 use DateTimeImmutable;
 use DateTimeZone;
 use LogicException;
@@ -18,11 +20,17 @@ use Throwable;
 final class Kernel
 {
     /**
-     * O mapa de middlewares será preenchido nas tarefas F07–F09.
+     * Middlewares registrados (F07 registra sessao e csrf; F08 e F09 acrescentam os demais).
+     * Cada um recebe a requisição e o próximo passo da cadeia.
      *
-     * @var array<string, callable>
+     * @var array<string, callable(Request, callable(Request): Response): Response>
      */
     private array $middlewares = [];
+
+    /**
+     * Executados em toda requisição que casa com uma rota, antes dos da própria rota.
+     */
+    private const MIDDLEWARES_GLOBAIS = ['sessao', 'csrf'];
 
     public function __construct(
         private readonly Router $router,
@@ -30,41 +38,73 @@ final class Kernel
         private readonly View $view,
         private readonly ?string $diretorioLogs = null
     ) {
+        $this->middlewares['sessao'] = static fn (Request $r, callable $proximo): Response
+            => (new SessaoMiddleware())->tratar($r, $proximo);
+        $this->middlewares['csrf'] = static fn (Request $r, callable $proximo): Response
+            => (new CsrfMiddleware())->tratar($r, $proximo);
     }
 
     public function tratar(Request $request): Response
     {
         try {
-            $rota = $this->router->resolver($request->metodo(), $request->caminho());
-            $this->validarMiddlewares($rota);
-
-            [$classe, $acao] = $rota->handler;
-            if (!is_string($classe) || !is_string($acao)) {
-                throw new LogicException('O handler da rota é inválido.');
-            }
-
-            $controller = $this->container->get($classe);
-            if (!is_callable([$controller, $acao])) {
-                throw new LogicException('A ação da rota não pode ser chamada.');
-            }
-
-            $argumentos = array_merge([$request], array_values($rota->parametros));
-            $resposta = call_user_func_array([$controller, $acao], $argumentos);
-            if (!$resposta instanceof Response) {
-                throw new LogicException('A ação do controller deve retornar uma Response.');
-            }
-
-            return $resposta;
+            $resposta = $this->despachar($request);
         } catch (Throwable $erro) {
-            return $this->responderExcecao($erro);
+            $resposta = $this->responderExcecao($erro);
         }
+
+        // Aplicado aqui para valer também nas respostas de erro.
+        return HeadersSeguranca::aplicar($resposta);
     }
 
-    private function validarMiddlewares(RotaResolvida $rota): void
+    private function despachar(Request $request): Response
     {
-        foreach ($rota->middlewares as $middleware) {
-            if (!isset($this->middlewares[$middleware])) {
-                throw new LogicException('Middleware não registrado: ' . $middleware);
+        $rota = $this->router->resolver($request->metodo(), $request->caminho());
+        $nomes = array_values(array_unique(array_merge(self::MIDDLEWARES_GLOBAIS, $rota->middlewares)));
+        $this->validarMiddlewares($nomes);
+
+        $executar = function (Request $req) use ($rota): Response {
+            return $this->executarHandler($rota, $req);
+        };
+
+        // Monta a cadeia de dentro para fora: o primeiro middleware é o mais externo.
+        foreach (array_reverse($nomes) as $nome) {
+            $middleware = $this->middlewares[$nome];
+            $proximo = $executar;
+            $executar = static fn (Request $req): Response => $middleware($req, $proximo);
+        }
+
+        return $executar($request);
+    }
+
+    private function executarHandler(RotaResolvida $rota, Request $request): Response
+    {
+        [$classe, $acao] = $rota->handler;
+        if (!is_string($classe) || !is_string($acao)) {
+            throw new LogicException('O handler da rota é inválido.');
+        }
+
+        $controller = $this->container->get($classe);
+        if (!is_callable([$controller, $acao])) {
+            throw new LogicException('A ação da rota não pode ser chamada.');
+        }
+
+        $argumentos = array_merge([$request], array_values($rota->parametros));
+        $resposta = call_user_func_array([$controller, $acao], $argumentos);
+        if (!$resposta instanceof Response) {
+            throw new LogicException('A ação do controller deve retornar uma Response.');
+        }
+
+        return $resposta;
+    }
+
+    /**
+     * @param list<mixed> $nomes
+     */
+    private function validarMiddlewares(array $nomes): void
+    {
+        foreach ($nomes as $middleware) {
+            if (!is_string($middleware) || !isset($this->middlewares[$middleware])) {
+                throw new LogicException('Middleware não registrado.');
             }
         }
     }
@@ -137,14 +177,14 @@ final class Kernel
         try {
             $view = new View($diretorioViews);
 
-            return Response::html($view->render('erros/500', [
+            return HeadersSeguranca::aplicar(Response::html($view->render('erros/500', [
                 'titulo' => 'Erro interno',
                 'mensagem' => $mensagem,
-            ], 'erro'), 500);
+            ], 'erro'), 500));
         } catch (Throwable $erroDeRenderizacao) {
             self::registrarErro($erroDeRenderizacao, $diretorioLogs);
 
-            return Response::html(self::htmlErroInicializacao($mensagem), 500);
+            return HeadersSeguranca::aplicar(Response::html(self::htmlErroInicializacao($mensagem), 500));
         }
     }
 
