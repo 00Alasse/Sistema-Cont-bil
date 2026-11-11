@@ -8,6 +8,4 @@ parameters:
     - config
     - public
     - tests
-  scanFiles:
-    - tests/Support/PHPStan/UsuarioLogado.stub
   tmpDir: storage/cache/phpstan

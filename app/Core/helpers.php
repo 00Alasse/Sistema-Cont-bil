@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Config;
+use App\Core\Csrf;
 
 function e(?string $valor): string
 {
@@ -30,17 +31,7 @@ function url(string $caminho, array $query = []): string
 
 function csrf_campo(): string
 {
-    $metodo = ['App\\Core\\Csrf', 'token'];
-    if (!is_callable($metodo)) {
-        throw new LogicException('A integração de CSRF estará disponível após a tarefa F07.');
-    }
-
-    $token = call_user_func($metodo);
-    if (!is_string($token)) {
-        throw new UnexpectedValueException('O token CSRF deve ser uma string.');
-    }
-
-    return '<input type="hidden" name="_csrf" value="' . e($token) . '">';
+    return '<input type="hidden" name="_csrf" value="' . e(Csrf::token()) . '">';
 }
 
 /**
