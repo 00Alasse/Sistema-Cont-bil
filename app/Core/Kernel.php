@@ -13,8 +13,11 @@ use App\Exceptions\NaoEncontradoException;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
 use App\Middleware\GuestMiddleware;
+use App\Middleware\ModuloMiddleware;
+use App\Middleware\PerfilMiddleware;
 use App\Middleware\SessaoMiddleware;
 use App\Services\Nucleo\AuthService;
+use Closure;
 use DateTimeImmutable;
 use DateTimeZone;
 use LogicException;
@@ -24,9 +27,10 @@ final class Kernel
 {
     /**
      * Middlewares registrados (F07 registra sessao e csrf; F08 e F09 acrescentam os demais).
-     * Cada um recebe a requisição e o próximo passo da cadeia.
+     * Cada um recebe a requisição e o próximo passo da cadeia; perfil e modulo recebem também,
+     * como 3º argumento, o texto depois de ":" na rota.
      *
-     * @var array<string, callable(Request, callable(Request): Response): Response>
+     * @var array<string, Closure>
      */
     private array $middlewares = [];
 
@@ -34,6 +38,11 @@ final class Kernel
      * Executados em toda requisição que casa com uma rota, antes dos da própria rota.
      */
     private const MIDDLEWARES_GLOBAIS = ['sessao', 'csrf'];
+
+    /**
+     * Middlewares que exigem argumento (`nome:argumentos`); os demais não aceitam nenhum.
+     */
+    private const MIDDLEWARES_COM_ARGUMENTO = ['perfil', 'modulo'];
 
     public function __construct(
         private readonly Router $router,
@@ -50,6 +59,11 @@ final class Kernel
             => (new AuthMiddleware(AuthService::padrao()))->tratar($r, $proximo);
         $this->middlewares['guest'] = static fn (Request $r, callable $proximo): Response
             => (new GuestMiddleware(AuthService::padrao()))->tratar($r, $proximo);
+        // Estes dois recebem como 3º argumento o texto depois de ":" na rota (ex.: "ADMIN,COLABORADOR").
+        $this->middlewares['perfil'] = static fn (Request $r, callable $proximo, string $argumentos): Response
+            => (new PerfilMiddleware($argumentos))->tratar($r, $proximo);
+        $this->middlewares['modulo'] = static fn (Request $r, callable $proximo, string $argumentos): Response
+            => (new ModuloMiddleware($argumentos))->tratar($r, $proximo);
     }
 
     public function tratar(Request $request): Response
@@ -75,10 +89,13 @@ final class Kernel
         };
 
         // Monta a cadeia de dentro para fora: o primeiro middleware é o mais externo.
-        foreach (array_reverse($nomes) as $nome) {
-            $middleware = $this->middlewares[$nome];
+        foreach (array_reverse($nomes) as $expressao) {
+            [$alias, $argumentos] = self::separarMiddleware($expressao);
+            $middleware = $this->middlewares[$alias];
             $proximo = $executar;
-            $executar = static fn (Request $req): Response => $middleware($req, $proximo);
+            $executar = $argumentos === null
+                ? static fn (Request $req): Response => $middleware($req, $proximo)
+                : static fn (Request $req): Response => $middleware($req, $proximo, $argumentos);
         }
 
         return $executar($request);
@@ -110,11 +127,37 @@ final class Kernel
      */
     private function validarMiddlewares(array $nomes): void
     {
-        foreach ($nomes as $middleware) {
-            if (!is_string($middleware) || !isset($this->middlewares[$middleware])) {
+        foreach ($nomes as $expressao) {
+            if (!is_string($expressao)) {
                 throw new LogicException('Middleware não registrado.');
             }
+
+            [$alias, $argumentos] = self::separarMiddleware($expressao);
+            if (!isset($this->middlewares[$alias])) {
+                throw new LogicException('Middleware não registrado.');
+            }
+
+            // Exige argumento não vazio onde há, e nenhum onde não há.
+            $exigeArgumento = in_array($alias, self::MIDDLEWARES_COM_ARGUMENTO, true);
+            if ($exigeArgumento !== ($argumentos !== null) || $argumentos === '') {
+                throw new LogicException('Argumentos do middleware inválidos.');
+            }
         }
+    }
+
+    /**
+     * Separa "perfil:ADMIN,COLABORADOR" em ["perfil", "ADMIN,COLABORADOR"]; sem ":" o argumento é null.
+     *
+     * @return array{0: string, 1: ?string}
+     */
+    private static function separarMiddleware(string $expressao): array
+    {
+        $posicao = strpos($expressao, ':');
+        if ($posicao === false) {
+            return [$expressao, null];
+        }
+
+        return [substr($expressao, 0, $posicao), substr($expressao, $posicao + 1)];
     }
 
     private function responderExcecao(Throwable $erro): Response

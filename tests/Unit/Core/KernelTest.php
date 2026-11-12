@@ -10,6 +10,7 @@ use App\Core\Kernel;
 use App\Core\Request;
 use App\Core\Response;
 use App\Core\Router;
+use App\Core\UsuarioLogado;
 use App\Core\View;
 use App\Exceptions\AcessoNegadoException;
 use App\Exceptions\ConflitoException;
@@ -17,6 +18,7 @@ use App\Exceptions\CsrfException;
 use App\Exceptions\MetodoNaoPermitidoException;
 use App\Exceptions\ModuloInativoException;
 use App\Exceptions\NaoEncontradoException;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 use Throwable;
@@ -250,6 +252,73 @@ PHP
         $response = $this->kernel($router)->tratar(new Request('GET', '/'));
 
         self::assertSame(500, $response->status);
+    }
+
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function middlewaresMalformados(): array
+    {
+        return [
+            'alias desconhecido com argumento' => ['desconhecido:ADMIN'],
+            'perfil sem argumento' => ['perfil'],
+            'perfil com argumento vazio' => ['perfil:'],
+            'perfil com perfil inválido' => ['perfil:SUPER'],
+            'perfil com item vazio' => ['perfil:ADMIN,'],
+            'modulo sem argumento' => ['modulo'],
+            'modulo vazio' => ['modulo:'],
+            'modulo inexistente' => ['modulo:FISCAL'],
+            'auth não aceita argumento' => ['auth:ADMIN'],
+            'alias vazio' => [':ADMIN'],
+        ];
+    }
+
+    #[DataProvider('middlewaresMalformados')]
+    public function testMiddlewareParametrizadoMalformadoFalhaFechado(string $middleware): void
+    {
+        $router = new Router();
+        $router->adicionar('GET', '/', [\App\Controllers\InicioController::class, 'index'], [$middleware]);
+
+        $response = $this->kernel($router)->tratar($this->requisicaoDe('ADMIN', ['BPO_FINANCEIRO']));
+
+        self::assertSame(500, $response->status);
+        self::assertStringNotContainsString('Estrutura inicial', $response->corpo);
+    }
+
+    public function testMiddlewareDePerfilRecebeOsArgumentosDaRota(): void
+    {
+        $router = new Router();
+        $router->adicionar('GET', '/', [\App\Controllers\InicioController::class, 'index'], ['perfil:ADMIN,COLABORADOR']);
+
+        $permitido = $this->kernel($router)->tratar($this->requisicaoDe('COLABORADOR', []));
+        $negado = $this->kernel($router)->tratar($this->requisicaoDe('CLIENTE', []));
+
+        self::assertSame(200, $permitido->status);
+        self::assertSame(403, $negado->status);
+        self::assertStringContainsString('Acesso negado', $negado->corpo);
+    }
+
+    public function testMiddlewareDeModuloRecebeOCodigoDaRota(): void
+    {
+        $router = new Router();
+        $router->adicionar('GET', '/', [\App\Controllers\InicioController::class, 'index'], ['modulo:BPO_FINANCEIRO']);
+
+        $ativo = $this->kernel($router)->tratar($this->requisicaoDe('ADMIN', ['BPO_FINANCEIRO']));
+        $inativo = $this->kernel($router)->tratar($this->requisicaoDe('ADMIN', ['CONSULTIVO']));
+
+        self::assertSame(200, $ativo->status);
+        self::assertSame(403, $inativo->status);
+        self::assertStringContainsString('Módulo não contratado', $inativo->corpo);
+    }
+
+    /**
+     * @param list<string> $modulos
+     */
+    private function requisicaoDe(string $perfil, array $modulos): Request
+    {
+        $usuario = new UsuarioLogado(1, 1, $perfil, $perfil === 'CLIENTE' ? 1 : null, 'Teste', $modulos);
+
+        return (new Request('GET', '/'))->comUsuario($usuario);
     }
 
     private function kernel(Router $router, ?Container $container = null): Kernel
