@@ -24,7 +24,7 @@ final class TributoSqlAtualizadoTest extends IntegrationTestCase
         self::assertStringContainsString('CREATE TABLE escritorios', $consolidado);
         self::assertStringContainsString('INSERT INTO escritorios', $consolidado);
         self::assertStringNotContainsString('CREATE DATABASE', strtoupper($consolidado));
-        self::assertStringNotContainsString('CREATE TABLE obrigacoes', $consolidado);
+        self::assertStringContainsString('CREATE TABLE obrigacoes', $consolidado);
         self::assertSame($this->semDataDoCabecalho($geradoEmMemoria), $this->semDataDoCabecalho($consolidado));
     }
 
