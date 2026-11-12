@@ -9,7 +9,6 @@ use App\Core\Modulos;
 use App\Core\Request;
 use App\Core\Router;
 use App\Core\View;
-use Throwable;
 
 $autoload = dirname(__DIR__) . '/vendor/autoload.php';
 $autoloadCarregado = false;
