@@ -14,10 +14,12 @@ use App\Core\Router;
 use App\Core\UsuarioLogado;
 use App\Core\Validator;
 use App\Core\View;
+use App\Exceptions\ConflitoException;
 use App\Exceptions\NaoEncontradoException;
 use App\Models\Cadastro\Empresa;
 use App\Models\Fiscal\Obrigacao;
 use App\Services\Fiscal\ObrigacaoService;
+use App\Services\Fiscal\ObrigacaoStatusService;
 use App\Support\Competencia;
 use InvalidArgumentException;
 use PDOException;
@@ -49,12 +51,15 @@ final class ObrigacaoController extends Controller
 
     private readonly ObrigacaoService $servico;
 
+    private readonly ObrigacaoStatusService $servicoStatus;
+
     public function __construct(View $viewEngine)
     {
         parent::__construct($viewEngine);
         $this->obrigacoes = new Obrigacao();
         $this->empresas = new Empresa();
         $this->servico = ObrigacaoService::padrao();
+        $this->servicoStatus = ObrigacaoStatusService::padrao();
     }
 
     public function index(Request $request): Response
@@ -121,10 +126,50 @@ final class ObrigacaoController extends Controller
 
     public function mostrar(Request $request, int $id): Response
     {
-        return $this->view('fiscal/obrigacoes/show', array_merge(
-            $this->contextoLayout($request, 'Detalhes da obrigação'),
-            ['obrigacao' => $this->buscarObrigacao($request, $id), 'rotulosStatus' => self::ROTULOS_STATUS]
-        ));
+        $obrigacao = $this->buscarObrigacao($request, $id);
+
+        return $this->renderizarDetalhe($request, $obrigacao, $this->formularioStatusVazio($obrigacao), [], 200);
+    }
+
+    /**
+     * Mudança de status (FI04). Erros de campo → 422 e conflito (versão ou transição) → 409,
+     * ambos na própria página de detalhe com o que foi digitado; reabertura sem ser ADMIN → 403.
+     */
+    public function status(Request $request, int $id): Response
+    {
+        $usuario = $request->usuario();
+        $obrigacao = $this->buscarObrigacao($request, $id);
+        $dados = $this->dadosDaRequisicao($request, ['status', 'justificativa', 'protocolo', 'versao']);
+        $erros = Validator::validar($dados, [
+            'status' => ['rotulo' => 'Novo status', 'regras' => 'obrigatorio|em:' . implode(',', Obrigacao::STATUS)],
+            'versao' => ['rotulo' => 'Versão', 'regras' => 'obrigatorio|inteiro'],
+        ]);
+
+        if ($erros !== []) {
+            return $this->renderizarDetalhe($request, $obrigacao, $dados, $erros, 422);
+        }
+
+        $mudanca = [
+            'status' => (string) $dados['status'],
+            'justificativa' => $this->textoOpcional($dados['justificativa']),
+            'protocolo' => $this->textoOpcional($dados['protocolo']),
+        ];
+        try {
+            $erros = $this->servicoStatus->errosDaMudanca($usuario, $obrigacao, $mudanca, (int) $dados['versao']);
+            if ($erros !== []) {
+                return $this->renderizarDetalhe($request, $obrigacao, $dados, $erros, 422);
+            }
+
+            $this->servicoStatus->mudarStatus($usuario, $id, $mudanca, (int) $dados['versao']);
+        } catch (ConflitoException $conflito) {
+            // A página volta com o estado atual e a versão nova; o texto digitado é preservado.
+            $atual = $this->buscarObrigacao($request, $id);
+            $dados['versao'] = (string) $atual['versao'];
+
+            return $this->renderizarDetalhe($request, $atual, $dados, [], 409, $conflito->getMessage());
+        }
+
+        return $this->redirecionar('/obrigacoes/' . $id, 'Status atualizado.');
     }
 
     public function editar(Request $request, int $id): Response
@@ -333,6 +378,44 @@ final class ObrigacaoController extends Controller
         }
 
         return $obrigacao;
+    }
+
+    /**
+     * @param array<string, mixed> $obrigacao
+     * @param array<string, mixed> $dadosStatus valores do formulário de status
+     * @param array<string, list<string>> $erros
+     */
+    private function renderizarDetalhe(
+        Request $request,
+        array $obrigacao,
+        array $dadosStatus,
+        array $erros,
+        int $status,
+        ?string $conflito = null
+    ): Response {
+        $usuario = $request->usuario();
+
+        return $this->view('fiscal/obrigacoes/show', array_merge(
+            $this->contextoLayout($request, 'Detalhes da obrigação'),
+            [
+                'obrigacao' => $obrigacao,
+                'rotulosStatus' => self::ROTULOS_STATUS,
+                'historico' => $this->obrigacoes->historico($usuario->escritorioId, (int) $obrigacao['id']),
+                'destinos' => ObrigacaoStatusService::destinosPermitidos((string) $obrigacao['status'], $usuario->ehAdmin()),
+                'dadosStatus' => $dadosStatus,
+                'errosStatus' => $erros,
+                'conflitoStatus' => $conflito,
+            ]
+        ), $status);
+    }
+
+    /**
+     * @param array<string, mixed> $obrigacao
+     * @return array<string, string>
+     */
+    private function formularioStatusVazio(array $obrigacao): array
+    {
+        return ['status' => '', 'justificativa' => '', 'protocolo' => '', 'versao' => (string) $obrigacao['versao']];
     }
 
     /**

@@ -55,6 +55,10 @@ $entregueEm = $valor('entregue_em');
         <div class="detalhe-largo"><dt>Observação interna</dt><dd><?= nl2br(e($ouTraco($valor('observacao')))) ?></dd></div>
     </dl>
 
+    <?php require __DIR__ . '/_form-status.php'; ?>
+
+    <?php require __DIR__ . '/_historico.php'; ?>
+
     <?php if ($usuarioAdmin) : ?>
         <form class="cartao acao-exclusao" method="post" action="<?= e(url('/obrigacoes/' . $obrigacaoId . '/excluir')) ?>">
             <?= csrf_campo() ?>

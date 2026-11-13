@@ -37,5 +37,7 @@ return [
         ['GET', '/obrigacoes/{id}/editar', [ObrigacaoController::class, 'editar'], $equipe],
         ['POST', '/obrigacoes/{id}', [ObrigacaoController::class, 'atualizar'], $equipe],
         ['POST', '/obrigacoes/{id}/excluir', [ObrigacaoController::class, 'excluir'], $admin],
+        // Reabrir é só para ADMIN, mas essa regra depende da transição: fica no ObrigacaoStatusService.
+        ['POST', '/obrigacoes/{id}/status', [ObrigacaoController::class, 'status'], $equipe],
     ],
 ];

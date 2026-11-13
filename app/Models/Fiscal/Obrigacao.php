@@ -142,6 +142,76 @@ final class Obrigacao extends Model
         }
     }
 
+    /**
+     * Grava a mudança de status (FI04). As regras ficam no ObrigacaoStatusService; aqui só o SQL.
+     * Protocolo nulo mantém o que já estava gravado (D4/D9). Versão diferente → 409.
+     *
+     * @param array{status: string, entregue_em: string|null, entregue_por: int|null, protocolo: string|null} $dados
+     */
+    public function mudarStatus(int $escritorioId, int $id, array $dados, int $versao): void
+    {
+        $afetadas = $this->executar(
+            'UPDATE obrigacoes
+             SET status = :status,
+                 entregue_em = :entregue_em,
+                 entregue_por = :entregue_por,
+                 protocolo = COALESCE(:protocolo, protocolo),
+                 versao = versao + 1
+             WHERE escritorio_id = :escritorio_id AND id = :id AND versao = :versao',
+            [
+                'status' => $dados['status'],
+                'entregue_em' => $dados['entregue_em'],
+                'entregue_por' => $dados['entregue_por'],
+                'protocolo' => $dados['protocolo'],
+                'escritorio_id' => $escritorioId,
+                'id' => $id,
+                'versao' => $versao,
+            ]
+        );
+        if ($afetadas !== 1) {
+            throw new ConflitoException();
+        }
+    }
+
+    /**
+     * Histórico de status lido da auditoria (logs_atividade), do mais recente para o mais antigo.
+     * Só eventos "status:*" desta obrigação e deste escritório (D2). O id desempata eventos
+     * gravados no mesmo segundo.
+     *
+     * @return list<array{id: int, criado_em: string, usuario_nome: string|null, de: string|null, para: string|null, justificativa: string|null, protocolo: string|null}>
+     */
+    public function historico(int $escritorioId, int $id): array
+    {
+        $linhas = $this->buscarTodos(
+            "SELECT l.id, l.criado_em, l.detalhes, u.nome AS usuario_nome
+             FROM logs_atividade l
+             LEFT JOIN usuarios u ON u.id = l.usuario_id AND u.escritorio_id = l.escritorio_id
+             WHERE l.escritorio_id = :escritorio_id
+               AND l.entidade = 'obrigacao'
+               AND l.entidade_id = :id
+               AND l.acao LIKE 'status:%'
+             ORDER BY l.criado_em DESC, l.id DESC",
+            ['escritorio_id' => $escritorioId, 'id' => $id]
+        );
+
+        $historico = [];
+        foreach ($linhas as $linha) {
+            $detalhes = json_decode((string) ($linha['detalhes'] ?? ''), true);
+            $detalhes = is_array($detalhes) ? $detalhes : [];
+            $historico[] = [
+                'id' => (int) $linha['id'],
+                'criado_em' => (string) $linha['criado_em'],
+                'usuario_nome' => is_string($linha['usuario_nome'] ?? null) ? $linha['usuario_nome'] : null,
+                'de' => self::textoOuNulo($detalhes['de'] ?? null),
+                'para' => self::textoOuNulo($detalhes['para'] ?? null),
+                'justificativa' => self::textoOuNulo($detalhes['justificativa'] ?? null),
+                'protocolo' => self::textoOuNulo($detalhes['protocolo'] ?? null),
+            ];
+        }
+
+        return $historico;
+    }
+
     public function excluir(int $escritorioId, int $id): int
     {
         return $this->executar(
@@ -321,5 +391,10 @@ final class Obrigacao extends Model
             static fn (array $linha): array => ['id' => (int) $linha['id'], 'nome' => (string) $linha['nome']],
             $this->buscarTodos($sql, ['escritorio_id' => $escritorioId])
         );
+    }
+
+    private static function textoOuNulo(mixed $valor): ?string
+    {
+        return is_string($valor) ? $valor : null;
     }
 }
