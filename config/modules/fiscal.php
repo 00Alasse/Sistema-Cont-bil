@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\Fiscal\EmpresaTiposController;
+use App\Controllers\Fiscal\ObrigacaoController;
 use App\Controllers\Fiscal\TipoObrigacaoController;
 
 // Fiscal faz parte do Plano Base: sem código contratável, logo sem middleware "modulo:".
@@ -28,5 +29,13 @@ return [
         ['POST', '/tipos-obrigacao/{id}/excluir', [TipoObrigacaoController::class, 'excluir'], $admin],
         ['GET', '/empresas/{id}/tipos-obrigacao', [EmpresaTiposController::class, 'mostrar'], $equipe],
         ['POST', '/empresas/{id}/tipos-obrigacao', [EmpresaTiposController::class, 'salvar'], $equipe],
+        // O item de menu "Obrigações" já é declarado em nucleo.php.
+        ['GET', '/obrigacoes', [ObrigacaoController::class, 'index'], $equipe],
+        ['GET', '/obrigacoes/nova', [ObrigacaoController::class, 'nova'], $equipe],
+        ['POST', '/obrigacoes', [ObrigacaoController::class, 'criar'], $equipe],
+        ['GET', '/obrigacoes/{id}', [ObrigacaoController::class, 'mostrar'], $equipe],
+        ['GET', '/obrigacoes/{id}/editar', [ObrigacaoController::class, 'editar'], $equipe],
+        ['POST', '/obrigacoes/{id}', [ObrigacaoController::class, 'atualizar'], $equipe],
+        ['POST', '/obrigacoes/{id}/excluir', [ObrigacaoController::class, 'excluir'], $admin],
     ],
 ];
