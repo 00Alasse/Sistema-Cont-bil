@@ -1,5 +1,66 @@
 "use strict";
 
+// Melhorias progressivas da interface: o menu e todos os links funcionam sem este arquivo.
+document.documentElement.classList.add("js");
+
+/**
+ * Marca (aria-current="page") o link cujo caminho é o da página atual ou o prefixo mais longo dele.
+ * Ex.: /empresas/12/editar destaca "Empresas". Em empate, o caminho mais específico vence.
+ */
+function marcarPaginaAtual(links) {
+    const atual = window.location.pathname.replace(/\/+$/, "") || "/";
+    let melhor = null;
+    let tamanhoMelhor = -1;
+
+    links.forEach((link) => {
+        const caminho = new URL(link.href, window.location.href).pathname.replace(/\/+$/, "") || "/";
+        const casa = atual === caminho || (caminho !== "/" && atual.startsWith(caminho + "/"));
+        if (casa && caminho.length > tamanhoMelhor) {
+            melhor = link;
+            tamanhoMelhor = caminho.length;
+        }
+    });
+
+    if (melhor !== null) {
+        melhor.setAttribute("aria-current", "page");
+    }
+}
+
+marcarPaginaAtual(document.querySelectorAll(".navegacao-principal a[href]"));
+
+// Abas da empresa: só uma pode ser a atual (mesmo caminho exato).
+document.querySelectorAll(".abas-empresa").forEach((abas) => {
+    const atual = window.location.pathname.replace(/\/+$/, "");
+    abas.querySelectorAll("a[href]").forEach((aba) => {
+        if (new URL(aba.href, window.location.href).pathname.replace(/\/+$/, "") === atual) {
+            aba.setAttribute("aria-current", "page");
+        }
+    });
+});
+
+// Menu em telas pequenas: botão que abre e fecha a lista; Esc fecha e devolve o foco ao botão.
+const botaoMenu = document.querySelector("[data-menu-botao]");
+if (botaoMenu !== null) {
+    const barra = botaoMenu.closest(".barra-lateral");
+
+    const definirMenu = (aberto) => {
+        botaoMenu.setAttribute("aria-expanded", aberto ? "true" : "false");
+        botaoMenu.querySelector(".texto-acessivel").textContent = aberto ? "Fechar menu" : "Abrir menu";
+        barra.classList.toggle("menu-aberto", aberto);
+    };
+
+    definirMenu(false);
+    botaoMenu.addEventListener("click", () => {
+        definirMenu(botaoMenu.getAttribute("aria-expanded") !== "true");
+    });
+    document.addEventListener("keydown", (evento) => {
+        if (evento.key === "Escape" && botaoMenu.getAttribute("aria-expanded") === "true") {
+            definirMenu(false);
+            botaoMenu.focus();
+        }
+    });
+}
+
 document.querySelectorAll("form[data-confirmar]").forEach((form) => {
     form.addEventListener("submit", (event) => {
         const mensagem = form.getAttribute("data-confirmar");

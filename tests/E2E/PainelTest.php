@@ -47,7 +47,7 @@ final class PainelTest extends E2ETestCase
         // Sem o módulo de documentos (DO01), não há seção nem zeros fictícios.
         self::assertStringNotContainsString('Documentos', $resposta->corpo);
         // Um único "Painel" no menu, vindo de gestao.php.
-        self::assertSame(1, preg_match_all('#<span class="menu-icone" aria-hidden="true">P</span>\s*Painel#', $resposta->corpo));
+        self::assertSame(1, preg_match_all('#<span class="menu-icone"[^>]*>(?:(?!</span>).)*</span>\s*<span class="menu-rotulo">Painel</span>#s', $resposta->corpo));
     }
 
     public function testColaboradoraVeMeusPorPadraoEPodeAlternar(): void
