@@ -81,7 +81,7 @@ final class PainelService
      *     obrigacoes: array<string, array{rotulo: string, valor: int, caminho: string, query: array<string, string>}>,
      *     pontualidade: int|null,
      *     semaforo: array<string, int>,
-     *     piores: list<array{empresa_id: int, nome: string, score: int|null, semaforo: string, motivos: list<string>, caminho: string}>,
+     *     piores: list<array{empresa_id: int, nome: string, score: int|null, semaforo: string, motivos: list<string>, recomendacao: string, caminho: string}>,
      *     carga: list<array{responsavel_id: int|null, nome: string, inativo: bool, atrasadas: array{valor: int, query: array<string, string>|null}, vence_7d: array{valor: int, query: array<string, string>|null}}>
      * }
      */
@@ -184,7 +184,7 @@ final class PainelService
      * Semáforo e piores índices da carteira ativa (ou das empresas do usuário, no "meus"),
      * com uma consulta de empresas e uma chamada em lote ao Índice de Regularidade.
      *
-     * @return array{array<string, int>, list<array{empresa_id: int, nome: string, score: int|null, semaforo: string, motivos: list<string>, caminho: string}>}
+     * @return array{array<string, int>, list<array{empresa_id: int, nome: string, score: int|null, semaforo: string, motivos: list<string>, recomendacao: string, caminho: string}>}
      */
     private function regularidade(UsuarioLogado $usuario, string $escopo): array
     {
@@ -202,6 +202,7 @@ final class PainelService
                     'score' => $resultado['score'],
                     'semaforo' => $resultado['semaforo'],
                     'motivos' => $resultado['motivos'],
+                    'recomendacao' => $this->gerarRecomendacao($resultado),
                     'caminho' => '/empresas/' . $empresaId,
                 ];
             }
@@ -214,6 +215,37 @@ final class PainelService
             ?: $a['empresa_id'] <=> $b['empresa_id']);
 
         return [$semaforo, array_slice($candidatas, 0, self::LIMITE_PIORES)];
+    }
+
+    /**
+     * Recomendação de ação imediata ou preventiva para empresas com pior índice.
+     *
+     * @param array{score: int|null, semaforo: string, motivos: list<string>, contadores: array<string, int|null>} $resultado
+     */
+    private function gerarRecomendacao(array $resultado): string
+    {
+        $contadores = $resultado['contadores'];
+        $criticas = (int) ($contadores['atrasadas_criticas'] ?? 0);
+        $atrasadas = (int) ($contadores['atrasadas'] ?? 0);
+        $docs = (int) ($contadores['docs_vencidos'] ?? 0);
+
+        if ($criticas > 0) {
+            return 'Ação imediata: regularizar ' . $criticas . ' obrigação(ões) com atraso crítico (> 30 dias).';
+        }
+
+        if ($atrasadas > 0) {
+            return 'Ação imediata: regularizar ' . $atrasadas . ' obrigação(ões) atrasada(s).';
+        }
+
+        if ($docs > 0) {
+            return 'Ação preventiva: solicitar ' . $docs . ' documento(s) pendente(s).';
+        }
+
+        if ($resultado['semaforo'] === 'vermelho' || $resultado['semaforo'] === 'amarelo') {
+            return 'Ação preventiva: acompanhar entregas da próxima competência.';
+        }
+
+        return 'Manter rotina regular de entregas.';
     }
 
     /**

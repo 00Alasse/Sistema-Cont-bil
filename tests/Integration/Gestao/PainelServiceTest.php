@@ -180,8 +180,10 @@ final class PainelServiceTest extends IntegrationTestCase
             self::assertSame('/empresas/' . $pior['empresa_id'], $pior['caminho']);
             self::assertSame($carteira[$pior['empresa_id']]['motivos'], $pior['motivos']);
             self::assertSame('vermelho', $pior['semaforo']);
+            self::assertNotEmpty($pior['recomendacao']);
         }
         self::assertSame('Zulu Ltda', $painel['piores'][0]['nome']);
+        self::assertStringContainsString('Ação imediata: regularizar', $painel['piores'][0]['recomendacao']);
 
         // "meus": só as empresas sob responsabilidade do colaborador (Bravo e Nova).
         $meus = $this->painel->montar($this->usuario($this->colaborador, 'COLABORADOR'), 'meus');

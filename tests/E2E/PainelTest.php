@@ -135,6 +135,27 @@ final class PainelTest extends E2ETestCase
         self::assertStringContainsString('Obrigação atrasada há mais de 30 dias', $corpo);
     }
 
+    public function testPioresIndicesExibemRecomendacaoDeAcaoPreventivaOuImediata(): void
+    {
+        $empresa = (new FabricaCadastro($this->banco()))->criarEmpresa(
+            $this->escritorioId(),
+            Cnpj::gerarFicticio(random_int(1, 99_999_999)),
+            'Empresa Alerta ' . bin2hex(random_bytes(3))
+        );
+        $antiga = $this->hoje()->modify('-45 days')->format('Y-m-d');
+        $fiscal = new FabricaFiscal($this->banco());
+        $fiscal->criarObrigacao($this->escritorioId(), $empresa, $fiscal->criarTipo($this->escritorioId()), $this->usuarioId(self::ADMIN), [
+            'competencia' => substr($antiga, 0, 8) . '01',
+            'vencimento' => $antiga,
+        ]);
+
+        $resposta = $this->entrar(self::ADMIN)->get('/painel');
+        self::assertSame(200, $resposta->status);
+        self::assertStringContainsString('Recomendação', $resposta->corpo);
+        self::assertStringContainsString('Ação imediata: regularizar', $resposta->corpo);
+        self::assertStringContainsString('href="/obrigacoes?empresa_id=' . $empresa . '&amp;situacao=atrasada"', $resposta->corpo);
+    }
+
     public function testClienteRecebe403ESemSessaoVaiParaOLogin(): void
     {
         self::assertSame(403, $this->entrar('cliente.padaria@exemplo.test')->get('/painel')->status);
