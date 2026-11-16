@@ -8,9 +8,9 @@
     <title><?= e($titulo ?? 'Entrar') ?> - -Tributo!</title>
     <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
 </head>
-<body>
-    <main class="pagina">
-        <div class="cartao" style="max-width: 420px; margin: 3rem auto;">
+<body class="corpo-auth">
+    <main class="pagina-auth">
+        <div class="cartao cartao-auth">
             <?= $conteudo ?? '' ?>
         </div>
     </main>

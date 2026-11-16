@@ -185,13 +185,21 @@ textarea::placeholder {
     align-items: center;
     justify-content: center;
     min-height: 2.65rem;
-    padding: 0.5rem 0.9rem;
+    padding: 0.5rem 1rem;
     border: 1px solid transparent;
-    border-radius: 0.3rem;
+    border-radius: 0.35rem;
     font: inherit;
     font-weight: 650;
     text-decoration: none;
     cursor: pointer;
+    background: #153e75;
+    color: #fff;
+    transition: background 0.15s ease-in-out;
+}
+
+.botao:hover {
+    background: #0f2c54;
+    color: #fff;
 }
 
 .botao:disabled {
@@ -205,9 +213,29 @@ textarea::placeholder {
     background: #fff;
 }
 
+.botao-secundario:hover {
+    background: #f1f5f9;
+    color: #172b4d;
+}
+
+.botao-perigo {
+    background: #b91c1c;
+    color: #fff;
+}
+
+.botao-perigo:hover {
+    background: #991b1b;
+    color: #fff;
+}
+
 .cabecalho .botao-secundario {
     border-color: #fff;
     color: #153e75;
+}
+
+.cabecalho .botao-secundario:hover {
+    background: #f1f5f9;
+    color: #0f2c54;
 }
 
 .erro-campo {
@@ -307,6 +335,135 @@ textarea::placeholder {
 .paginacao ul {
     display: flex;
     flex-wrap: wrap;
+}
+
+.cartao {
+    background: #fff;
+    border: 1px solid #d0d7de;
+    border-radius: 0.5rem;
+    padding: clamp(1rem, 3vw, 1.5rem);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+.campo label {
+    margin-bottom: 0.35rem;
+    font-size: 0.9rem;
+    font-weight: 650;
+    color: #334155;
+}
+
+.campo input,
+.campo select,
+.campo textarea {
+    width: 100%;
+}
+
+.grade-formulario {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1rem;
+}
+
+.campo-largo {
+    grid-column: 1 / -1;
+}
+
+.acoes-formulario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.tabela-responsiva {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    margin-bottom: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+th, td {
+    padding: 0.75rem 0.85rem;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: middle;
+}
+
+th {
+    background: #f8fafc;
+    font-weight: 650;
+    color: #334155;
+}
+
+tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Estrutura da Autenticação / Telas Públicas */
+.corpo-auth {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background: #f1f5f9;
+    padding: 1.5rem 1rem;
+}
+
+.pagina-auth {
+    width: 100%;
+    max-width: 25rem;
+    margin: 0 auto;
+}
+
+.cartao-auth {
+    padding: clamp(1.5rem, 5vw, 2.25rem);
+    border-radius: 0.65rem;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.login-cabecalho {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.login-marca {
+    margin: 0 0 0.25rem 0;
+    color: #153e75;
+    font-size: 2.25rem;
+    font-weight: 800;
+}
+
+.login-subtitulo {
+    margin: 0 0 1.25rem 0;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.login-cabecalho h2 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 650;
+    color: #1e293b;
+}
+
+.botao-bloco {
+    width: 100%;
+    margin-top: 0.75rem;
 }
 
 @media (max-width: 44rem) {
