@@ -24,13 +24,19 @@ final class Obrigacao extends Model
 {
     public const STATUS = ['PENDENTE', 'EM_ANDAMENTO', 'AGUARDANDO_CLIENTE', 'ENTREGUE', 'DISPENSADA'];
 
-    public const SITUACOES = ['atrasada', 'vence_hoje', 'vence_7d', 'entregue_atraso'];
+    public const SITUACOES = ['atrasada', 'vence_hoje', 'vence_7d', 'entregue_atraso', 'entregue_no_prazo'];
 
     private const ABERTA = "o.status IN ('PENDENTE', 'EM_ANDAMENTO', 'AGUARDANDO_CLIENTE')";
 
     private const ATRASADA = self::ABERTA . ' AND o.vencimento < ref.hoje';
 
     private const ENTREGUE_COM_ATRASO = "o.status = 'ENTREGUE' AND DATE(o.entregue_em) > o.vencimento";
+
+    /**
+     * Complemento exato de ENTREGUE_COM_ATRASO; é o "no prazo" do Índice (ARCHITECTURE §10.4).
+     * Entregar no próprio dia do vencimento, a qualquer hora, é pontual.
+     */
+    private const ENTREGUE_NO_PRAZO = "o.status = 'ENTREGUE' AND DATE(o.entregue_em) <= o.vencimento";
 
     /**
      * "hoje" entra uma única vez, numa tabela derivada de uma linha (ref). Assim a listagem e
@@ -57,7 +63,8 @@ final class Obrigacao extends Model
 
     /**
      * Filtros aceitos (API §4.2): q, empresa_id, tipo_id, status, situacao, responsavel (ID),
-     * competencia (AAAA-MM), de, ate e ordem. Valores inválidos são ignorados.
+     * competencia (AAAA-MM), de, ate (vencimento), entregue_de, entregue_ate (data da entrega)
+     * e ordem. Valores inválidos são ignorados.
      *
      * @param array<string, mixed> $filtros
      */
@@ -73,6 +80,61 @@ final class Obrigacao extends Model
             $parametros,
             $paginacao
         );
+    }
+
+    /**
+     * Totais de vários conjuntos de filtros numa única consulta, com o mesmo FROM e as mesmas
+     * condições da listagem: contar($e, ['x' => $f])['x'] é igual a listar($e, $f, ...)->total.
+     * As chaves dos conjuntos só existem no PHP; no SQL os apelidos são posicionais (c0, c1...).
+     *
+     * @param array<string, array<string, mixed>> $conjuntos
+     * @return array<string, int>
+     */
+    public function contar(int $escritorioId, array $conjuntos): array
+    {
+        if ($conjuntos === []) {
+            return [];
+        }
+
+        [$somas, $parametros] = $this->somasDosConjuntos($escritorioId, $conjuntos);
+        $linha = $this->buscarUm(
+            'SELECT ' . implode(', ', $somas) . ' ' . self::FROM . ' WHERE o.escritorio_id = :escritorio_id',
+            $parametros
+        );
+
+        return $this->contagensDaLinha($linha ?? [], $conjuntos);
+    }
+
+    /**
+     * Os mesmos totais de contar(), separados por responsável, numa única consulta. Inclui
+     * responsáveis inativos e a linha das obrigações sem responsável (responsavel_id null),
+     * que vem por último. Só aparecem responsáveis que têm alguma obrigação no escritório.
+     *
+     * @param array<string, array<string, mixed>> $conjuntos
+     * @return list<array{responsavel_id: int|null, nome: string|null, ativo: bool|null, contagens: array<string, int>}>
+     */
+    public function contarPorResponsavel(int $escritorioId, array $conjuntos): array
+    {
+        if ($conjuntos === []) {
+            return [];
+        }
+
+        [$somas, $parametros] = $this->somasDosConjuntos($escritorioId, $conjuntos);
+        $linhas = $this->buscarTodos(
+            'SELECT o.responsavel_id, u.nome AS responsavel_nome, u.ativo AS responsavel_ativo, '
+            . implode(', ', $somas) . ' ' . self::FROM
+            . ' WHERE o.escritorio_id = :escritorio_id
+                GROUP BY o.responsavel_id, u.nome, u.ativo
+                ORDER BY o.responsavel_id IS NULL, u.nome ASC, o.responsavel_id ASC',
+            $parametros
+        );
+
+        return array_map(fn (array $linha): array => [
+            'responsavel_id' => $linha['responsavel_id'] === null ? null : (int) $linha['responsavel_id'],
+            'nome' => $linha['responsavel_nome'] === null ? null : (string) $linha['responsavel_nome'],
+            'ativo' => $linha['responsavel_ativo'] === null ? null : (int) $linha['responsavel_ativo'] === 1,
+            'contagens' => $this->contagensDaLinha($linha, $conjuntos),
+        ], $linhas);
     }
 
     /**
@@ -270,30 +332,52 @@ final class Obrigacao extends Model
      */
     private function condicoes(int $escritorioId, array $filtros): array
     {
-        $condicoes = ['o.escritorio_id = :escritorio_id'];
-        $parametros = ['hoje' => $this->hoje(), 'escritorio_id' => $escritorioId];
+        [$condicoes, $parametros] = $this->condicoesDosFiltros($filtros, '');
+
+        return [
+            array_merge(['o.escritorio_id = :escritorio_id'], $condicoes),
+            ['hoje' => $this->hoje(), 'escritorio_id' => $escritorioId] + $parametros,
+        ];
+    }
+
+    /**
+     * Condições de cada filtro aceito, sem o escritório nem "hoje" (que entram uma vez só).
+     * O sufixo vai em todos os parâmetros: com prepares nativos, um nome não pode se repetir,
+     * e a contagem agregada põe vários conjuntos de filtros na mesma consulta.
+     *
+     * @param array<string, mixed> $filtros
+     * @return array{list<string>, array<string, mixed>}
+     */
+    private function condicoesDosFiltros(array $filtros, string $sufixo): array
+    {
+        $condicoes = [];
+        $parametros = [];
 
         $busca = $this->texto($filtros, 'q');
         if ($busca !== '') {
             $termo = '%' . QueryFiltros::like($busca) . '%';
-            $condicoes[] = "(e.razao_social LIKE :termo_empresa ESCAPE '\\\\'
-                OR e.nome_fantasia LIKE :termo_fantasia ESCAPE '\\\\'
-                OR t.nome LIKE :termo_tipo ESCAPE '\\\\')";
-            $parametros += ['termo_empresa' => $termo, 'termo_fantasia' => $termo, 'termo_tipo' => $termo];
+            $condicoes[] = "(e.razao_social LIKE :termo_empresa{$sufixo} ESCAPE '\\\\'
+                OR e.nome_fantasia LIKE :termo_fantasia{$sufixo} ESCAPE '\\\\'
+                OR t.nome LIKE :termo_tipo{$sufixo} ESCAPE '\\\\')";
+            $parametros += [
+                'termo_empresa' . $sufixo => $termo,
+                'termo_fantasia' . $sufixo => $termo,
+                'termo_tipo' . $sufixo => $termo,
+            ];
         }
 
         foreach (['empresa_id' => 'o.empresa_id', 'tipo_id' => 'o.tipo_obrigacao_id', 'responsavel' => 'o.responsavel_id'] as $filtro => $coluna) {
             $id = $this->texto($filtros, $filtro);
             if (preg_match('/\A[1-9][0-9]{0,9}\z/', $id) === 1) {
-                $condicoes[] = $coluna . ' = :' . $filtro;
-                $parametros[$filtro] = (int) $id;
+                $condicoes[] = $coluna . ' = :' . $filtro . $sufixo;
+                $parametros[$filtro . $sufixo] = (int) $id;
             }
         }
 
         $status = $this->texto($filtros, 'status');
         if (in_array($status, self::STATUS, true)) {
-            $condicoes[] = 'o.status = :status';
-            $parametros['status'] = $status;
+            $condicoes[] = 'o.status = :status' . $sufixo;
+            $parametros['status' . $sufixo] = $status;
         }
 
         $situacao = $this->condicaoDaSituacao($this->texto($filtros, 'situacao'));
@@ -301,7 +385,7 @@ final class Obrigacao extends Model
             $condicoes[] = '(' . $situacao . ')';
         }
 
-        return $this->condicoesDeData($filtros, $condicoes, $parametros);
+        return $this->condicoesDeData($filtros, $sufixo, $condicoes, $parametros);
     }
 
     /**
@@ -315,6 +399,7 @@ final class Obrigacao extends Model
             'vence_hoje' => self::ABERTA . ' AND o.vencimento = ref.hoje',
             'vence_7d' => self::ABERTA . ' AND o.vencimento BETWEEN ref.hoje AND DATE_ADD(ref.hoje, INTERVAL 7 DAY)',
             'entregue_atraso' => self::ENTREGUE_COM_ATRASO,
+            'entregue_no_prazo' => self::ENTREGUE_NO_PRAZO,
             default => null,
         };
     }
@@ -325,12 +410,12 @@ final class Obrigacao extends Model
      * @param array<string, mixed> $parametros
      * @return array{list<string>, array<string, mixed>}
      */
-    private function condicoesDeData(array $filtros, array $condicoes, array $parametros): array
+    private function condicoesDeData(array $filtros, string $sufixo, array $condicoes, array $parametros): array
     {
         try {
             $competencia = Competencia::deTexto($this->texto($filtros, 'competencia'));
-            $condicoes[] = 'o.competencia = :competencia';
-            $parametros['competencia'] = $competencia->primeiroDia()->format('Y-m-d');
+            $condicoes[] = 'o.competencia = :competencia' . $sufixo;
+            $parametros['competencia' . $sufixo] = $competencia->primeiroDia()->format('Y-m-d');
         } catch (InvalidArgumentException) {
             // Competência ausente ou inválida: o filtro é ignorado.
         }
@@ -339,9 +424,22 @@ final class Obrigacao extends Model
             $data = $this->texto($filtros, $filtro);
             $lida = DateTimeImmutable::createFromFormat('!Y-m-d', $data);
             if ($lida !== false && $lida->format('Y-m-d') === $data) {
-                $condicoes[] = $condicao;
-                $parametros[$filtro] = $data;
+                $condicoes[] = $condicao . $sufixo;
+                $parametros[$filtro . $sufixo] = $data;
             }
+        }
+
+        // Data da entrega: início inclusivo; o fim vira "antes do dia seguinte", o que inclui
+        // qualquer horário do último dia. entregue_em nulo nunca satisfaz a comparação.
+        $entregueDe = $this->dataValida($this->texto($filtros, 'entregue_de'));
+        if ($entregueDe !== null) {
+            $condicoes[] = 'o.entregue_em >= :entregue_de' . $sufixo;
+            $parametros['entregue_de' . $sufixo] = $entregueDe->format('Y-m-d');
+        }
+        $entregueAte = $this->dataValida($this->texto($filtros, 'entregue_ate'));
+        if ($entregueAte !== null) {
+            $condicoes[] = 'o.entregue_em < :entregue_ate' . $sufixo;
+            $parametros['entregue_ate' . $sufixo] = $entregueAte->modify('+1 day')->format('Y-m-d');
         }
 
         return [$condicoes, $parametros];
@@ -375,6 +473,54 @@ final class Obrigacao extends Model
         $valor = $filtros[$campo] ?? '';
 
         return is_string($valor) || is_int($valor) ? trim((string) $valor) : '';
+    }
+
+    /**
+     * Uma coluna SUM(CASE ...) por conjunto. Cada conjunto usa o sufixo "_c<posição>" nos
+     * parâmetros; escritório e "hoje" entram uma única vez, como na listagem.
+     *
+     * @param array<string, array<string, mixed>> $conjuntos
+     * @return array{list<string>, array<string, mixed>}
+     */
+    private function somasDosConjuntos(int $escritorioId, array $conjuntos): array
+    {
+        $somas = [];
+        $parametros = ['hoje' => $this->hoje(), 'escritorio_id' => $escritorioId];
+        foreach (array_values($conjuntos) as $posicao => $filtros) {
+            [$condicoes, $doConjunto] = $this->condicoesDosFiltros($filtros, '_c' . $posicao);
+            $condicao = $condicoes === [] ? '1 = 1' : implode(' AND ', $condicoes);
+            $somas[] = 'COALESCE(SUM(CASE WHEN ' . $condicao . ' THEN 1 ELSE 0 END), 0) AS c' . $posicao;
+            $parametros += $doConjunto;
+        }
+
+        return [$somas, $parametros];
+    }
+
+    /**
+     * Devolve os totais com as chaves que quem chamou usou nos conjuntos.
+     *
+     * @param array<string, mixed> $linha
+     * @param array<string, array<string, mixed>> $conjuntos
+     * @return array<string, int>
+     */
+    private function contagensDaLinha(array $linha, array $conjuntos): array
+    {
+        $contagens = [];
+        foreach (array_keys($conjuntos) as $posicao => $chave) {
+            $contagens[$chave] = (int) ($linha['c' . $posicao] ?? 0);
+        }
+
+        return $contagens;
+    }
+
+    /**
+     * Data "AAAA-MM-DD" existente no calendário; qualquer outra coisa vira null (filtro ignorado).
+     */
+    private function dataValida(string $texto): ?DateTimeImmutable
+    {
+        $lida = DateTimeImmutable::createFromFormat('!Y-m-d', $texto);
+
+        return $lida !== false && $lida->format('Y-m-d') === $texto ? $lida : null;
     }
 
     private function hoje(): string

@@ -341,6 +341,53 @@ final class ObrigacaoCrudTest extends E2ETestCase
         self::assertStringNotContainsString($this->celula($deOutroNome), $resposta->corpo);
     }
 
+    public function testFiltraPorDataDeEntregaESituacaoEntregueNoPrazoPelaUrl(): void
+    {
+        $empresa = $this->criarEmpresa();
+        $noPrazoNome = $this->nomeUnico('No prazo E2E');
+        $comAtrasoNome = $this->nomeUnico('Com atraso E2E');
+        $outroMesNome = $this->nomeUnico('Abril E2E');
+        $this->criarObrigacao($empresa, [
+            'competencia' => '2025-02-01', 'vencimento' => '2025-03-10',
+            'status' => 'ENTREGUE', 'entregue_em' => '2025-03-10 18:00:00',
+        ], ['nome' => $noPrazoNome]);
+        $this->criarObrigacao($empresa, [
+            'competencia' => '2025-02-01', 'vencimento' => '2025-03-05',
+            'status' => 'ENTREGUE', 'entregue_em' => '2025-03-06 09:00:00',
+        ], ['nome' => $comAtrasoNome]);
+        $this->criarObrigacao($empresa, [
+            'competencia' => '2025-03-01', 'vencimento' => '2025-04-02',
+            'status' => 'ENTREGUE', 'entregue_em' => '2025-04-01 09:00:00',
+        ], ['nome' => $outroMesNome]);
+        $cliente = $this->entrar(self::ADMIN);
+
+        $resposta = $cliente->get('/obrigacoes?empresa_id=' . $empresa
+            . '&entregue_de=2025-03-01&entregue_ate=2025-03-31&situacao=entregue_no_prazo');
+
+        self::assertSame(200, $resposta->status);
+        self::assertStringContainsString($this->celula($noPrazoNome), $resposta->corpo);
+        self::assertStringNotContainsString($this->celula($comAtrasoNome), $resposta->corpo);
+        self::assertStringNotContainsString($this->celula($outroMesNome), $resposta->corpo);
+        // Etiquetas de filtros aplicados (partial filtros-ativos).
+        self::assertStringContainsString('<span>Entregue a partir de:</span> 2025-03-01', $resposta->corpo);
+        self::assertStringContainsString('<span>Entregue até:</span> 2025-03-31', $resposta->corpo);
+        self::assertStringContainsString('<span>Situação:</span> Entregues no prazo', $resposta->corpo);
+        self::assertStringContainsString('name="entregue_de" type="date" value="2025-03-01"', $resposta->corpo);
+        self::assertStringContainsString('name="entregue_ate" type="date" value="2025-03-31"', $resposta->corpo);
+        self::assertStringContainsString('<option value="entregue_no_prazo" selected>Entregues no prazo</option>', $resposta->corpo);
+
+        // O filtro de responsável aceita o ID de um usuário inativo.
+        $inativo = (new FabricaCadastro($this->banco()))->criarUsuario($this->escritorioId(self::ADMIN), 'COLABORADOR', null, false);
+        $doInativoNome = $this->nomeUnico('Do inativo E2E');
+        $this->criarObrigacao($empresa, ['responsavel_id' => $inativo], ['nome' => $doInativoNome]);
+
+        $porResponsavel = $cliente->get('/obrigacoes?empresa_id=' . $empresa . '&responsavel=' . $inativo);
+
+        self::assertSame(200, $porResponsavel->status);
+        self::assertStringContainsString($this->celula($doInativoNome), $porResponsavel->corpo);
+        self::assertStringNotContainsString($this->celula($noPrazoNome), $porResponsavel->corpo);
+    }
+
     private function celula(string $texto): string
     {
         return '<td>' . $texto . '</td>';
