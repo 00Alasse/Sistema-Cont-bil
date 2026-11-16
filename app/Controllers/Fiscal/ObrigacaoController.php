@@ -39,9 +39,13 @@ final class ObrigacaoController extends Controller
         'vence_hoje' => 'Vencem hoje',
         'vence_7d' => 'Vencem em até 7 dias',
         'entregue_atraso' => 'Entregues com atraso',
+        'entregue_no_prazo' => 'Entregues no prazo',
     ];
 
-    private const FILTROS = ['q', 'empresa_id', 'tipo_id', 'status', 'situacao', 'responsavel', 'competencia', 'de', 'ate', 'ordem'];
+    private const FILTROS = [
+        'q', 'empresa_id', 'tipo_id', 'status', 'situacao', 'responsavel', 'competencia', 'de', 'ate',
+        'entregue_de', 'entregue_ate', 'ordem',
+    ];
 
     private const MENSAGEM_ANTES_DA_COMPETENCIA = 'O vencimento não pode ser anterior ao início da competência.';
 
@@ -484,7 +488,8 @@ final class ObrigacaoController extends Controller
         $rotulos = [
             'q' => 'Busca', 'empresa_id' => 'Empresa', 'tipo_id' => 'Tipo', 'status' => 'Status',
             'situacao' => 'Situação', 'responsavel' => 'Responsável', 'competencia' => 'Competência',
-            'de' => 'Vencimento a partir de', 'ate' => 'Vencimento até', 'ordem' => 'Ordenação',
+            'de' => 'Vencimento a partir de', 'ate' => 'Vencimento até',
+            'entregue_de' => 'Entregue a partir de', 'entregue_ate' => 'Entregue até', 'ordem' => 'Ordenação',
         ];
         $ativos = [];
         foreach ($rotulos as $campo => $rotulo) {

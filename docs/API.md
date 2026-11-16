@@ -97,7 +97,7 @@ As flags `bpo_ativo` e `consultivo_ativo` são apenas gravadas pelo cadastro. A 
 
 | Método | Rota | Finalidade | Perfil | Payload / parâmetros | Respostas | Tarefa |
 |--------|------|------------|--------|----------------------|-----------|--------|
-| GET | `/obrigacoes` | Listar | A, C | `q` (empresa ou tipo), `empresa_id`, `tipo_id`, `status`, `situacao` (`atrasada`\|`vence_hoje`\|`vence_7d`\|`entregue_atraso`), `responsavel` (ID ou `meus`), `competencia` (AAAA-MM), `de`, `ate` (vencimento), `ordem` (`vencimento`, `competencia`, `empresa`), `pagina` | 200 | FI03 |
+| GET | `/obrigacoes` | Listar | A, C | `q` (empresa ou tipo), `empresa_id`, `tipo_id`, `status`, `situacao` (`atrasada`\|`vence_hoje`\|`vence_7d`\|`entregue_atraso`\|`entregue_no_prazo`), `responsavel` (ID ou `meus`), `competencia` (AAAA-MM), `de`, `ate` (vencimento), `entregue_de`, `entregue_ate` (data da entrega, AAAA-MM-DD, limites inclusivos), `ordem` (`vencimento`, `competencia`, `empresa`), `pagina` | 200 | FI03 |
 | GET | `/obrigacoes/nova` | Formulário avulso | A, C | `empresa_id` (pré-seleção) | 200 | FI03 |
 | POST | `/obrigacoes` | Criar | A, C | `empresa_id`*, `tipo_obrigacao_id`*, `competencia`* (AAAA-MM), `vencimento`* (≥ início da competência), `responsavel_id`, `observacao` | 302; 422 (incluindo "já existe obrigação deste tipo nesta competência") | FI03 |
 | GET | `/obrigacoes/{id}` | Detalhe + histórico de status | A, C | — | 200; 404 | FI03, FI04 |

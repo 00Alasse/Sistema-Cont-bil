@@ -352,6 +352,209 @@ final class ObrigacaoModelTest extends IntegrationTestCase
         );
     }
 
+    public function testFiltraPorDataDeEntregaComLimitesInclusivos(): void
+    {
+        $e1 = $this->entregue('2026-02-28', '2026-02-28 23:59:59');
+        $e2 = $this->entregue('2026-03-01', '2026-03-01 00:00:00');
+        $e3 = $this->entregue('2026-03-15', '2026-03-15 12:00:00');
+        $e4 = $this->entregue('2026-03-31', '2026-03-31 23:59:59');
+        $e5 = $this->entregue('2026-04-01', '2026-04-01 00:00:00');
+        $pendente = $this->nova(['vencimento' => '2026-03-20']);
+
+        self::assertEqualsCanonicalizing(
+            [$e2, $e3, $e4],
+            $this->ids($this->listar(['entregue_de' => '2026-03-01', 'entregue_ate' => '2026-03-31'])->itens)
+        );
+        self::assertEqualsCanonicalizing(
+            [$e2, $e3, $e4, $e5],
+            $this->ids($this->listar(['entregue_de' => '2026-03-01'])->itens)
+        );
+        self::assertSame([$e1], $this->ids($this->listar(['entregue_ate' => '2026-02-28'])->itens));
+        self::assertSame([], $this->ids($this->listar(['entregue_de' => '2026-03-31', 'entregue_ate' => '2026-03-01'])->itens));
+        // Datas inválidas são ignoradas, como nos filtros de vencimento.
+        self::assertEqualsCanonicalizing(
+            [$e1, $e2, $e3, $e4, $e5, $pendente],
+            $this->ids($this->listar(['entregue_de' => '2026-02-30', 'entregue_ate' => '31/03/2026'])->itens)
+        );
+    }
+
+    public function testEntregueNoPrazoEEntregueComAtrasoSeComplementam(): void
+    {
+        $antes = $this->entregue('2026-03-05', '2026-03-04 10:00:00');
+        $inicioDoDia = $this->entregue('2026-03-05', '2026-03-05 00:00:00');
+        $fimDoDia = $this->entregue('2026-03-05', '2026-03-05 23:59:59');
+        $atrasada = $this->entregue('2026-03-05', '2026-03-06 00:00:00');
+        $this->nova(['vencimento' => '2026-03-05']);
+        $this->nova(['vencimento' => '2026-03-05', 'status' => 'DISPENSADA']);
+
+        $noPrazo = $this->idsDaSituacao('entregue_no_prazo');
+        $comAtraso = $this->idsDaSituacao('entregue_atraso');
+
+        self::assertEqualsCanonicalizing([$antes, $inicioDoDia, $fimDoDia], $noPrazo);
+        self::assertSame([$atrasada], $comAtraso);
+        self::assertSame([], array_intersect($noPrazo, $comAtraso));
+        self::assertEqualsCanonicalizing(
+            $this->ids($this->listar(['status' => 'ENTREGUE'])->itens),
+            array_merge($noPrazo, $comAtraso)
+        );
+        self::assertEqualsCanonicalizing(
+            [$antes, $inicioDoDia, $fimDoDia],
+            $this->ids($this->listar([
+                'situacao' => 'entregue_no_prazo',
+                'entregue_de' => '2026-03-01',
+                'entregue_ate' => '2026-03-31',
+            ])->itens)
+        );
+    }
+
+    public function testContarRespondeVariosConjuntosComOsTotaisDaListagem(): void
+    {
+        $this->nova(['vencimento' => self::HOJE]);                                       // vence hoje
+        $this->nova(['vencimento' => '2026-03-17', 'status' => 'EM_ANDAMENTO']);         // vence em 7 dias
+        $this->nova(['vencimento' => '2026-03-09']);                                     // atrasada
+        $this->nova(['vencimento' => '2026-02-20', 'status' => 'AGUARDANDO_CLIENTE']);   // atrasada
+        $this->entregue('2026-03-05', '2026-03-05 10:00:00');                            // março, no prazo
+        $this->entregue('2026-03-02', '2026-03-01 09:00:00');                            // março, no prazo
+        $this->entregue('2026-03-03', '2026-03-04 08:00:00');                            // março, com atraso
+        $this->entregue('2026-02-10', '2026-02-11 08:00:00');                            // fevereiro
+        $this->nova(['vencimento' => '2026-03-01', 'status' => 'DISPENSADA']);
+        // Outro escritório, com uma obrigação que venceria hoje: nunca entra.
+        $empresaB = $this->empresa($this->escritorioB, 'Empresa Beta');
+        $this->fiscal->criarObrigacao(
+            $this->escritorioB,
+            $empresaB,
+            $this->fiscal->criarTipo($this->escritorioB),
+            $this->cadastro->criarUsuario($this->escritorioB),
+            ['competencia' => '2026-03-01', 'vencimento' => self::HOJE]
+        );
+        $marco = ['entregue_de' => '2026-03-01', 'entregue_ate' => '2026-03-31'];
+        $conjuntos = [
+            'vence_hoje' => ['situacao' => 'vence_hoje'],
+            'vence_7d' => ['situacao' => 'vence_7d'],
+            'atrasadas' => ['situacao' => 'atrasada'],
+            'entregues_marco' => $marco,
+            'no_prazo_marco' => $marco + ['situacao' => 'entregue_no_prazo'],
+            'todas' => [],
+            'invalidos' => ['empresa_id' => '1 OR 1=1', 'situacao' => 'qualquer', 'entregue_de' => '2026-02-30'],
+            'so_ordem' => ['ordem' => '-empresa'],
+        ];
+
+        $contagens = $this->obrigacoes->contar($this->escritorioA, $conjuntos);
+
+        self::assertSame([
+            'vence_hoje' => 1,
+            'vence_7d' => 2,
+            'atrasadas' => 2,
+            'entregues_marco' => 3,
+            'no_prazo_marco' => 2,
+            'todas' => 9,
+            'invalidos' => 9,
+            'so_ordem' => 9,
+        ], $contagens);
+        foreach ($conjuntos as $chave => $filtros) {
+            self::assertSame($this->listar($filtros)->total, $contagens[$chave], $chave);
+        }
+        self::assertSame(['todas' => 1], $this->obrigacoes->contar($this->escritorioB, ['todas' => []]));
+        self::assertSame([], $this->obrigacoes->contar($this->escritorioA, []));
+    }
+
+    public function testContarComTodosOsFiltrosJuntosNaoMisturaParametrosEntreConjuntos(): void
+    {
+        $empresa = $this->empresa($this->escritorioA, 'Padaria 50%_Pão\\Doce');
+        $tipo = $this->fiscal->criarTipo($this->escritorioA);
+        $responsavel = $this->cadastro->criarUsuario($this->escritorioA, 'COLABORADOR');
+        $alvo = $this->nova([
+            'competencia' => '2026-02-01',
+            'vencimento' => '2026-03-05',
+            'status' => 'ENTREGUE',
+            'entregue_em' => '2026-03-05 10:00:00',
+            'responsavel_id' => $responsavel,
+        ], $empresa, $tipo);
+        // Iscas: mesma empresa e responsável, mas fora de algum filtro.
+        $this->nova(['competencia' => '2026-01-01', 'vencimento' => '2026-03-05', 'responsavel_id' => $responsavel], $empresa, $tipo);
+        $this->nova(['vencimento' => '2026-03-06', 'status' => 'ENTREGUE', 'entregue_em' => '2026-03-07 10:00:00', 'responsavel_id' => $responsavel], $empresa);
+        $todos = [
+            'q' => '50%_Pão\\Doce',
+            'empresa_id' => (string) $empresa,
+            'tipo_id' => (string) $tipo,
+            'responsavel' => (string) $responsavel,
+            'status' => 'ENTREGUE',
+            'situacao' => 'entregue_no_prazo',
+            'competencia' => '2026-02',
+            'de' => '2026-03-01',
+            'ate' => '2026-03-31',
+            'entregue_de' => '2026-03-01',
+            'entregue_ate' => '2026-03-31',
+        ];
+        // O segundo conjunto tem os mesmos filtros com valores diferentes: cada um precisa dos próprios parâmetros.
+        $conjuntos = [
+            'todos' => $todos,
+            'outra_busca' => ['q' => 'Inexistente'] + $todos,
+            'outro_periodo' => ['entregue_de' => '2026-04-01', 'entregue_ate' => '2026-04-30'] + $todos,
+        ];
+
+        $contagens = $this->obrigacoes->contar($this->escritorioA, $conjuntos);
+
+        self::assertSame(['todos' => 1, 'outra_busca' => 0, 'outro_periodo' => 0], $contagens);
+        self::assertSame([$alvo], $this->ids($this->listar($todos)->itens));
+        foreach ($conjuntos as $chave => $filtros) {
+            self::assertSame($this->listar($filtros)->total, $contagens[$chave], $chave);
+        }
+    }
+
+    public function testContarPorResponsavelIncluiInativosESemResponsavelPorUltimo(): void
+    {
+        $u1 = $this->cadastro->criarUsuario($this->escritorioA, 'COLABORADOR');
+        $u2 = $this->cadastro->criarUsuario($this->escritorioA, 'COLABORADOR', null, false);
+        $u3 = $this->cadastro->criarUsuario($this->escritorioA, 'COLABORADOR');
+        $this->nova(['vencimento' => '2026-03-09', 'responsavel_id' => $u1]);
+        $this->nova(['vencimento' => '2026-03-01', 'responsavel_id' => $u1, 'status' => 'EM_ANDAMENTO']);
+        $this->nova(['vencimento' => '2026-03-12', 'responsavel_id' => $u1]);
+        $this->nova(['vencimento' => '2026-03-05', 'responsavel_id' => $u2]);
+        $this->nova(['vencimento' => '2026-03-05', 'responsavel_id' => $u3, 'status' => 'ENTREGUE']);
+        $this->nova(['vencimento' => '2026-03-08']);
+        $this->nova(['vencimento' => '2026-03-15']);
+        $empresaB = $this->empresa($this->escritorioB, 'Empresa Beta');
+        $usuarioB = $this->cadastro->criarUsuario($this->escritorioB);
+        $this->fiscal->criarObrigacao(
+            $this->escritorioB,
+            $empresaB,
+            $this->fiscal->criarTipo($this->escritorioB),
+            $usuarioB,
+            ['competencia' => '2026-03-01', 'vencimento' => '2026-03-09', 'responsavel_id' => $usuarioB]
+        );
+        $conjuntos = ['atrasadas' => ['situacao' => 'atrasada'], 'vence_7d' => ['situacao' => 'vence_7d']];
+
+        $linhas = $this->obrigacoes->contarPorResponsavel($this->escritorioA, $conjuntos);
+
+        $nome = 'Usuário C01 de teste';
+        self::assertSame([
+            ['responsavel_id' => $u1, 'nome' => $nome, 'ativo' => true, 'contagens' => ['atrasadas' => 2, 'vence_7d' => 1]],
+            ['responsavel_id' => $u2, 'nome' => $nome, 'ativo' => false, 'contagens' => ['atrasadas' => 1, 'vence_7d' => 0]],
+            ['responsavel_id' => $u3, 'nome' => $nome, 'ativo' => true, 'contagens' => ['atrasadas' => 0, 'vence_7d' => 0]],
+            ['responsavel_id' => null, 'nome' => null, 'ativo' => null, 'contagens' => ['atrasadas' => 1, 'vence_7d' => 1]],
+        ], $linhas);
+
+        // Cada célula com responsável é igual à listagem filtrada pelo mesmo ID (inclusive o inativo).
+        foreach ($linhas as $linha) {
+            if ($linha['responsavel_id'] === null) {
+                continue;
+            }
+            foreach ($conjuntos as $chave => $filtros) {
+                $total = $this->listar($filtros + ['responsavel' => (string) $linha['responsavel_id']])->total;
+                self::assertSame($total, $linha['contagens'][$chave]);
+            }
+        }
+        // A soma das linhas é igual à contagem sem agrupamento.
+        $totais = $this->obrigacoes->contar($this->escritorioA, $conjuntos);
+        foreach (array_keys($conjuntos) as $chave) {
+            self::assertSame($totais[$chave], array_sum(array_map(
+                static fn (array $linha): int => $linha['contagens'][$chave],
+                $linhas
+            )));
+        }
+    }
+
     private function modelEm(string $hoje): Obrigacao
     {
         return new Obrigacao(new RelogioFixo(new DateTimeImmutable($hoje . ' 14:30:00')));
@@ -380,6 +583,11 @@ final class ObrigacaoModelTest extends IntegrationTestCase
             $this->usuarioA,
             $opcoes
         );
+    }
+
+    private function entregue(string $vencimento, string $entregueEm): int
+    {
+        return $this->nova(['vencimento' => $vencimento, 'status' => 'ENTREGUE', 'entregue_em' => $entregueEm]);
     }
 
     /**

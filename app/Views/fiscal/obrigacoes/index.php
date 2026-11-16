@@ -101,6 +101,14 @@ $ordens = [
                 <input id="ate" name="ate" type="date" value="<?= e($valorFiltro('ate')) ?>">
             </div>
             <div class="campo">
+                <label for="entregue_de">Entregue a partir de</label>
+                <input id="entregue_de" name="entregue_de" type="date" value="<?= e($valorFiltro('entregue_de')) ?>">
+            </div>
+            <div class="campo">
+                <label for="entregue_ate">Entregue até</label>
+                <input id="entregue_ate" name="entregue_ate" type="date" value="<?= e($valorFiltro('entregue_ate')) ?>">
+            </div>
+            <div class="campo">
                 <label for="ordem">Ordenar por</label>
                 <select id="ordem" name="ordem">
                     <?php foreach ($ordens as $codigo => $rotulo) : ?>
