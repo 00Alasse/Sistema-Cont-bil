@@ -17,14 +17,14 @@ $itensMenu = is_array($itensMenu ?? null) ? $itensMenu : [];
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#153e75">
-    <title><?= e($tituloPagina) ?> - -Tributo!</title>
+    <title><?= e($tituloPagina) ?> - -Tributo</title>
     <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
     <script src="<?= e(url('/assets/js/app.js')) ?>" defer></script>
 </head>
 <body>
     <a class="pular-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>
     <header class="cabecalho">
-        <a class="marca" href="<?= e(url('/painel')) ?>">-Tributo!</a>
+        <a class="marca" href="<?= e(url('/painel')) ?>">-Tributo</a>
         <?php if ($nomeUsuario !== '') : ?>
             <div class="usuario-atual">
                 <span><?= e($nomeUsuario) ?></span>

@@ -15,7 +15,7 @@ final class InicioController extends Controller
         return Response::html(
             '<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
             . '<meta name="viewport" content="width=device-width, initial-scale=1">'
-            . '<title>-Tributo!</title></head><body><h1>-Tributo!</h1>'
+            . '<title>-Tributo</title></head><body><h1>-Tributo</h1>'
             . '<p>Estrutura inicial instalada. As funcionalidades estão em desenvolvimento.</p>'
             . '</body></html>'
         );

@@ -10,7 +10,7 @@ $conteudoPagina = is_string($conteudo ?? null) ? $conteudo : '';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($tituloPagina) ?> - -Tributo!</title>
+    <title><?= e($tituloPagina) ?> - -Tributo</title>
     <link rel="stylesheet" href="<?= e(url('/assets/css/impressao.css')) ?>" media="print">
 </head>
 <body>

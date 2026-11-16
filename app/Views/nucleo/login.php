@@ -1,6 +1,6 @@
 <?php declare(strict_types=1); ?>
 <section>
-    <h1>-Tributo!</h1>
+    <h1>-Tributo</h1>
     <h2>Entrar</h2>
 
     <?php foreach ($mensagens ?? [] as $mensagem) : ?>

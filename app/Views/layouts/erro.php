@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($titulo ?? '-Tributo!') ?> - -Tributo!</title>
+    <title><?= e($titulo ?? '-Tributo') ?> - -Tributo</title>
 </head>
 <body>
     <main>
