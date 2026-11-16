@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Controllers\Cadastro\EmpresaController;
+use App\Controllers\Cadastro\UsuarioController;
 
 return [
     'contratavel' => null,
@@ -12,6 +13,7 @@ return [
     ],
     'cartoes_painel' => [],
     'rotas' => [
+        ['GET', '/usuarios', [UsuarioController::class, 'index'], ['auth', 'perfil:ADMIN']],
         ['GET', '/empresas', [EmpresaController::class, 'index'], ['auth', 'perfil:ADMIN,COLABORADOR']],
         ['GET', '/empresas/nova', [EmpresaController::class, 'nova'], ['auth', 'perfil:ADMIN,COLABORADOR']],
         ['POST', '/empresas', [EmpresaController::class, 'criar'], ['auth', 'perfil:ADMIN,COLABORADOR']],
