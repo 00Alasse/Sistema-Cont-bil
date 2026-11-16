@@ -163,7 +163,9 @@ $ordens = [
                         </td>
                         <td><?= e((string) ($rotulosStatus[$texto('status')] ?? $texto('status'))) ?></td>
                         <td>
-                            <?php if ($atrasada) : ?>
+                            <?php if ($texto('atraso_critico') === '1') : ?>
+                                <span class="semaforo semaforo-vermelho" title="Atraso crítico: superior a 30 dias"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada (&gt; 30d)</span>
+                            <?php elseif ($atrasada) : ?>
                                 <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada</span>
                             <?php elseif ($texto('entregue_com_atraso') === '1') : ?>
                                 <span class="semaforo semaforo-amarelo"><span class="semaforo-ponto" aria-hidden="true"></span>Entregue com atraso</span>

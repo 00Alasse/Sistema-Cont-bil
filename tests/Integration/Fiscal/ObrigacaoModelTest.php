@@ -299,6 +299,43 @@ final class ObrigacaoModelTest extends IntegrationTestCase
         self::assertSame([], $this->idsDaSituacao('vence_hoje'));
     }
 
+    public function testCalculaAtrasoCriticoSuperiorA30Dias(): void
+    {
+        // HOJE é 2026-03-10
+        // Atraso de 40 dias (crítico)
+        $critica = $this->nova(['vencimento' => '2026-01-29']);
+        // Atraso de 10 dias (não crítico)
+        $atrasadaNormal = $this->nova(['vencimento' => '2026-02-28']);
+        // No prazo
+        $noPrazo = $this->nova(['vencimento' => '2026-03-15']);
+        // Vencida há 40 dias mas ENTREGUE
+        $entregueAntiga = $this->nova([
+            'vencimento' => '2026-01-29',
+            'status' => 'ENTREGUE',
+            'entregue_em' => '2026-01-28 10:00:00',
+        ]);
+
+        $buscarCritica = $this->obrigacoes->buscar($this->escritorioA, $critica);
+        self::assertNotNull($buscarCritica);
+        self::assertSame(1, (int) $buscarCritica['atrasada']);
+        self::assertSame(1, (int) $buscarCritica['atraso_critico']);
+
+        $buscarNormal = $this->obrigacoes->buscar($this->escritorioA, $atrasadaNormal);
+        self::assertNotNull($buscarNormal);
+        self::assertSame(1, (int) $buscarNormal['atrasada']);
+        self::assertSame(0, (int) $buscarNormal['atraso_critico']);
+
+        $buscarNoPrazo = $this->obrigacoes->buscar($this->escritorioA, $noPrazo);
+        self::assertNotNull($buscarNoPrazo);
+        self::assertSame(0, (int) $buscarNoPrazo['atrasada']);
+        self::assertSame(0, (int) $buscarNoPrazo['atraso_critico']);
+
+        $buscarEntregue = $this->obrigacoes->buscar($this->escritorioA, $entregueAntiga);
+        self::assertNotNull($buscarEntregue);
+        self::assertSame(0, (int) $buscarEntregue['atrasada']);
+        self::assertSame(0, (int) $buscarEntregue['atraso_critico']);
+    }
+
     public function testFiltrosInvalidosSaoIgnorados(): void
     {
         $this->nova();

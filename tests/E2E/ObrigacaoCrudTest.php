@@ -325,6 +325,27 @@ final class ObrigacaoCrudTest extends E2ETestCase
         self::assertStringContainsString('Atrasada', $atrasadas->corpo);
     }
 
+    public function testListagemEDetalheDestacamAtrasoCriticoSuperiorA30Dias(): void
+    {
+        $empresa = $this->criarEmpresa();
+        $hoje = $this->hoje();
+        $vencimentoCritico = $hoje->modify('-35 days');
+        $criticaNome = $this->nomeUnico('Critica E2E');
+        $id = $this->criarObrigacao($empresa, [
+            'competencia' => $vencimentoCritico->modify('first day of -1 month')->format('Y-m-d'),
+            'vencimento' => $vencimentoCritico->format('Y-m-d'),
+        ], ['nome' => $criticaNome]);
+
+        $cliente = $this->entrar(self::ADMIN);
+        $respostaLista = $cliente->get('/obrigacoes?empresa_id=' . $empresa);
+        self::assertSame(200, $respostaLista->status);
+        self::assertStringContainsString('Atrasada (&gt; 30d)', $respostaLista->corpo);
+
+        $respostaDetalhe = $cliente->get('/obrigacoes/' . $id);
+        self::assertSame(200, $respostaDetalhe->status);
+        self::assertStringContainsString('Atraso crítico (&gt; 30 dias)', $respostaDetalhe->corpo);
+    }
+
     public function testFiltroMeusMostraSoAsObrigacoesDoUsuarioLogado(): void
     {
         $empresa = $this->criarEmpresa();

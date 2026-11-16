@@ -1,6 +1,6 @@
 -- -Tributo! - SQL consolidado gerado; não editar à mão.
 
--- Gerado em: 2026-11-12
+-- Gerado em: 2026-11-16
 
 SET FOREIGN_KEY_CHECKS=0;
 
