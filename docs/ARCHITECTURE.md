@@ -110,7 +110,7 @@ tributo/
 ├── public/                      # ÚNICA pasta acessível pelo navegador
 │   ├── index.php                # front controller
 │   ├── .htaccess
-│   └── assets/{css,js}/         # (F09)
+│   └── assets/{css,js,fonts,img}/  # CSS próprio (design system), JS progressivo, fonte Inter e favicon (ADR-024)
 ├── app/
 │   ├── Core/                    # infraestrutura: Router, Request, Response, Kernel, Container, View,
 │   │                            #   Session, Csrf, Validator, Database, Config, Env, Model, Controller,
@@ -124,8 +124,8 @@ tributo/
 │   ├── Models/<Modulo>/         #          Financeiro, Gestao, Consultivo
 │   ├── Services/<Modulo>/
 │   └── Views/
-│       ├── layouts/             # app.php, portal.php, auth.php, impressao.php
-│       ├── partials/            # flash, paginacao, campo-erro, semaforo, abas-empresa, aviso-gerencial
+│       ├── layouts/             # app.php, portal.php, auth.php, erro.php, impressao.php
+│       ├── partials/            # flash, paginacao, campo-erro, semaforo, abas-empresa, aviso-gerencial, marca, icone, status
 │       ├── erros/               # 403, 404, 405, 409, 419, 500, modulo-inativo
 │       └── <modulo>/<recurso>/  # pastas em minúsculas: nucleo, cadastro, fiscal, documentos, portal,
 │                                #   financeiro, gestao, consultivo → index.php, form.php, show.php ...
@@ -317,6 +317,7 @@ Assim, a assinatura pública permanece `Validator::validar(array $dados, array $
 11. **PRG:** toda mutação bem-sucedida termina em redirecionamento.
 12. **Comentários** explicam o *porquê*, não o *o quê*. Métodos com mais de cerca de 30 linhas devem ser divididos.
 13. Mensagens ao usuário em português claro, sem jargão técnico.
+14. **Interface (ADR-024):** estilos só em `public/assets/css/app.css`, com as variáveis (`--cor-*`, `--espaco-*`...) e os componentes existentes; sem `style=` e sem CSS por tela. Ícones por `partials/icone.php`; ícone decorativo leva `aria-hidden="true"` e ícone que sozinho tem significado leva texto alternativo. O nome do produto é **-Tributo** e vem de `partials/marca.php`. O menu funciona sem JS; o destaque do item ativo é melhoria progressiva. Contraste mínimo WCAG AA, foco visível, `prefers-reduced-motion` respeitado e impressão sem menu.
 
 ## 7. Multi-tenant e autorização
 

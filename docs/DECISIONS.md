@@ -23,12 +23,13 @@
 | 015 | Controle administrativo, não tributário | Proposta |
 | 016 | Idioma dos identificadores | Proposta |
 | 017 | Desenvolvimento com várias IAs: posse de arquivos e regras centralizadas | Proposta |
-| 018 | Renderização no servidor e JS progressivo, sem bibliotecas de gráficos | Proposta |
+| 018 | Renderização no servidor e JS progressivo, sem bibliotecas de gráficos | Proposta; "sem dependências de front-end" substituída em parte pela ADR-024 |
 | 019 | Estratégia de testes e análise estática | Proposta; meta de cobertura substituída pela ADR-021 |
 | 020 | Publicação em hospedagem condicional; apresentação local como plano principal | Proposta (rev. 2) |
 | 021 | Testes de segurança obrigatórios; cobertura de 80% como objetivo secundário | Proposta (rev. 2) |
 | 022 | Cronograma por capacidade de revisão, núcleo reduzido e ordem de inclusão | Proposta (rev. 2) |
 | 023 | Perfil do participante do teste com usuário | Proposta (rev. 2) |
+| 024 | Interface própria: design system em CSS, fonte e ícones locais, sem framework de interface | Aprovada (rev. 3) |
 
 ---
 
@@ -110,6 +111,7 @@
 ### ADR-018 — Renderização no servidor e JS progressivo, sem bibliotecas de gráficos
 - **Decisão:** HTML gerado no servidor; formulários funcionam sem JS; gráficos em barras CSS ou SVG gerado em PHP; CSP sem scripts inline.
 - **Consequências:** simples, seguro e sem dependências de front-end; visual mais modesto.
+- *Substituída em parte pela ADR-024:* continuam valendo a renderização no servidor, o JS progressivo, a CSP sem scripts inline e a ausência de bibliotecas de gráficos; deixam de valer "sem dependências de front-end" e "visual mais modesto" (a ADR-024 permite uma fonte e ícones SVG locais e exige qualidade visual).
 
 ### ADR-019 — Estratégia de testes e análise estática
 - **Decisão:** PHPUnit 11 (unitário, integração com MariaDB real `tributo_test`, E2E com `php -S` + cURL); PHPStan começando no nível 5 (meta: 6 após a R1); `composer check` obrigatório antes de cada commit; ~~cobertura ≥ 80% na lógica de negócio como critério~~ → **ver ADR-021**.
@@ -147,3 +149,17 @@
 
 ### Correção de registro (rev. 2)
 As ADR-003 e ADR-014 diziam que o DDL foi "testado durante a T00", o que podia sugerir um banco implementado. O texto foi corrigido para deixar claro que houve apenas uma **verificação manual, temporária e não versionada** do DDL especificado (DATABASE §8.2). Nenhum arquivo `.sql`, script de banco ou teste de banco existe no repositório até a F03.
+
+## Revisão 3: interface e identidade visual
+
+### ADR-024 — Interface própria: design system em CSS, fonte e ícones locais, sem framework de interface
+- **Contexto:** a interface tinha CSS mínimo (F10): 24 das 46 classes usadas nas views não tinham estilo, as tabelas e os formulários saíam sem acabamento e o produto parecia um protótipo. A qualidade visual passou a ser requisito comercial. A regra anterior ("sem bibliotecas", AGENTS §1 e ADR-018) precisava ser reavaliada.
+- **Alternativas:** (1) Bootstrap 5 + Bootstrap Icons locais: exige trocar as classes de todas as views, pesa cerca de 300 KB, tende a um visual genérico e acrescenta JS de terceiros a revisar frente à CSP, além de versões a acompanhar; (2) **CSS próprio organizado como design system** (variáveis, componentes, tipografia), com uma fonte e ícones SVG locais; (3) manter o CSS mínimo.
+- **Decisão:** alternativa 2.
+  - **CSS próprio**, em `public/assets/css/app.css`, com variáveis CSS para cores, espaços, raios e sombras e componentes reutilizáveis (sidebar, cabeçalho, cartão, botão, campo, tabela, selo de status, alerta, indicador).
+  - **Fonte Inter hospedada localmente** (um arquivo `woff2`, licença SIL OFL 1.1), com a fonte do sistema como alternativa.
+  - **Ícones SVG adaptados do Lucide** (licença ISC), embutidos no HTML por `partials/icone.php`: sem arquivo externo, sem fonte de ícones e sem requisição extra. Ícones decorativos usam `aria-hidden="true"`; ícone que sozinho carrega significado recebe texto alternativo.
+  - **JavaScript só como melhoria progressiva** (destaque do item ativo do menu, menu recolhível no celular). Sem JS, o menu continua completo e utilizável.
+  - Créditos e textos de licença em `docs/LICENCAS-TERCEIROS.md` e junto do arquivo da fonte.
+- **O que não muda:** MVC próprio e sem framework PHP (ADR-001), Composer só para autoload e ferramentas (ADR-006), formulários funcionando sem JS, HTML gerado no servidor, **nenhuma CDN em tempo de execução**, CSP inalterada (`default-src 'self'`, sem `unsafe-inline`, sem scripts inline) e nenhum framework de interface (Bootstrap, Tailwind e similares).
+- **Consequências:** (+) identidade visual própria, sem dependência para atualizar nem falha de terceiros para acompanhar, peso baixo e visual verificável por testes existentes; (−) o CSS é mantido pelo projeto e novos componentes devem seguir os tokens existentes em vez de CSS avulso. Adicionar qualquer outra biblioteca ou fonte de interface exige um novo ADR.

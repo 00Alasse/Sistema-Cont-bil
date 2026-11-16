@@ -6,7 +6,7 @@ Ele é a fonte única de regras de trabalho; `CLAUDE.md` e `.github/copilot-inst
 ## 1. O projeto em poucas linhas
 
 - **-Tributo:** plataforma web para escritórios de contabilidade (obrigações, documentos, BPO financeiro, indicadores e consultivo). Projeto acadêmico (Programação Web II) com potencial comercial.
-- **Stack fixa:** PHP 8.2+ puro, MVC próprio, PDO, MariaDB 10.4 / MySQL 8, HTML + CSS + JS sem framework, sessões PHP, PHPUnit 11, PHPStan, Composer (só autoload e ferramentas de desenvolvimento). **Não introduza frameworks nem bibliotecas.**
+- **Stack fixa:** PHP 8.2+ puro, MVC próprio, PDO, MariaDB 10.4 / MySQL 8, HTML + CSS + JS sem framework, sessões PHP, PHPUnit 11, PHPStan, Composer (só autoload e ferramentas de desenvolvimento). **Não introduza frameworks (PHP ou de interface, como Bootstrap) nem bibliotecas novas.** Exceções aprovadas na ADR-024: a fonte Inter e os ícones SVG do Lucide, ambos hospedados no projeto. Qualquer outra biblioteca exige um novo ADR e nunca é carregada de CDN.
 - **Ambiente local:** XAMPP (Windows). Produção: hospedagem compartilhada.
 - Quem desenvolve é **estudante** e precisa entender e apresentar o código: prefira clareza a esperteza.
 
@@ -42,6 +42,7 @@ Ele é a fonte única de regras de trabalho; `CLAUDE.md` e `.github/copilot-inst
 - Domínio em português, infraestrutura com nomes técnicos (`Router`, `Kernel`). Banco: português, `snake_case`, sem acento.
 - Métodos curtos (≈ 30 linhas). Comentários explicam o **porquê**.
 - Sem JS inline (CSP). Tudo funciona sem JS.
+- **Interface (ADR-024):** use as variáveis e os componentes de `public/assets/css/app.css`; sem `style=` nem CSS avulso por tela; ícones só por `partials/icone.php` (decorativos com `aria-hidden`); o nome do produto é **-Tributo** (hífen inicial, sem exclamação) e vem de `partials/marca.php`.
 
 ## 5. Checklist de segurança (obrigatório em tarefas 🔒; desejável em todas)
 
@@ -109,7 +110,7 @@ Verifique e classifique cada problema como CRÍTICO, ALTO, MÉDIO ou BAIXO:
 5. Arquivos alterados fora do cartão? Contratos alterados?
 6. Complexidade desnecessária ou código difícil de explicar para uma estudante.
 Para cada problema: arquivo:linha, explicação, correção sugerida (só o trecho).
-Não reescreva arquivos inteiros. Não proponha bibliotecas ou frameworks.
+Não reescreva arquivos inteiros. Não proponha bibliotecas ou frameworks além dos aprovados na ADR-024.
 ```
 
 ## 10. Quando parar e perguntar
