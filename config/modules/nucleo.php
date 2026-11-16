@@ -10,7 +10,7 @@ use App\Core\Config;
 
 $rotas = [
     ['GET', '/', [InicioController::class, 'index'], []],
-    ['GET', '/painel', [LayoutTesteController::class, 'escritorio'], ['auth', 'perfil:ADMIN,COLABORADOR']],
+    // GET /painel e o item de menu "Painel" ficam em gestao.php (GE02).
     ['GET', '/login', [AuthController::class, 'mostrarLogin'], ['guest']],
     ['POST', '/login', [AuthController::class, 'entrar'], ['guest']],
     ['POST', '/logout', [AuthController::class, 'sair'], ['auth']],
@@ -29,8 +29,6 @@ if (Config::obter('app.env') === 'testing') {
 return [
     'contratavel' => null,
     'menu' => [
-        ['rotulo' => 'Painel', 'url' => '/painel', 'icone' => 'painel',
-            'perfis' => ['ADMIN', 'COLABORADOR'], 'ordem' => 10],
         ['rotulo' => 'Empresas', 'url' => '/empresas', 'icone' => 'empresa',
             'perfis' => ['ADMIN', 'COLABORADOR'], 'ordem' => 20],
         ['rotulo' => 'Obrigações', 'url' => '/obrigacoes', 'icone' => 'obrigacoes',
