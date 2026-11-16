@@ -33,7 +33,10 @@ $ordens = [
             <h1>Obrigações</h1>
             <p>Obrigações das empresas atendidas, com vencimento e responsável.</p>
         </div>
-        <a class="botao" href="<?= e(url('/obrigacoes/nova')) ?>">Cadastrar obrigação</a>
+        <a class="botao" href="<?= e(url('/obrigacoes/nova')) ?>">
+            <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+            Cadastrar obrigação
+        </a>
     </header>
 
     <form class="cartao formulario-filtros" method="get" action="<?= e(url('/obrigacoes')) ?>">
@@ -161,7 +164,13 @@ $ordens = [
                                 <?= e(data_br($texto('vencimento'))) ?>
                             <?php endif; ?>
                         </td>
-                        <td><?= e((string) ($rotulosStatus[$texto('status')] ?? $texto('status'))) ?></td>
+                        <td>
+                            <?php
+                            $seloRotulo = (string) ($rotulosStatus[$texto('status')] ?? $texto('status'));
+                            $seloTom = ['ENTREGUE' => 'sucesso', 'EM_ANDAMENTO' => 'info', 'AGUARDANDO_CLIENTE' => 'aviso'][$texto('status')] ?? 'neutro';
+                            require dirname(__DIR__, 2) . '/partials/status.php';
+                            ?>
+                        </td>
                         <td>
                             <?php if ($atrasada) : ?>
                                 <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada</span>
@@ -172,7 +181,12 @@ $ordens = [
                             <?php endif; ?>
                         </td>
                         <td><?= e($texto('responsavel_nome') !== '' ? $texto('responsavel_nome') : '—') ?></td>
-                        <td><a href="<?= e(url('/obrigacoes/' . $id)) ?>">Ver</a></td>
+                        <td>
+                            <a class="botao botao-secundario botao-compacto" href="<?= e(url('/obrigacoes/' . $id)) ?>">
+                                <?php $icone = 'ver'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                                Ver<span class="texto-acessivel"> <?= e($texto('tipo_nome')) ?> de <?= e($texto('empresa_nome')) ?></span>
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($resultado->itens === []) : ?>

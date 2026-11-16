@@ -9,10 +9,10 @@ use App\Core\UsuarioLogado;
  *
  * Variável do chamador: $usuarioAtual (UsuarioLogado). Sem usuário, nada é impresso.
  */
-$logado = ($usuarioAtual ?? null) instanceof UsuarioLogado ? $usuarioAtual : null;
-$nomeLogado = $logado?->nome ?? '';
+$logado = $usuarioAtual ?? null;
 $rotulosPerfil = ['ADMIN' => 'Administração', 'COLABORADOR' => 'Equipe', 'CLIENTE' => 'Cliente'];
-$perfilLogado = $logado !== null ? ($rotulosPerfil[$logado->perfil] ?? '') : '';
+$nomeLogado = $logado instanceof UsuarioLogado ? $logado->nome : '';
+$perfilLogado = $logado instanceof UsuarioLogado ? ($rotulosPerfil[$logado->perfil] ?? '') : '';
 
 $partesNome = preg_split('/\s+/u', trim($nomeLogado), -1, PREG_SPLIT_NO_EMPTY);
 $partesNome = is_array($partesNome) ? $partesNome : [];

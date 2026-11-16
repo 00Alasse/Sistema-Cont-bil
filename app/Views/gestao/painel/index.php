@@ -28,12 +28,12 @@ $numero = static function (array $item): string {
             <h1>Painel do escritório</h1>
             <p>Mostrando: <strong><?= e($escopos[$escopo] ?? $escopo) ?></strong></p>
         </div>
-        <nav aria-label="Escopo do painel">
+        <nav class="alternador" aria-label="Escopo do painel">
             <?php foreach ($escopos as $codigo => $rotulo) : ?>
                 <?php if ($codigo === $escopo) : ?>
-                    <span class="botao" aria-current="page"><?= e($rotulo) ?></span>
+                    <span aria-current="page"><?= e($rotulo) ?></span>
                 <?php else : ?>
-                    <a class="botao botao-secundario" href="<?= e(url('/painel', ['escopo' => $codigo])) ?>"><?= e($rotulo) ?></a>
+                    <a href="<?= e(url('/painel', ['escopo' => $codigo])) ?>"><?= e($rotulo) ?></a>
                 <?php endif; ?>
             <?php endforeach; ?>
         </nav>
@@ -47,44 +47,52 @@ $numero = static function (array $item): string {
     require dirname(__DIR__, 2) . '/partials/aviso-gerencial.php';
     ?>
 
-    <section class="cartao" aria-labelledby="titulo-obrigacoes">
+    <section class="painel-secao" aria-labelledby="titulo-obrigacoes">
         <h2 id="titulo-obrigacoes">Obrigações</h2>
-        <ul>
+        <ul class="indicadores">
             <?php foreach (['vence_hoje', 'vence_7d', 'atrasadas', 'entregues_mes'] as $chave) : ?>
                 <?php if (is_array($obrigacoes[$chave] ?? null)) : ?>
-                    <li><?= e((string) $obrigacoes[$chave]['rotulo']) ?>: <?= $numero($obrigacoes[$chave]) ?></li>
+                    <li class="indicador<?= $chave === 'atrasadas' ? ' indicador-perigo' : '' ?>">
+                        <span class="indicador-rotulo"><?= e((string) $obrigacoes[$chave]['rotulo']) ?></span>
+                        <?= $numero($obrigacoes[$chave]) ?>
+                    </li>
                 <?php endif; ?>
             <?php endforeach; ?>
             <?php if (is_array($obrigacoes['entregues_no_prazo'] ?? null) && is_array($obrigacoes['entregues_mes'] ?? null)) : ?>
-                <li>
-                    Entregues no prazo no mês: <?= $numero($obrigacoes['entregues_no_prazo']) ?>
-                    de <?= $numero($obrigacoes['entregues_mes']) ?>
-                    (<span class="indicador-percentual"><?= e($pontualidade === null ? '—' : $pontualidade . '%') ?></span>)
+                <li class="indicador">
+                    <span class="indicador-rotulo">Entregues no prazo</span>
+                    <?= $numero($obrigacoes['entregues_no_prazo']) ?>
+                    <span class="painel-nota">
+                        de <?= $numero($obrigacoes['entregues_mes']) ?> no mês
+                        (<span class="indicador-percentual"><?= e($pontualidade === null ? '—' : $pontualidade . '%') ?></span>)
+                    </span>
                 </li>
             <?php endif; ?>
         </ul>
     </section>
 
-    <section class="cartao" aria-labelledby="titulo-regularidade">
+    <section class="painel-secao" aria-labelledby="titulo-regularidade">
         <h2 id="titulo-regularidade">Índice de Regularidade</h2>
-        <ul>
+        <ul class="indicadores">
             <?php foreach ($rotulosSemaforo as $cor => $rotuloCor) : ?>
-                <li>
-                    <?php if ($cor === 'sem_historico') : ?>
-                        <?= e($rotuloCor) ?>
-                    <?php else : ?>
-                        <?php $nivel = $cor; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?>
-                    <?php endif; ?>
-                    : <span class="indicador-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) (int) ($semaforo[$cor] ?? 0)) ?></span>
+                <li class="indicador">
+                    <span class="indicador-rotulo">
+                        <?php if ($cor === 'sem_historico') : ?>
+                            <?= e($rotuloCor) ?>
+                        <?php else : ?>
+                            <?php $nivel = $cor; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?>
+                        <?php endif; ?>
+                    </span>
+                    <span class="indicador-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) (int) ($semaforo[$cor] ?? 0)) ?></span>
                 </li>
             <?php endforeach; ?>
         </ul>
 
         <h3>5 piores índices</h3>
         <?php if ($piores === []) : ?>
-            <p>Nenhuma empresa com histórico para comparar.</p>
+            <p class="painel-nota">Nenhuma empresa com histórico para comparar.</p>
         <?php else : ?>
-            <div class="tabela-responsiva">
+            <div class="cartao tabela-responsiva">
                 <table>
                     <thead>
                         <tr>
@@ -115,10 +123,10 @@ $numero = static function (array $item): string {
         <?php endif; ?>
     </section>
 
-    <section class="cartao" aria-labelledby="titulo-carga">
+    <section class="painel-secao" aria-labelledby="titulo-carga">
         <h2 id="titulo-carga">Carga por responsável</h2>
-        <p>Equipe inteira, em qualquer escopo.</p>
-        <div class="tabela-responsiva">
+        <p class="painel-nota">Equipe inteira, em qualquer escopo.</p>
+        <div class="cartao tabela-responsiva">
             <table>
                 <thead>
                     <tr>

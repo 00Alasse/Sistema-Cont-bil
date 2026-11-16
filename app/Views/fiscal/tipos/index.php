@@ -30,7 +30,10 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
             <p>Catálogo de obrigações acompanhadas pelo escritório.</p>
         </div>
         <?php if ($usuarioAdmin) : ?>
-            <a class="botao" href="<?= e(url('/tipos-obrigacao/novo')) ?>">Cadastrar tipo</a>
+            <a class="botao" href="<?= e(url('/tipos-obrigacao/novo')) ?>">
+                <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Cadastrar tipo
+            </a>
         <?php endif; ?>
     </header>
 
@@ -120,9 +123,20 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
                         <td><?= e($periodicidades[$texto('periodicidade')] ?? $texto('periodicidade')) ?></td>
                         <td><?= e($vencimento) ?></td>
                         <td><?= e($texto('total_empresas')) ?></td>
-                        <td><?= e($texto('ativo') === '1' ? 'Ativo' : 'Inativo') ?></td>
+                        <td>
+                            <?php
+                            $seloRotulo = $texto('ativo') === '1' ? 'Ativo' : 'Inativo';
+                            $seloTom = $texto('ativo') === '1' ? 'sucesso' : 'neutro';
+                            require dirname(__DIR__, 2) . '/partials/status.php';
+                            ?>
+                        </td>
                         <?php if ($usuarioAdmin) : ?>
-                            <td><a href="<?= e(url('/tipos-obrigacao/' . $id . '/editar')) ?>">Editar</a></td>
+                            <td>
+                                <a class="botao botao-secundario botao-compacto" href="<?= e(url('/tipos-obrigacao/' . $id . '/editar')) ?>">
+                                    <?php $icone = 'editar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                                    Editar<span class="texto-acessivel"> <?= e($texto('nome')) ?></span>
+                                </a>
+                            </td>
                         <?php endif; ?>
                     </tr>
                 <?php endforeach; ?>

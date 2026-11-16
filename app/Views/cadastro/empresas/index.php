@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Pagina;
+use App\Support\Cnpj;
 
 $resultado = $paginaEmpresas ?? null;
 $resultado = $resultado instanceof Pagina ? $resultado : new Pagina([], 0, 1, 20);
@@ -10,6 +11,7 @@ $filtros = is_array($filtros ?? null) ? $filtros : [];
 $responsaveis = is_array($responsaveis ?? null) ? $responsaveis : [];
 $filtrosAtivos = is_array($filtrosAtivos ?? null) ? $filtrosAtivos : [];
 $queryAtual = is_array($queryAtual ?? null) ? $queryAtual : [];
+$regimes = ['MEI' => 'MEI', 'SIMPLES_NACIONAL' => 'Simples Nacional', 'LUCRO_PRESUMIDO' => 'Lucro Presumido', 'LUCRO_REAL' => 'Lucro Real'];
 $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?? null)
     ? (string) $filtros[$campo]
     : '';
@@ -20,7 +22,10 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
             <h1>Empresas</h1>
             <p>Consulte e mantenha os cadastros do escritório.</p>
         </div>
-        <a class="botao" href="<?= e(url('/empresas/nova')) ?>">Cadastrar empresa</a>
+        <a class="botao" href="<?= e(url('/empresas/nova')) ?>">
+            <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+            Cadastrar empresa
+        </a>
     </header>
 
     <form class="cartao formulario-filtros" method="get" action="<?= e(url('/empresas')) ?>">
@@ -128,11 +133,22 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
                     ?>
                     <tr>
                         <th scope="row"><a href="<?= e(url('/empresas/' . $id)) ?>"><?= e($razaoSocial) ?></a></th>
-                        <td><?= e($cnpj) ?></td>
-                        <td><?= e($regime) ?></td>
+                        <td><?= e(Cnpj::formatar($cnpj)) ?></td>
+                        <td><?= e($regimes[$regime] ?? $regime) ?></td>
                         <td><?= e($responsavelNome) ?></td>
-                        <td><?= e($status === 'ATIVA' ? 'Ativa' : 'Inativa') ?></td>
-                        <td><a href="<?= e(url('/empresas/' . $id)) ?>">Ver</a></td>
+                        <td>
+                            <?php
+                            $seloRotulo = $status === 'ATIVA' ? 'Ativa' : 'Inativa';
+                            $seloTom = $status === 'ATIVA' ? 'sucesso' : 'neutro';
+                            require dirname(__DIR__, 2) . '/partials/status.php';
+                            ?>
+                        </td>
+                        <td>
+                            <a class="botao botao-secundario botao-compacto" href="<?= e(url('/empresas/' . $id)) ?>">
+                                <?php $icone = 'ver'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                                Ver<span class="texto-acessivel"> <?= e($razaoSocial) ?></span>
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($resultado->itens === []) : ?>

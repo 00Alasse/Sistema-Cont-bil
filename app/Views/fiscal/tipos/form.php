@@ -120,13 +120,17 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
     </form>
 
     <?php if ($emEdicao) : ?>
-        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/tipos-obrigacao/' . $tipoId . '/excluir')) ?>">
+        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/tipos-obrigacao/' . $tipoId . '/excluir')) ?>"
+              data-confirmar="Excluir este tipo? Os vínculos dele com empresas também serão removidos.">
             <?= csrf_campo() ?>
             <p>
                 Excluir este tipo? Os vínculos deste tipo com empresas também serão removidos.
                 Se já existirem obrigações deste tipo, a exclusão será bloqueada: nesse caso, inative o tipo.
             </p>
-            <button class="botao botao-perigo" type="submit">Excluir tipo</button>
+            <button class="botao botao-perigo" type="submit">
+                <?php $icone = 'excluir'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Excluir tipo
+            </button>
         </form>
     <?php endif; ?>
 </section>
