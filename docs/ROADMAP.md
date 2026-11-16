@@ -221,47 +221,47 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | F01 | Configuração por ambiente, PDO e relógio | M | ◆ | Fundação | T00 | ✅ |
 | F02 | CNPJ e Validator com erros por campo | M | ◆ | Fundação | F01 | ✅ |
 | F03 | Banco do núcleo, seeds e ferramenta `bin/db.php` | M | 🔒 | Fundação | F02 | ✅ |
-| F04 | Request, Response, Router e Container | M | ◆ | Fundação | F01 | 🟨 |
-| F05 | View, helpers, Kernel, carregador de módulos, páginas de erro | M | ◆ | Fundação | F04 | ⬜ |
-| F06 | Model base, paginação, filtros seguros e auditoria | M | 🔒 | Fundação | F03, F05 | ⬜ |
-| F07 | Sessão segura, CSRF e headers de segurança | M | 🔒 | Fundação | F05 | ⬜ |
-| F08 | Autenticação, bloqueio por tentativas e UsuarioLogado | M | 🔒 | Fundação | F06, F07 | ⬜ |
-| F09 | Middlewares de perfil e de módulo | M | 🔒 | Fundação | F08 | ⬜ |
-| F10 | Layouts, menu dinâmico, flash, partials, CSS e JS | M | ○ | Fundação | F09 | ⬜ |
-| C01 | CRUD de empresas | M | ◆ | Cadastro | F10 | ⬜ |
-| C02 | Usuários e "meu perfil" | S | 🔒 | Cadastro | C01 | ⬜ |
-| C03 | Página "Plano e módulos" | C | ○ | Cadastro | C02 | ⬜ |
-| FI01 | Schema, seeds e fábrica do fiscal | M | ◆ | Fiscal | C01 | ⬜ |
-| FI02 | Tipos de obrigação e vínculo com empresas | M | ○ | Fiscal | FI01 | ⬜ |
-| FI03 | CRUD de obrigações com filtros | M | ◆ | Fiscal | FI02 | ⬜ |
-| FI04 | Fluxo de status e histórico | M | ◆ | Fiscal | FI03 | ⬜ |
-| FI05 | Gerador de obrigações por competência | S | ◆ | Fiscal | FI04 | ⬜ |
-| FI06 | Calendário de vencimentos | C | ○ | Fiscal | FI03 | ⬜ |
-| DO01 | Schema e solicitações de documento | S | ◆ | Documentos | FI03 | ⬜ |
-| DO02 | Upload e download seguros | S | 🔒 | Documentos | DO01 | ⬜ |
-| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02, C02 | ⬜ |
-| GE01 | Índice de Regularidade | M | ◆ | Gestão | FI04, DO01* | ⬜ |
-| GE02 | Painel do escritório | M | ◆ | Gestão | GE01 | ⬜ |
-| GE03 | Visão geral 360º da empresa | S | ○ | Gestão | GE02 | ⬜ |
-| GE04 | Relatório mensal imprimível | S | ◆ | Gestão | GE03 (+FN05, CO02 se existirem) | ⬜ |
-| FN01 | Schema, seeds, Dinheiro e fábrica do financeiro | S | 🔒 | Financeiro | C01 | ⬜ |
-| FN02 | Categorias gerenciais e contas | S | ○ | Financeiro | FN01 | ⬜ |
-| FN03 | Lançamentos (a pagar e a receber) | S | ◆ | Financeiro | FN02 | ⬜ |
-| FN04 | Baixa, estorno e cancelamento | S | 🔒 | Financeiro | FN03 | ⬜ |
-| FN05 | Indicadores, fluxo de caixa e painel financeiro | S | ◆ | Financeiro | FN04 | ⬜ |
-| FN06 | Visão da carteira BPO | C | ○ | Financeiro | FN03 | ⬜ |
-| FN07 | Financeiro no portal do cliente | C | 🔒 | Financeiro | FN05, DO03 | ⬜ |
-| CO01 | Schema e acompanhamentos | S | ○ | Consultivo | C01 | ⬜ |
-| CO02 | Plano de ação | S | ◆ | Consultivo | CO01 | ⬜ |
-| CO03 | Radar de alertas e oportunidades | S | ◆ | Consultivo | CO02, GE01, FN05* | ⬜ |
-| CO04 | Radar da carteira | C | ○ | Consultivo | CO03 | ⬜ |
-| Q01 | Suíte de segurança consolidada | M | 🔒 | Qualidade | GE02 (+DO03 se existir) | ⬜ |
-| Q02 | Publicação em hospedagem | Cond. | ◆ | Qualidade | GE02 + hospedagem disponível | ⬜ |
-| Q03 | Roteiro e execução do teste com usuário real | M | ○ | Qualidade | Q01 (agendamento no D1) | ⬜ |
-| Q04 | Melhoria 1 vinda do teste | M | — | Qualidade | Q03 | ⬜ |
-| Q05 | Melhoria 2 vinda do teste | M | — | Qualidade | Q03 | ⬜ |
-| Q06 | Documentação final e ensaio da apresentação local | M | ○ | Qualidade | Q05 | ⬜ |
-| Q07 | Medição de cobertura (meta de 80%, objetivo secundário) | C | ○ | Qualidade | Q01 | ⬜ |
+| F04 | Request, Response, Router e Container | M | ◆ | Fundação | F01 | ✅ |
+| F05 | View, helpers, Kernel, carregador de módulos, páginas de erro | M | ◆ | Fundação | F04 | ✅ |
+| F06 | Model base, paginação, filtros seguros e auditoria | M | 🔒 | Fundação | F03, F05 | ✅ |
+| F07 | Sessão segura, CSRF e headers de segurança | M | 🔒 | Fundação | F05 | ✅ |
+| F08 | Autenticação, bloqueio por tentativas e UsuarioLogado | M | 🔒 | Fundação | F06, F07 | ✅ |
+| F09 | Middlewares de perfil e de módulo | M | 🔒 | Fundação | F08 | ✅ |
+| F10 | Layouts, menu dinâmico, flash, partials, CSS e JS | M | ○ | Fundação | F09 | ✅ |
+| C01 | CRUD de empresas | M | ◆ | Cadastro | F10 | ✅ |
+| C02 | Usuários e "meu perfil" | S | 🔒 | Cadastro | C01 | ⏭️ |
+| C03 | Página "Plano e módulos" | C | ○ | Cadastro | C02 | ⏭️ |
+| FI01 | Schema, seeds e fábrica do fiscal | M | ◆ | Fiscal | C01 | ✅ |
+| FI02 | Tipos de obrigação e vínculo com empresas | M | ○ | Fiscal | FI01 | ✅ |
+| FI03 | CRUD de obrigações com filtros | M | ◆ | Fiscal | FI02 | ✅ |
+| FI04 | Fluxo de status e histórico | M | ◆ | Fiscal | FI03 | ✅ |
+| FI05 | Gerador de obrigações por competência | S | ◆ | Fiscal | FI04 | ⏭️ |
+| FI06 | Calendário de vencimentos | C | ○ | Fiscal | FI03 | ⏭️ |
+| DO01 | Schema e solicitações de documento | S | ◆ | Documentos | FI03 | ⏭️ |
+| DO02 | Upload e download seguros | S | 🔒 | Documentos | DO01 | ⏭️ |
+| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02, C02 | ⏭️ |
+| GE01 | Índice de Regularidade | M | ◆ | Gestão | FI04, DO01* | ✅ |
+| GE02 | Painel do escritório | M | ◆ | Gestão | GE01 | ✅ |
+| GE03 | Visão geral 360º da empresa | S | ○ | Gestão | GE02 | ⏭️ |
+| GE04 | Relatório mensal imprimível | S | ◆ | Gestão | GE03 (+FN05, CO02 se existirem) | ⏭️ |
+| FN01 | Schema, seeds, Dinheiro e fábrica do financeiro | S | 🔒 | Financeiro | C01 | ⏭️ |
+| FN02 | Categorias gerenciais e contas | S | ○ | Financeiro | FN01 | ⏭️ |
+| FN03 | Lançamentos (a pagar e a receber) | S | ◆ | Financeiro | FN02 | ⏭️ |
+| FN04 | Baixa, estorno e cancelamento | S | 🔒 | Financeiro | FN03 | ⏭️ |
+| FN05 | Indicadores, fluxo de caixa e painel financeiro | S | ◆ | Financeiro | FN04 | ⏭️ |
+| FN06 | Visão da carteira BPO | C | ○ | Financeiro | FN03 | ⏭️ |
+| FN07 | Financeiro no portal do cliente | C | 🔒 | Financeiro | FN05, DO03 | ⏭️ |
+| CO01 | Schema e acompanhamentos | S | ○ | Consultivo | C01 | ⏭️ |
+| CO02 | Plano de ação | S | ◆ | Consultivo | CO01 | ⏭️ |
+| CO03 | Radar de alertas e oportunidades | S | ◆ | Consultivo | CO02, GE01, FN05* | ⏭️ |
+| CO04 | Radar da carteira | C | ○ | Consultivo | CO03 | ⏭️ |
+| Q01 | Suíte de segurança consolidada | M | 🔒 | Qualidade | GE02 (+DO03 se existir) | ✅ |
+| Q02 | Publicação em hospedagem | Cond. | ◆ | Qualidade | GE02 + hospedagem disponível | ⏭️ |
+| Q03 | Roteiro e execução do teste com usuário real | M | ○ | Qualidade | Q01 (agendamento no D1) | ✅ |
+| Q04 | Melhoria 1 vinda do teste | M | — | Qualidade | Q03 | ✅ |
+| Q05 | Melhoria 2 vinda do teste | M | — | Qualidade | Q03 | ✅ |
+| Q06 | Documentação final e ensaio da apresentação local | M | ○ | Qualidade | Q05 | ✅ |
+| Q07 | Medição de cobertura (meta de 80%, objetivo secundário) | C | ○ | Qualidade | Q01 | ⏭️ |
 
 \* Dependência opcional: a regra correspondente é omitida se o módulo não existir (ver o cartão).
 
