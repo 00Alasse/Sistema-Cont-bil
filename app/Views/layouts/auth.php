@@ -4,11 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#153e75">
     <title><?= e($titulo ?? 'Entrar') ?> - -Tributo!</title>
+    <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
 </head>
 <body>
-    <main>
-        <?= $conteudo ?? '' ?>
+    <main class="pagina">
+        <div class="cartao" style="max-width: 420px; margin: 3rem auto;">
+            <?= $conteudo ?? '' ?>
+        </div>
     </main>
 </body>
 </html>
