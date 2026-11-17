@@ -46,15 +46,6 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
                 </span>
             <?php endif; ?>
         </div>
-        <?php if ($nomeUsuario !== '') : ?>
-            <div class="usuario-atual">
-                <span class="usuario-nome" title="<?= e($nomeUsuario) ?>"><?= e($nomeUsuario) ?></span>
-                <form method="post" action="<?= e(url('/logout')) ?>" style="margin: 0;">
-                    <?= csrf_campo() ?>
-                    <button class="botao-sair" type="submit" title="Encerrar sessão">Sair</button>
-                </form>
-            </div>
-        <?php endif; ?>
     </header>
 
     <div class="estrutura-aplicacao">

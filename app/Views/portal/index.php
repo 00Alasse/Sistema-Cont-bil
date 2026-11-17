@@ -263,27 +263,27 @@ foreach ($documentos as $d) {
                                 $valorCentavos = $ob['valor_centavos'] ?? null;
                             ?>
                             <tr>
-                                <td>
+                                <td data-rotulo="Obrigação">
                                     <strong><?= e((string) $ob['tipo_nome']) ?></strong>
                                     <?php if (!empty($ob['observacao'])) : ?>
                                         <div style="font-size: 0.8rem; color: #64748b;"><?= e((string) $ob['observacao']) ?></div>
                                     <?php endif; ?>
                                 </td>
-                                <td><?= e((string) $ob['competencia']) ?></td>
-                                <td>
+                                <td data-rotulo="Competência"><?= e((string) $ob['competencia']) ?></td>
+                                <td data-rotulo="Vencimento">
                                     <strong><?= e(date('d/m/Y', strtotime($vencimento))) ?></strong>
                                     <?php if ($vencida) : ?>
                                         <br><span class="badge badge-perigo" style="font-size: 0.72rem;">Vencida</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-rotulo="Valor">
                                     <?php if ($valorCentavos !== null && is_numeric($valorCentavos)) : ?>
                                         <strong><?= e('R$ ' . number_format(((int) $valorCentavos) / 100, 2, ',', '.')) ?></strong>
                                     <?php else : ?>
                                         <span style="color: #94a3b8;">—</span>
                                     <?php endif; ?>
                                 </td>
-                                <td>
+                                <td data-rotulo="Situação">
                                     <?php if ($entregue) : ?>
                                         <span class="badge badge-sucesso">Entregue / Paga</span>
                                     <?php elseif ($vencida) : ?>

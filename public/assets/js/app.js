@@ -310,13 +310,14 @@ document.querySelectorAll("[data-preencher-login]").forEach((botao) => {
                 const tamanhoKb = Math.round(file.size / 1024);
                 if (nomeExibicao) {
                     nomeExibicao.textContent = `✓ ${file.name} (${tamanhoKb} KB selecionado)`;
-                    nomeExibicao.style.display = "block";
+                    nomeExibicao.style.display = "inline-block";
                 }
                 if (textoInstrucao) {
                     textoInstrucao.style.display = "none";
                 }
             } else {
                 if (nomeExibicao) {
+                    nomeExibicao.textContent = "";
                     nomeExibicao.style.display = "none";
                 }
                 if (textoInstrucao) {

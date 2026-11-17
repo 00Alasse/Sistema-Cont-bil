@@ -161,17 +161,17 @@ $numero = static function (array $item): string {
                     <tbody>
                         <?php foreach ($piores as $pior) : ?>
                             <tr class="linha-empresa-indice" data-semaforo-linha="<?= e((string) $pior['semaforo']) ?>">
-                                <th scope="row"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
-                                <td><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
-                                <td><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
-                                <td>
+                                <th scope="row" data-rotulo="Empresa"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
+                                <td data-rotulo="Índice"><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
+                                <td data-rotulo="Situação"><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
+                                <td data-rotulo="Motivos">
                                     <ul style="margin: 0; padding-left: 1.25rem;">
                                         <?php foreach ($pior['motivos'] as $motivo) : ?>
                                             <li><?= e((string) $motivo) ?></li>
                                         <?php endforeach; ?>
                                     </ul>
                                 </td>
-                                <td>
+                                <td data-rotulo="Recomendação">
                                     <?php if (!empty($pior['recomendacao'])) : ?>
                                         <p style="margin: 0 0 0.25rem;"><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
                                         <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>" class="botao botao-pequeno botao-secundario">Ver pendências</a>
