@@ -29,6 +29,16 @@ final class AuthController extends Controller
         $email = is_string($email) ? trim($email) : '';
         $senha = is_string($senha) ? $senha : '';
 
+        $atalhos = [
+            'contador' => 'contador@teste.com',
+            'empresario' => 'empresario@teste.com',
+            'admin' => 'admin@exemplo.test',
+        ];
+        $emailLower = mb_strtolower($email);
+        if (isset($atalhos[$emailLower])) {
+            $email = $atalhos[$emailLower];
+        }
+
         $erros = Validator::validar(
             ['email' => $email, 'senha' => $senha],
             [

@@ -16,6 +16,7 @@
     <main class="pagina-acesso">
         <?= $conteudo ?? '' ?>
     </main>
+    <script src="<?= e(url('/assets/js/app.js')) ?>" defer></script>
 </body>
 
 </html>

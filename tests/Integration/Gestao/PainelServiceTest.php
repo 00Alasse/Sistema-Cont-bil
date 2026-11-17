@@ -256,9 +256,9 @@ final class PainelServiceTest extends IntegrationTestCase
         self::assertSame('teste/cartao', $semModulo[0]['template']);
         self::assertSame(['escritorio' => $this->escritorioA], $semModulo[0]['dados']);
 
-        // Nenhum módulo real declara cartões ainda: a lista fica vazia, sem erro.
+        // O módulo real de documentos declara seu cartão no painel.
         $reais = (new Modulos(new Router()))->carregar();
-        self::assertSame([], $this->painel->cartoes($this->usuario($this->admin, 'ADMIN'), $reais));
+        self::assertSame(['Documentos dos Clientes'], array_column($this->painel->cartoes($this->usuario($this->admin, 'ADMIN'), $reais), 'titulo'));
     }
 
     public function testQuantidadeDeConsultasNaoCresceComEmpresasEResponsaveis(): void

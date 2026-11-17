@@ -17,10 +17,10 @@
     <form class="formulario" method="post" action="<?= e(url('/login')) ?>" novalidate>
         <?= csrf_campo() ?>
 
-        <div class="mb-3">
-            <label class="form-label" for="email">E-mail</label>
-            <input class="form-control" type="email" id="email" name="email" maxlength="150" autocomplete="username"
-                   value="<?= e((string) ($antigos['email'] ?? '')) ?>" required>
+        <div class="campo">
+            <label for="email">E-mail</label>
+            <input type="email" id="email" name="email" maxlength="150" autocomplete="username"
+                   value="<?= e((string) ($antigos['email'] ?? '')) ?>" placeholder="seu@email.com" required autofocus>
             <?= erro_campo($erros ?? [], 'email') ?>
         </div>
 

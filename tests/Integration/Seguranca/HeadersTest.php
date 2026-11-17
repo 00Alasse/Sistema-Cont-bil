@@ -99,13 +99,13 @@ final class HeadersTest extends E2ETestCase
         foreach (self::HEADERS as $nome => $valor) {
             self::assertSame([$valor], $resposta->headers[strtolower($nome)] ?? [], $nome . ' em ' . $onde);
         }
-        if ($resposta->status !== 302) {
+        if ($resposta->status !== 302 && !str_contains($onde, 'download')) {
             self::assertSame('text/html; charset=UTF-8', $resposta->header('Content-Type'), 'Content-Type em ' . $onde);
         }
     }
 
     /**
-     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int}
+     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int}
      */
     private function cenario(): array
     {
@@ -122,17 +122,22 @@ final class HeadersTest extends E2ETestCase
         $fiscal->criarVinculo($escritorio, $empresa, $tipo);
         $obrigacao = $fiscal->criarObrigacao($escritorio, $empresa, $tipo, $admin);
 
+        $stmt = $this->banco()->prepare("INSERT INTO solicitacoes_documentos (escritorio_id, empresa_id, titulo, prazo, status, criado_por) VALUES (:escritorio, :empresa, 'Doc Teste', CURRENT_DATE, 'aberta', :admin)");
+        $stmt->execute(['escritorio' => $escritorio, 'empresa' => $empresa, 'admin' => $admin]);
+        $solicitacao = (int) $this->banco()->lastInsertId();
+
         return [
             'escritorio' => $escritorio,
             'admin' => $admin,
             'empresas' => $empresa,
             'tipos-obrigacao' => $tipo,
             'obrigacoes' => $obrigacao,
+            'solicitacoes' => $solicitacao,
         ];
     }
 
     /**
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $cenario
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $cenario
      */
     private function caminho(string $padrao, array $cenario): string
     {
@@ -143,6 +148,7 @@ final class HeadersTest extends E2ETestCase
         $recurso = explode('/', ltrim($padrao, '/'))[0];
         $id = match ($recurso) {
             'empresas', 'tipos-obrigacao', 'obrigacoes' => $cenario[$recurso],
+            'solicitacoes', 'portal' => $cenario['solicitacoes'],
             default => self::fail('A rota ' . $padrao . ' recebe {id} de um recurso "' . $recurso . '" que este teste ainda não cria.'),
         };
 
