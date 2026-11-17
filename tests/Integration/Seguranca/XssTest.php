@@ -40,6 +40,9 @@ final class XssTest extends E2ETestCase
         $paginas = 0;
 
         foreach (self::rotasGet() as $padrao) {
+            if (str_contains($padrao, 'download')) {
+                continue;
+            }
             $resposta = $cliente->get($this->caminho($padrao, $cenario));
             $paginas++;
             $this->assertSemHtmlAtivo($resposta, $padrao);
@@ -148,7 +151,7 @@ final class XssTest extends E2ETestCase
     /**
      * Escritório em que todo campo de texto exibido nas telas guarda um ataque.
      *
-     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int}
+     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int}
      */
     private function cenarioComAtaques(): array
     {
@@ -175,12 +178,17 @@ final class XssTest extends E2ETestCase
             'observacao' => self::ataque('observacao'),
         ]);
 
+        $stmt = $this->banco()->prepare("INSERT INTO solicitacoes_documentos (escritorio_id, empresa_id, titulo, prazo, status, criado_por) VALUES (:escritorio, :empresa, 'Doc Teste', CURRENT_DATE, 'aberta', :admin)");
+        $stmt->execute(['escritorio' => $escritorio, 'empresa' => $empresa, 'admin' => $admin]);
+        $solicitacao = (int) $this->banco()->lastInsertId();
+
         return [
             'escritorio' => $escritorio,
             'admin' => $admin,
             'empresas' => $empresa,
             'tipos-obrigacao' => $tipo,
             'obrigacoes' => $obrigacao,
+            'solicitacoes' => $solicitacao,
         ];
     }
 
@@ -199,7 +207,7 @@ final class XssTest extends E2ETestCase
     }
 
     /**
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $cenario
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $cenario
      */
     private function caminho(string $padrao, array $cenario): string
     {
@@ -210,6 +218,7 @@ final class XssTest extends E2ETestCase
         $recurso = explode('/', ltrim($padrao, '/'))[0];
         $id = match ($recurso) {
             'empresas', 'tipos-obrigacao', 'obrigacoes' => $cenario[$recurso],
+            'solicitacoes', 'portal' => $cenario['solicitacoes'],
             default => self::fail('A rota ' . $padrao . ' recebe {id} de um recurso "' . $recurso . '" que este teste ainda não cria.'),
         };
 

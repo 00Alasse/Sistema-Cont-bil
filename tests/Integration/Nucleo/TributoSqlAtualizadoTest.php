@@ -107,6 +107,6 @@ final class TributoSqlAtualizadoTest extends IntegrationTestCase
 
     private function semDataDoCabecalho(string $sql): string
     {
-        return preg_replace('/^(-- Gerado em: )\d{4}-\d{2}-\d{2}$/m', '$1<DATA>', $sql) ?? $sql;
+        return preg_replace('/^(-- Gerado em: )\d{4}-\d{2}-\d{2}\r?$/m', '$1<DATA>', $sql) ?? $sql;
     }
 }

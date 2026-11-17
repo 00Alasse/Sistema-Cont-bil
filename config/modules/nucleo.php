@@ -35,8 +35,6 @@ return [
             'perfis' => ['ADMIN', 'COLABORADOR'], 'ordem' => 30],
         ['rotulo' => 'Usuários', 'url' => '/usuarios', 'icone' => 'usuarios',
             'perfis' => ['ADMIN'], 'ordem' => 40],
-        ['rotulo' => 'Portal do cliente', 'url' => '/portal', 'icone' => 'portal',
-            'perfis' => ['CLIENTE'], 'ordem' => 10],
     ],
     'abas_empresa' => [],
     'cartoes_painel' => [],

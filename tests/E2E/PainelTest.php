@@ -44,8 +44,8 @@ final class PainelTest extends E2ETestCase
         self::assertStringContainsString('href="' . $entregues . '&amp;situacao=entregue_no_prazo"', $resposta->corpo);
         self::assertStringContainsString('Carga por responsável', $resposta->corpo);
         self::assertStringContainsString('5 piores índices', $resposta->corpo);
-        // Sem o módulo de documentos (DO01), não há seção nem zeros fictícios.
-        self::assertStringNotContainsString('Documentos', $resposta->corpo);
+        // Com o módulo de documentos implementado, o link está presente no menu.
+        self::assertStringContainsString('Documentos', $resposta->corpo);
         // Um único "Painel" no menu, vindo de gestao.php.
         self::assertSame(1, preg_match_all('#<span class="menu-icone" aria-hidden="true">P</span>\s*Painel#', $resposta->corpo));
     }

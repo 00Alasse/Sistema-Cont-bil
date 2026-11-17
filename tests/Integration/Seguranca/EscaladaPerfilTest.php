@@ -23,7 +23,7 @@ final class EscaladaPerfilTest extends E2ETestCase
 {
     private const SENHA = 'Senha@123';
 
-    private const TABELAS = ['empresas', 'tipos_obrigacao', 'empresa_tipos_obrigacao', 'obrigacoes', 'logs_atividade'];
+    private const TABELAS = ['empresas', 'tipos_obrigacao', 'empresa_tipos_obrigacao', 'obrigacoes', 'logs_atividade', 'solicitacoes_documentos', 'avaliacoes'];
 
     /**
      * @return array<string, array{string, string}>
@@ -105,7 +105,7 @@ final class EscaladaPerfilTest extends E2ETestCase
     }
 
     /**
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $cenario
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $cenario
      */
     private function assertNegadoSemEfeito(ClienteHttp $cliente, string $metodo, string $padrao, array $cenario): void
     {
@@ -177,7 +177,7 @@ final class EscaladaPerfilTest extends E2ETestCase
 
     /**
      * @param array<string, mixed> $opcoesObrigacao
-     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int}
+     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int}
      */
     private function cenario(array $opcoesObrigacao = []): array
     {
@@ -194,17 +194,22 @@ final class EscaladaPerfilTest extends E2ETestCase
         $fiscal->criarVinculo($escritorio, $empresa, $tipo);
         $obrigacao = $fiscal->criarObrigacao($escritorio, $empresa, $tipo, $admin, $opcoesObrigacao);
 
+        $stmt = $this->banco()->prepare("INSERT INTO solicitacoes_documentos (escritorio_id, empresa_id, titulo, prazo, status, criado_por) VALUES (:escritorio, :empresa, 'Doc Teste', CURRENT_DATE, 'aberta', :admin)");
+        $stmt->execute(['escritorio' => $escritorio, 'empresa' => $empresa, 'admin' => $admin]);
+        $solicitacao = (int) $this->banco()->lastInsertId();
+
         return [
             'escritorio' => $escritorio,
             'admin' => $admin,
             'empresas' => $empresa,
             'tipos-obrigacao' => $tipo,
             'obrigacoes' => $obrigacao,
+            'solicitacoes' => $solicitacao,
         ];
     }
 
     /**
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $cenario
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $cenario
      */
     private function caminho(string $padrao, array $cenario): string
     {
@@ -215,6 +220,7 @@ final class EscaladaPerfilTest extends E2ETestCase
         $recurso = explode('/', ltrim($padrao, '/'))[0];
         $id = match ($recurso) {
             'empresas', 'tipos-obrigacao', 'obrigacoes' => $cenario[$recurso],
+            'solicitacoes', 'portal' => $cenario['solicitacoes'],
             default => self::fail('A rota ' . $padrao . ' recebe {id} de um recurso "' . $recurso . '" que este teste ainda não cria.'),
         };
 
