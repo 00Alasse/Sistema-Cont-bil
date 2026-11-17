@@ -1,13 +1,21 @@
 # Licenças de terceiros
 
-O -Tributo não usa bibliotecas de código de terceiros no navegador nem no servidor. Há apenas
-dois recursos visuais de terceiros, ambos **hospedados no próprio projeto** (nada é carregado de CDN)
+O -Tributo não usa bibliotecas de terceiros no servidor. No navegador há apenas os recursos
+visuais abaixo, todos **hospedados no próprio projeto** (nada é carregado de CDN)
 e aprovados na [ADR-024](DECISIONS.md). Qualquer outro item exige um novo ADR e entra nesta lista.
 
 | Recurso | Onde está | Origem | Licença |
 |---------|-----------|--------|---------|
 | Fonte **Inter** (variável, subconjunto latino, pesos 400 a 700) | `public/assets/fonts/inter-latin-variable.woff2` | https://github.com/rsms/inter, versão 4.1 | SIL Open Font License 1.1 |
+| **Bootstrap** 5.3.8 (CSS e JS, sem source maps) | `public/assets/vendor/bootstrap/` | https://getbootstrap.com, pacote npm `bootstrap@5.3.8` | MIT |
 | Ícones **Lucide** (22 desenhos) | `app/Views/partials/icone.php` | https://lucide.dev, versão 1.73.0 | ISC (parte dos desenhos, herdada do Feather, é MIT) |
+
+## Bootstrap
+
+Copyright (c) 2011-2025 The Bootstrap Authors. Licença MIT (texto integral em
+`public/assets/vendor/bootstrap/LICENSE-Bootstrap.txt`). Usado sem modificação: `bootstrap.min.css` e
+`bootstrap.bundle.min.js` (inclui o Popper). Só foi removida a linha de comentário `sourceMappingURL`, que
+apontava para arquivos de mapa não incluídos. Autorizado na revisão da [ADR-024](DECISIONS.md).
 
 ## Inter
 

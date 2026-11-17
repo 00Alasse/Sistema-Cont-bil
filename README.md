@@ -38,7 +38,7 @@ Visão completa do produto e do modelo comercial: [docs/PRODUCT.md](docs/PRODUCT
 |--------|------------|
 | Back-end | PHP 8.2+ (sem framework), arquitetura MVC, ponto único de entrada |
 | Banco de dados | MariaDB 10.4 (XAMPP) / MySQL 8, acesso via PDO com prepared statements |
-| Front-end | HTML5, CSS3 e JavaScript; CSS próprio, fonte Inter e ícones Lucide hospedados no projeto, sem frameworks de interface |
+| Front-end | HTML5, CSS3 e JavaScript; Bootstrap 5.3.8, fonte Inter e ícones Lucide hospedados no projeto (sem CDN), com identidade visual própria em CSS |
 | Autenticação | Sessões PHP, `password_hash` |
 | Qualidade | PHPUnit 11, PHPStan 2, `php -l` |
 | Dependências | Composer (só autoload e ferramentas de desenvolvimento) |
