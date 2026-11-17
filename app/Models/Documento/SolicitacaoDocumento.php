@@ -57,7 +57,9 @@ final class SolicitacaoDocumento extends Model
                      JOIN empresas e ON e.id = s.empresa_id AND e.escritorio_id = s.escritorio_id
                      WHERE {$where}";
         $stmtConta = $this->db->prepare($sqlConta);
-        $this->vincularParametrosConta($stmtConta, $params);
+        $paramsConta = $params;
+        unset($paramsConta['hoje']);
+        $this->vincularParametrosConta($stmtConta, $paramsConta);
         $stmtConta->execute();
         $total = (int) $stmtConta->fetchColumn();
 
