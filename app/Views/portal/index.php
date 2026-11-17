@@ -14,13 +14,21 @@ $statusLabels = [
     'aceita' => ['rotulo' => 'Recebido e conferido', 'badge' => 'badge-sucesso'],
     'recusada' => ['rotulo' => 'Recusado (reenvio necessário)', 'badge' => 'badge-perigo'],
 ];
+
+$regimeTexto = match ((string) ($empresa['regime_tributario'] ?? $empresa['regime'] ?? '')) {
+    'SIMPLES_NACIONAL' => 'Simples Nacional',
+    'MEI' => 'MEI',
+    'LUCRO_PRESUMIDO' => 'Lucro Presumido',
+    'LUCRO_REAL' => 'Lucro Real',
+    default => (string) ($empresa['regime_tributario'] ?? 'Simples Nacional'),
+};
 ?>
 <section class="pagina portal-cliente">
     <header class="pagina-cabecalho">
         <div>
             <h1>Portal da Empresa: <?= e((string) ($empresa['nome_fantasia'] ?: $empresa['razao_social'])) ?></h1>
             <p style="margin-top: 0.25rem; color: #64748b;">
-                CNPJ: <?= e(\App\Support\Cnpj::formatar((string) $empresa['cnpj'])) ?> • Regime: <?= e((string) ($empresa['regime_tributario'] ?? $empresa['regime'] ?? 'Simples Nacional')) ?>
+                CNPJ: <?= e(\App\Support\Cnpj::formatar((string) $empresa['cnpj'])) ?> • Regime: <?= e($regimeTexto) ?>
             </p>
         </div>
         <div>
