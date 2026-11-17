@@ -18,7 +18,7 @@ final class SolicitacaoDocumento extends Model
 
     private readonly Relogio $relogio;
 
-    public function __construct(?Relogio $relogio = null, ?PDO $db = null)
+    public function __construct(?RelogioSistema $relogio = null, ?PDO $db = null)
     {
         parent::__construct($db);
         $this->relogio = $relogio ?? new RelogioSistema();

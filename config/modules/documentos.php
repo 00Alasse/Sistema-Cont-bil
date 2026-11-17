@@ -17,7 +17,9 @@ return [
             'perfis' => ['CLIENTE'], 'ordem' => 10],
     ],
     'abas_empresa' => [],
-    'cartoes_painel' => [],
+    'cartoes_painel' => [
+        \App\Services\Documento\CartaoDocumentosPainel::class,
+    ],
     'rotas' => [
         // Rotas do Escritório (Contador / Colaborador)
         ['GET', '/solicitacoes', [SolicitacaoController::class, 'index'], $equipe],
