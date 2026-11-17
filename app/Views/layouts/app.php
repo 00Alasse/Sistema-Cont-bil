@@ -26,10 +26,17 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
 <body>
     <a class="pular-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>
     <header class="cabecalho">
-        <div class="cabecalho-marca-area" style="display: flex; align-items: center; gap: 0.6rem;">
+        <div class="cabecalho-marca-area">
+            <button id="botao-toggle-menu" class="botao-menu-toggle" type="button" aria-label="Minimizar ou expandir menu" aria-expanded="true" title="Minimizar/Maximizar menu">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
             <a class="marca" href="<?= e(url('/painel')) ?>">-Tributo!</a>
             <?php if ($perfilUsuario !== '') : ?>
-                <span style="font-size: 0.7rem; background: rgba(255,255,255,0.18); padding: 0.2rem 0.5rem; border-radius: 9999px; color: #e2e8f0; font-weight: 500;">
+                <span class="badge-perfil">
                     <?= $perfilUsuario === 'CLIENTE' ? 'Portal Cliente' : 'Escritório' ?>
                 </span>
             <?php endif; ?>
@@ -46,7 +53,12 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
     </header>
 
     <div class="estrutura-aplicacao">
-        <nav class="navegacao-principal" aria-label="Navegação principal">
+        <div id="menu-backdrop" class="menu-backdrop" aria-hidden="true"></div>
+        <nav class="navegacao-principal" id="sidebar-principal" aria-label="Navegação principal">
+            <div class="sidebar-topo-mobile">
+                <span class="sidebar-titulo-mobile">Navegação</span>
+                <button id="botao-fechar-menu-mobile" class="botao-fechar-mobile" type="button" aria-label="Fechar menu">✕</button>
+            </div>
             <ul>
                 <?php foreach ($itensMenu as $item) : ?>
                     <?php
@@ -54,9 +66,8 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
                         || ($item['url'] !== '/painel' && str_starts_with($caminhoAtual, $item['url']));
                     ?>
                     <li>
-                        <a href="<?= e(url($item['url'])) ?>" class="<?= $ehAtivo ? 'item-ativo' : '' ?>" <?= $ehAtivo ? 'aria-current="page"' : '' ?>>
-                            <span class="menu-icone" aria-hidden="true"><?= e(strtoupper(substr($item['icone'], 0, 1))) ?></span>
-                            <?= e($item['rotulo']) ?>
+                        <a href="<?= e(url($item['url'])) ?>" data-icone="<?= e($item['icone']) ?>" class="<?= $ehAtivo ? 'item-ativo' : '' ?>" <?= $ehAtivo ? 'aria-current="page"' : '' ?> title="<?= e($item['rotulo']) ?>">
+                            <span class="menu-icone" aria-hidden="true"><?= e(strtoupper(substr($item['icone'], 0, 1))) ?></span> <?= e($item['rotulo']) ?>
                         </a>
                     </li>
                 <?php endforeach; ?>
