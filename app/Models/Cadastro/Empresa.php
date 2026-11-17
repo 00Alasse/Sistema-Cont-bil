@@ -231,7 +231,7 @@ final class Empresa extends Model
     public function listarTodas(int $escritorioId): array
     {
         return $this->buscarTodos(
-            "SELECT id, razao_social, nome_fantasia, cnpj, regime, situacao FROM empresas
+            "SELECT id, razao_social, nome_fantasia, cnpj, regime_tributario, status FROM empresas
              WHERE escritorio_id = :escritorio_id
              ORDER BY razao_social ASC, id ASC",
             ['escritorio_id' => $escritorioId]

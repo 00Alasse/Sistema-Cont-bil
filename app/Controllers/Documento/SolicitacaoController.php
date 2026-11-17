@@ -79,7 +79,7 @@ final class SolicitacaoController extends Controller
         $erros = Validator::validar($dadosInput, [
             'empresa_id' => ['rotulo' => 'Empresa', 'regras' => 'obrigatorio|inteiro'],
             'titulo' => ['rotulo' => 'Título', 'regras' => 'obrigatorio|max:150'],
-            'prazo' => ['rotulo' => 'Prazo', 'regras' => 'obrigatorio|data_iso'],
+            'prazo' => ['rotulo' => 'Prazo', 'regras' => 'obrigatorio|data'],
         ]);
 
         $empresaId = (int) $dadosInput['empresa_id'];

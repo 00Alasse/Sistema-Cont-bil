@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+use App\Core\UsuarioLogado;
+
 $tituloPagina = is_string($titulo ?? null) ? $titulo : 'Portal do cliente';
 $usuarioAtual = $usuario ?? null;
 $nomeUsuario = $usuarioAtual instanceof UsuarioLogado ? $usuarioAtual->nome : '';
