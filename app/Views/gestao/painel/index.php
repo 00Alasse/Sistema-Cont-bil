@@ -116,21 +116,42 @@ $numero = static function (array $item): string {
         <h2 id="titulo-regularidade">Índice de Regularidade</h2>
         <p class="texto-mutado">Pontuação preventiva (0–100) baseada na adimplência fiscal das empresas.</p>
 
-        <div class="grid-semaforo">
+        <div class="grid-kpis grid-kpis-interativos" style="margin: 1rem 0;">
+            <?php
+            $configSemaforo = [
+                'verde' => [
+                    'icone' => '🟢',
+                    'classe' => 'kpi-sucesso',
+                    'titulo' => 'Regularidade em dia',
+                ],
+                'amarelo' => [
+                    'icone' => '🟡',
+                    'classe' => 'kpi-alerta',
+                    'titulo' => 'Atenção',
+                ],
+                'vermelho' => [
+                    'icone' => '🔴',
+                    'classe' => 'kpi-perigo',
+                    'titulo' => 'Pendência',
+                ],
+                'sem_historico' => [
+                    'icone' => '⚪',
+                    'classe' => '',
+                    'titulo' => 'Sem histórico',
+                ],
+            ];
+            ?>
             <?php foreach ($rotulosSemaforo as $cor => $rotuloCor) : ?>
-                <div class="card-semaforo card-semaforo-<?= e($cor) ?> card-semaforo-clicavel" role="button" tabindex="0" data-filtro-semaforo="<?= e($cor) ?>" title="Clique para filtrar empresas com situação <?= e($rotuloCor) ?>">
-                    <div class="semaforo-cabecalho">
-                        <?php if ($cor === 'sem_historico') : ?>
-                            <span style="display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 50%; background: #94a3b8;"></span>
-                            <?= e($rotuloCor) ?>
-                        <?php else : ?>
-                            <?php $nivel = $cor; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?>
-                            <?= e($rotuloCor) ?>
-                        <?php endif; ?>
-                    </div>
-                    <div class="semaforo-contagem">
-                        <span class="indicador-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) (int) ($semaforo[$cor] ?? 0)) ?></span>
-                        <span class="semaforo-legenda">empresas</span>
+                <?php
+                $cfg = $configSemaforo[$cor];
+                $qtd = (int) ($semaforo[$cor] ?? 0);
+                ?>
+                <div class="kpi-card <?= e($cfg['classe']) ?> card-semaforo-clicavel" role="button" tabindex="0" data-filtro-semaforo="<?= e($cor) ?>" title="Clique para filtrar empresas com situação <?= e($cfg['titulo']) ?>">
+                    <div class="kpi-icone"><?= $cfg['icone'] ?></div>
+                    <div class="kpi-dados">
+                        <span class="kpi-rotulo semaforo-cabecalho"><?= e($cfg['titulo']) ?></span>
+                        <span class="kpi-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) $qtd) ?></span>
+                        <span class="kpi-subtexto">empresas</span>
                     </div>
                 </div>
             <?php endforeach; ?>

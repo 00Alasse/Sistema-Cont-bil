@@ -11,7 +11,7 @@ $atrasadas = (int) ($dados['atrasadas'] ?? 0);
         <a class="botao botao-pequeno botao-secundario" href="<?= e(url('/solicitacoes/nova')) ?>">+ Nova Solicitação</a>
     </div>
 
-    <div class="grid-kpis" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 0;">
+    <div class="grid-kpis" style="margin-bottom: 0;">
         <!-- Aguardando conferência -->
         <div class="kpi-card kpi-info">
             <div class="kpi-icone">📥</div>
@@ -22,11 +22,7 @@ $atrasadas = (int) ($dados['atrasadas'] ?? 0);
                         <?= e((string) $aguardando) ?>
                     </a>
                 </span>
-                <?php if ($aguardando > 0) : ?>
-                    <span class="badge badge-info" style="align-self: flex-start; margin-top: 0.35rem;">Ação pendente</span>
-                <?php else : ?>
-                    <span class="kpi-subtexto">Nenhum documento aguardando</span>
-                <?php endif; ?>
+                <span class="kpi-subtexto"><?= $aguardando > 0 ? 'Ação pendente' : 'Nenhum documento aguardando' ?></span>
             </div>
         </div>
 
@@ -40,11 +36,7 @@ $atrasadas = (int) ($dados['atrasadas'] ?? 0);
                         <?= e((string) $atrasadas) ?>
                     </a>
                 </span>
-                <?php if ($atrasadas > 0) : ?>
-                    <span class="badge badge-perigo" style="align-self: flex-start; margin-top: 0.35rem;">Requer cobrança</span>
-                <?php else : ?>
-                    <span class="kpi-subtexto">Clientes em dia</span>
-                <?php endif; ?>
+                <span class="kpi-subtexto"><?= $atrasadas > 0 ? 'Requer cobrança' : 'Clientes em dia' ?></span>
             </div>
         </div>
     </div>

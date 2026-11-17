@@ -20,29 +20,32 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
     </header>
 
     <!-- Indicadores de Satisfação -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
-        <div class="cartao" style="text-align: center; padding: 1.5rem;">
-            <div style="font-size: 0.875rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Total de Avaliações</div>
-            <div style="font-size: 2.25rem; font-weight: 700; color: #1e293b; margin-top: 0.35rem;">
-                <?= e((string) $estatisticas['total']) ?>
+    <div class="grid-kpis" style="margin-bottom: 1.5rem;">
+        <div class="kpi-card">
+            <div class="kpi-icone">📋</div>
+            <div class="kpi-dados">
+                <span class="kpi-rotulo">Total de Avaliações</span>
+                <span class="kpi-valor"><?= e((string) $estatisticas['total']) ?></span>
+                <span class="kpi-subtexto">respostas registradas</span>
             </div>
-            <small style="color: #64748b;">respostas registradas</small>
         </div>
 
-        <div class="cartao" style="text-align: center; padding: 1.5rem;">
-            <div style="font-size: 0.875rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Média Geral</div>
-            <div style="font-size: 2.25rem; font-weight: 700; color: #eab308; margin-top: 0.35rem;">
-                <?= e(number_format((float) $estatisticas['media_nota'], 1, ',', '.')) ?> ⭐
+        <div class="kpi-card kpi-alerta">
+            <div class="kpi-icone">⭐</div>
+            <div class="kpi-dados">
+                <span class="kpi-rotulo">Média Geral</span>
+                <span class="kpi-valor" style="color: #d97706;"><?= e(number_format((float) $estatisticas['media_nota'], 1, ',', '.')) ?></span>
+                <span class="kpi-subtexto">escala de 1 a 5 estrelas</span>
             </div>
-            <small style="color: #64748b;">escala de 1 a 5 estrelas</small>
         </div>
 
-        <div class="cartao" style="text-align: center; padding: 1.5rem;">
-            <div style="font-size: 0.875rem; color: #64748b; font-weight: 600; text-transform: uppercase;">Facilidade de Uso</div>
-            <div style="font-size: 2.25rem; font-weight: 700; color: #16a34a; margin-top: 0.35rem;">
-                <?= e(number_format((float) $estatisticas['media_facilidade'], 1, ',', '.')) ?> / 5,0
+        <div class="kpi-card kpi-sucesso">
+            <div class="kpi-icone">👍</div>
+            <div class="kpi-dados">
+                <span class="kpi-rotulo">Facilidade de Uso</span>
+                <span class="kpi-valor" style="color: #16a34a;"><?= e(number_format((float) $estatisticas['media_facilidade'], 1, ',', '.')) ?></span>
+                <span class="kpi-subtexto">índice de usabilidade (até 5,0)</span>
             </div>
-            <small style="color: #64748b;">índice de usabilidade</small>
         </div>
     </div>
 
