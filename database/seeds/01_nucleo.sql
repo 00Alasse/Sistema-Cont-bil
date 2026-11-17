@@ -36,4 +36,6 @@ INSERT INTO empresas (
 INSERT INTO usuarios (id, escritorio_id, empresa_id, nome, email, senha_hash, perfil) VALUES
   (5, 1, 1, 'Cliente Padaria', 'cliente.padaria@exemplo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
   (6, 1, 2, 'Cliente Oficina', 'cliente.oficina@exemplo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
-  (7, 2, 13, 'Cliente Modelo', 'cliente@modelo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE');
+  (7, 2, 13, 'Cliente Modelo', 'cliente@modelo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
+  (8, 1, NULL, 'Contador Demonstração', 'contador@teste.com', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'ADMIN'),
+  (9, 1, 1, 'Empresário Demonstração', 'empresario@teste.com', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE');

@@ -30,26 +30,30 @@ final class IsolamentoRotasTest extends E2ETestCase
     private const TABELAS = ['empresas', 'tipos_obrigacao', 'empresa_tipos_obrigacao', 'obrigacoes', 'logs_atividade'];
 
     /**
-     * @return array<string, array{string, string}>
+     * @return array<string, array{string, string, list<string>}>
      */
     public static function rotasComId(): array
     {
         $casos = [];
-        foreach (self::tabelaDeRotas() as [$metodo, $padrao]) {
+        foreach (self::tabelaDeRotas() as [$metodo, $padrao, $middlewares]) {
             if (str_contains($padrao, '{')) {
-                $casos[$metodo . ' ' . $padrao] = [$metodo, $padrao];
+                $casos[$metodo . ' ' . $padrao] = [$metodo, $padrao, $middlewares];
             }
         }
 
         return $casos;
     }
 
+    /**
+     * @param list<string> $middlewares
+     */
     #[DataProvider('rotasComId')]
-    public function testRotaComIdDeOutroEscritorioResponde404(string $metodo, string $padrao): void
+    public function testRotaComIdDeOutroEscritorioResponde404(string $metodo, string $padrao, array $middlewares = []): void
     {
         $meu = $this->cenario();
         $outro = $this->cenario();
-        $cliente = $this->entrar($meu['admin']);
+        $ehRotaCliente = in_array('perfil:CLIENTE', $middlewares, true);
+        $cliente = $this->entrar($ehRotaCliente ? $meu['cliente'] : $meu['admin']);
         $estadoDoOutro = $this->estado($outro['escritorio']);
 
         $resposta = $this->chamar($cliente, $metodo, $this->caminho($padrao, $outro));
@@ -168,10 +172,10 @@ final class IsolamentoRotasTest extends E2ETestCase
     }
 
     /**
-     * Um escritório completo: ADMIN, empresa, tipo, vínculo e obrigação. As chaves de recurso
+     * Um escritório completo: ADMIN, CLIENTE, empresa, tipo, vínculo e obrigação. As chaves de recurso
      * são o primeiro trecho das rotas que recebem {id}.
      *
-     * @return array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int}
+     * @return array{escritorio: int, admin: int, cliente: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int}
      */
     private function cenario(): array
     {
@@ -184,23 +188,37 @@ final class IsolamentoRotasTest extends E2ETestCase
             Cnpj::gerarFicticio(random_int(1, 99_999_999)),
             'Empresa Q01 ' . bin2hex(random_bytes(4))
         );
+        $cliente = $cadastro->criarUsuario($escritorio, 'CLIENTE', $empresa);
         $tipo = $fiscal->criarTipo($escritorio);
         $fiscal->criarVinculo($escritorio, $empresa, $tipo);
         $obrigacao = $fiscal->criarObrigacao($escritorio, $empresa, $tipo, $admin);
 
+        $storageDir = dirname(__DIR__, 3) . '/storage/uploads';
+        if (!is_dir($storageDir)) {
+            @mkdir($storageDir, 0755, true);
+        }
+        $dummyFile = 'teste_isolamento_' . bin2hex(random_bytes(4)) . '.pdf';
+        file_put_contents($storageDir . '/' . $dummyFile, '%PDF-1.4 dummy');
+
+        $stmt = $this->banco()->prepare("INSERT INTO solicitacoes_documentos (escritorio_id, empresa_id, titulo, prazo, status, arquivo_path, arquivo_nome_original, criado_por) VALUES (:escritorio, :empresa, 'Doc Teste', CURRENT_DATE, 'enviada', :path, 'teste.pdf', :admin)");
+        $stmt->execute(['escritorio' => $escritorio, 'empresa' => $empresa, 'path' => $dummyFile, 'admin' => $admin]);
+        $solicitacao = (int) $this->banco()->lastInsertId();
+
         return [
             'escritorio' => $escritorio,
             'admin' => $admin,
+            'cliente' => $cliente,
             'empresas' => $empresa,
             'tipos-obrigacao' => $tipo,
             'obrigacoes' => $obrigacao,
+            'solicitacoes' => $solicitacao,
         ];
     }
 
     /**
      * Troca os nomes visíveis do outro escritório por uma marca única, procurada nas respostas.
      *
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $outro
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $outro
      */
     private function marcarOutroEscritorio(array $outro): string
     {
@@ -219,13 +237,14 @@ final class IsolamentoRotasTest extends E2ETestCase
     }
 
     /**
-     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int} $cenario
+     * @param array{escritorio: int, admin: int, empresas: int, tipos-obrigacao: int, obrigacoes: int, solicitacoes: int} $cenario
      */
     private function caminho(string $padrao, array $cenario): string
     {
         $recurso = explode('/', ltrim($padrao, '/'))[0];
         $id = match ($recurso) {
             'empresas', 'tipos-obrigacao', 'obrigacoes' => $cenario[$recurso],
+            'solicitacoes', 'portal' => $cenario['solicitacoes'],
             default => self::fail(
                 'A rota ' . $padrao . ' recebe {id}, mas este teste não sabe criar o recurso "' . $recurso
                 . '" em outro escritório. Acrescente-o ao cenário para manter a rota coberta.'

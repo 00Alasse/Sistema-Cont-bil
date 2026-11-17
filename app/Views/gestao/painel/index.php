@@ -12,6 +12,7 @@ $carga = is_array($painel['carga'] ?? null) ? $painel['carga'] : [];
 $pontualidade = is_int($painel['pontualidade'] ?? null) ? $painel['pontualidade'] : null;
 $escopos = ['meus' => 'Minhas obrigações e empresas', 'todos' => 'Todo o escritório'];
 $rotulosSemaforo = ['verde' => 'Em dia', 'amarelo' => 'Atenção', 'vermelho' => 'Pendência', 'sem_historico' => 'Sem histórico'];
+
 /** Número com link para a listagem já filtrada (ou só o número, quando não há filtro equivalente). */
 $numero = static function (array $item): string {
     $valor = (string) (int) ($item['valor'] ?? 0);
@@ -47,53 +48,106 @@ $numero = static function (array $item): string {
     require dirname(__DIR__, 2) . '/partials/aviso-gerencial.php';
     ?>
 
-    <section class="painel-secao" aria-labelledby="titulo-obrigacoes">
-        <h2 id="titulo-obrigacoes">Obrigações</h2>
-        <ul class="indicadores">
-            <?php foreach (['vence_hoje', 'vence_7d', 'atrasadas', 'entregues_mes'] as $chave) : ?>
-                <?php if (is_array($obrigacoes[$chave] ?? null)) : ?>
-                    <li class="indicador<?= $chave === 'atrasadas' ? ' indicador-perigo' : '' ?>">
-                        <span class="indicador-rotulo"><?= e((string) $obrigacoes[$chave]['rotulo']) ?></span>
-                        <?= $numero($obrigacoes[$chave]) ?>
-                    </li>
-                <?php endif; ?>
-            <?php endforeach; ?>
-            <?php if (is_array($obrigacoes['entregues_no_prazo'] ?? null) && is_array($obrigacoes['entregues_mes'] ?? null)) : ?>
-                <li class="indicador">
-                    <span class="indicador-rotulo">Entregues no prazo</span>
-                    <?= $numero($obrigacoes['entregues_no_prazo']) ?>
-                    <span class="painel-nota">
-                        de <?= $numero($obrigacoes['entregues_mes']) ?> no mês
-                        (<span class="indicador-percentual"><?= e($pontualidade === null ? '—' : $pontualidade . '%') ?></span>)
-                    </span>
-                </li>
-            <?php endif; ?>
-        </ul>
+    <!-- Métricas Rápidas de Obrigações -->
+    <section class="card card-body" aria-labelledby="titulo-obrigacoes">
+        <div class="cartao-cabecalho-flex">
+            <div>
+                <h2 id="titulo-obrigacoes" class="mb-1">Obrigações</h2>
+                <p class="texto-mutado mb-0">Monitoramento de prazos legais e cumprimento das rotinas fiscais.</p>
+            </div>
+            <a href="<?= e(url('/obrigacoes/nova')) ?>" class="btn btn-outline-secondary btn-sm">+ Nova Obrigação</a>
+        </div>
+
+        <div class="grid-kpis">
+            <!-- Atrasadas -->
+            <div class="kpi-card kpi-perigo">
+                <div class="kpi-icone">⚠️</div>
+                <div class="kpi-dados">
+                    <span class="kpi-rotulo">Atrasadas</span>
+                    <span class="kpi-valor"><?= is_array($obrigacoes['atrasadas'] ?? null) ? $numero($obrigacoes['atrasadas']) : '0' ?></span>
+                    <span class="kpi-subtexto">Requerem regularização imediata</span>
+                </div>
+            </div>
+
+            <!-- Vence Hoje -->
+            <div class="kpi-card kpi-alerta">
+                <div class="kpi-icone">🔔</div>
+                <div class="kpi-dados">
+                    <span class="kpi-rotulo">Vencem hoje</span>
+                    <span class="kpi-valor"><?= is_array($obrigacoes['vence_hoje'] ?? null) ? $numero($obrigacoes['vence_hoje']) : '0' ?></span>
+                    <span class="kpi-subtexto">Prioridade máxima no dia</span>
+                </div>
+            </div>
+
+            <!-- Vencem em 7 dias -->
+            <div class="kpi-card kpi-info">
+                <div class="kpi-icone">📅</div>
+                <div class="kpi-dados">
+                    <span class="kpi-rotulo">Vencem em 7 dias</span>
+                    <span class="kpi-valor"><?= is_array($obrigacoes['vence_7d'] ?? null) ? $numero($obrigacoes['vence_7d']) : '0' ?></span>
+                    <span class="kpi-subtexto">Próximos vencimentos</span>
+                </div>
+            </div>
+
+            <!-- Entregues no Mês -->
+            <div class="kpi-card kpi-sucesso">
+                <div class="kpi-icone">✅</div>
+                <div class="kpi-dados">
+                    <span class="kpi-rotulo">Entregues no mês</span>
+                    <span class="kpi-valor"><?= is_array($obrigacoes['entregues_mes'] ?? null) ? $numero($obrigacoes['entregues_mes']) : '0' ?></span>
+                    <?php if (is_array($obrigacoes['entregues_no_prazo'] ?? null) && is_array($obrigacoes['entregues_mes'] ?? null)) : ?>
+                        <span class="kpi-subtexto">
+                            <?= $numero($obrigacoes['entregues_no_prazo']) ?> no prazo
+                            (<strong class="indicador-percentual"><?= e($pontualidade === null ? '—' : $pontualidade . '%') ?></strong>)
+                        </span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
     </section>
 
-    <section class="painel-secao" aria-labelledby="titulo-regularidade">
+    <!-- Cartões Modulares (ex: Documentos dos Clientes) -->
+    <?php foreach ($cartoes as $cartao) : ?>
+        <?php require __DIR__ . '/_cartao-padrao.php'; ?>
+    <?php endforeach; ?>
+
+    <!-- Índice de Regularidade Fiscal -->
+    <section class="card card-body" aria-labelledby="titulo-regularidade">
         <h2 id="titulo-regularidade">Índice de Regularidade</h2>
-        <ul class="indicadores">
+        <p class="texto-mutado">Pontuação preventiva (0–100) baseada na adimplência fiscal das empresas.</p>
+
+        <div class="grid-semaforo">
             <?php foreach ($rotulosSemaforo as $cor => $rotuloCor) : ?>
-                <li class="indicador">
-                    <span class="indicador-rotulo">
+                <div class="card-semaforo card-semaforo-<?= e($cor) ?> card-semaforo-clicavel" role="button" tabindex="0" data-filtro-semaforo="<?= e($cor) ?>" title="Clique para filtrar empresas com situação <?= e($rotuloCor) ?>">
+                    <div class="semaforo-cabecalho">
                         <?php if ($cor === 'sem_historico') : ?>
+                            <span class="semaforo-ponto-neutro" aria-hidden="true"></span>
                             <?= e($rotuloCor) ?>
                         <?php else : ?>
                             <?php $nivel = $cor; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?>
                         <?php endif; ?>
-                    </span>
-                    <span class="indicador-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) (int) ($semaforo[$cor] ?? 0)) ?></span>
-                </li>
+                    </div>
+                    <div class="semaforo-contagem">
+                        <span class="indicador-valor" data-semaforo="<?= e($cor) ?>"><?= e((string) (int) ($semaforo[$cor] ?? 0)) ?></span>
+                        <span class="semaforo-legenda">empresas</span>
+                    </div>
+                </div>
             <?php endforeach; ?>
-        </ul>
+        </div>
 
-        <h3>5 piores índices</h3>
+        <div class="painel-titulo-linha">
+            <h3 class="mb-0">5 piores índices</h3>
+            <div id="barra-filtro-semaforo" class="barra-filtro-ativo filtro-oculto">
+                <span id="texto-filtro-semaforo"></span>
+                <button type="button" id="botao-limpar-filtro-semaforo" class="botao-limpar-filtro">✕ Ver todas</button>
+            </div>
+        </div>
+
         <?php if ($piores === []) : ?>
-            <p class="painel-nota">Nenhuma empresa com histórico para comparar.</p>
+            <p class="texto-mutado">Nenhuma empresa com histórico para comparar.</p>
         <?php else : ?>
-            <div class="card cartao-tabela"><div class="table-responsive">
-                <table class="table table-hover align-middle">
+            <div class="table-responsive">
+                <table id="tabela-piores-indices" class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th scope="col">Empresa</th>
@@ -105,21 +159,21 @@ $numero = static function (array $item): string {
                     </thead>
                     <tbody>
                         <?php foreach ($piores as $pior) : ?>
-                            <tr>
-                                <th scope="row"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
-                                <td><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></td>
-                                <td><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
-                                <td>
-                                    <ul>
+                            <tr class="linha-empresa-indice" data-semaforo-linha="<?= e((string) $pior['semaforo']) ?>">
+                                <th scope="row" data-rotulo="Empresa"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
+                                <td data-rotulo="Índice"><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
+                                <td data-rotulo="Situação"><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
+                                <td data-rotulo="Motivos">
+                                    <ul class="lista-motivos">
                                         <?php foreach ($pior['motivos'] as $motivo) : ?>
                                             <li><?= e((string) $motivo) ?></li>
                                         <?php endforeach; ?>
                                     </ul>
                                 </td>
-                                <td>
+                                <td data-rotulo="Recomendação">
                                     <?php if (!empty($pior['recomendacao'])) : ?>
-                                        <p><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
-                                        <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>">Ver pendências</a>
+                                        <p class="mb-1"><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
+                                        <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>" class="btn btn-outline-secondary btn-sm">Ver pendências</a>
                                     <?php else : ?>
                                         —
                                     <?php endif; ?>
@@ -128,15 +182,18 @@ $numero = static function (array $item): string {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-            </div>
+                <p id="aviso-sem-empresa-filtro" class="aviso-filtro-vazio filtro-oculto">
+                    Nenhuma empresa entre os 5 piores índices com esta situação.
+                </p>
             </div>
         <?php endif; ?>
     </section>
 
-    <section class="painel-secao" aria-labelledby="titulo-carga">
+    <!-- Carga por Responsável -->
+    <section class="card card-body" aria-labelledby="titulo-carga">
         <h2 id="titulo-carga">Carga por responsável</h2>
-        <p class="painel-nota">Equipe inteira, em qualquer escopo.</p>
-        <div class="card cartao-tabela"><div class="table-responsive">
+        <p class="texto-mutado">Distribuição de demandas na equipe (todo o escritório).</p>
+        <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
                     <tr>
@@ -159,10 +216,5 @@ $numero = static function (array $item): string {
                 </tbody>
             </table>
         </div>
-        </div>
     </section>
-
-    <?php foreach ($cartoes as $cartao) : ?>
-        <?php require __DIR__ . '/_cartao-padrao.php'; ?>
-    <?php endforeach; ?>
 </section>

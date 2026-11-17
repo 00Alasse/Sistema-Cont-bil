@@ -237,9 +237,10 @@ Regra: **uma tarefa só altera os arquivos do próprio cartão.** Arquivos de ou
 | FI04 | Fluxo de status e histórico | M | ◆ | Fiscal | FI03 | ✅ |
 | FI05 | Gerador de obrigações por competência | S | ◆ | Fiscal | FI04 | ⏭️ |
 | FI06 | Calendário de vencimentos | C | ○ | Fiscal | FI03 | ⏭️ |
-| DO01 | Schema e solicitações de documento | S | ◆ | Documentos | FI03 | ⏭️ |
-| DO02 | Upload e download seguros | S | 🔒 | Documentos | DO01 | ⏭️ |
-| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02, C02 | ⏭️ |
+| DO01 | Schema e solicitações de documento | S | ◆ | Documentos | FI03 | ✅ |
+| DO02 | Upload e download seguros | S | 🔒 | Documentos | DO01 | ✅ |
+| DO03 | Portal do cliente | S | 🔒 | Documentos | DO02, C02 | ✅ |
+| AV01 | Módulo de avaliação e satisfação | M | ○ | Gestão | F10 | ✅ |
 | GE01 | Índice de Regularidade | M | ◆ | Gestão | FI04, DO01* | ✅ |
 | GE02 | Painel do escritório | M | ◆ | Gestão | GE01 | ✅ |
 | GE03 | Visão geral 360º da empresa | S | ○ | Gestão | GE02 | ⏭️ |

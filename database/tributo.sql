@@ -1,8 +1,12 @@
 -- -Tributo! - SQL consolidado gerado; não editar à mão.
 
--- Gerado em: 2026-11-16
+-- Gerado em: 2026-11-17
 
 SET FOREIGN_KEY_CHECKS=0;
+
+DROP TABLE IF EXISTS `avaliacoes`;
+
+DROP TABLE IF EXISTS `solicitacoes_documentos`;
 
 DROP TABLE IF EXISTS `obrigacoes`;
 
@@ -211,6 +215,47 @@ CREATE TABLE obrigacoes (
   INDEX idx_obr_responsavel (escritorio_id, responsavel_id, status, vencimento)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Fonte: 03_documentos.sql
+
+CREATE TABLE solicitacoes_documentos (
+  id                    INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  escritorio_id         INT UNSIGNED NOT NULL,
+  empresa_id            INT UNSIGNED NOT NULL,
+  titulo                VARCHAR(150) NOT NULL,
+  descricao             TEXT         NULL,
+  prazo                 DATE         NOT NULL,
+  status                ENUM('aberta','enviada','aceita','recusada') NOT NULL DEFAULT 'aberta',
+  motivo_recusa         TEXT         NULL,
+  arquivo_path          VARCHAR(255) NULL,
+  arquivo_nome_original VARCHAR(255) NULL,
+  enviado_em            DATETIME     NULL,
+  criado_por            INT UNSIGNED NOT NULL,
+  criado_em             DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  atualizado_em         DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT uq_solic_tenant UNIQUE (id, escritorio_id),
+  CONSTRAINT fk_solic_escritorio FOREIGN KEY (escritorio_id) REFERENCES escritorios(id),
+  CONSTRAINT fk_solic_empresa FOREIGN KEY (empresa_id, escritorio_id) REFERENCES empresas(id, escritorio_id),
+  CONSTRAINT fk_solic_criador FOREIGN KEY (criado_por, escritorio_id) REFERENCES usuarios(id, escritorio_id),
+  INDEX idx_solic_empresa (escritorio_id, empresa_id, status, prazo),
+  INDEX idx_solic_status  (escritorio_id, status, prazo)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE avaliacoes (
+  id             INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  escritorio_id  INT UNSIGNED NOT NULL,
+  usuario_id     INT UNSIGNED NOT NULL,
+  nota           TINYINT UNSIGNED NOT NULL,
+  facilidade     TINYINT UNSIGNED NULL,
+  comentario     TEXT NULL,
+  criado_em      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT uq_aval_tenant UNIQUE (id, escritorio_id),
+  CONSTRAINT fk_aval_escritorio FOREIGN KEY (escritorio_id) REFERENCES escritorios(id),
+  CONSTRAINT fk_aval_usuario FOREIGN KEY (usuario_id, escritorio_id) REFERENCES usuarios(id, escritorio_id),
+  CONSTRAINT ck_aval_nota CHECK (nota BETWEEN 1 AND 5),
+  CONSTRAINT ck_aval_facilidade CHECK (facilidade IS NULL OR facilidade BETWEEN 1 AND 5),
+  INDEX idx_aval_lista (escritorio_id, criado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Fonte: 01_nucleo.sql
 
 -- Dados fictícios para demonstração; as senhas são armazenadas somente como hash.
@@ -251,7 +296,9 @@ INSERT INTO empresas (
 INSERT INTO usuarios (id, escritorio_id, empresa_id, nome, email, senha_hash, perfil) VALUES
   (5, 1, 1, 'Cliente Padaria', 'cliente.padaria@exemplo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
   (6, 1, 2, 'Cliente Oficina', 'cliente.oficina@exemplo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
-  (7, 2, 13, 'Cliente Modelo', 'cliente@modelo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE');
+  (7, 2, 13, 'Cliente Modelo', 'cliente@modelo.test', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE'),
+  (8, 1, NULL, 'Contador Demonstração', 'contador@teste.com', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'ADMIN'),
+  (9, 1, 1, 'Empresário Demonstração', 'empresario@teste.com', '$2y$10$DiuwXQ6pyLZPjwrlj1mIBuERNI9fo6Ckr183lpMoalfdWAvcy0yXu', 'CLIENTE');
 
 -- Fonte: 02_fiscal.sql
 
@@ -343,5 +390,32 @@ FROM (
     WHERE t.periodicidade = 'MENSAL'
   ) b
 ) x;
+
+-- Fonte: 03_documentos.sql
+
+-- Dados fictícios para o módulo de Solicitações de Documentos e Avaliações
+INSERT INTO solicitacoes_documentos (
+  id, escritorio_id, empresa_id, titulo, descricao, prazo, status,
+  motivo_recusa, arquivo_path, arquivo_nome_original, enviado_em, criado_por
+) VALUES
+  (1, 1, 1, 'Extrato Bancário - Caixa Econômica (Outubro)', 'Favor enviar o extrato completo em formato PDF ou OFX referente ao mês de Outubro.', DATE_SUB(CURRENT_DATE, INTERVAL 5 DAY), 'aberta', NULL, NULL, NULL, NULL, 1),
+  (2, 1, 1, 'Notas Fiscais de Entrada (Outubro)', 'Arquivos XML das notas fiscais de compra emitidas no mês de Outubro.', DATE_ADD(CURRENT_DATE, INTERVAL 3 DAY), 'aberta', NULL, NULL, NULL, NULL, 1),
+  (3, 1, 1, 'Comprovante de Pagamento do Simples', 'Enviar o comprovante de pagamento da guia DAS do mês anterior.', DATE_SUB(CURRENT_DATE, INTERVAL 2 DAY), 'enviada', NULL, 'comprovante_das_out.pdf', 'Comprovante_DAS_Outubro.pdf', DATE_SUB(NOW(), INTERVAL 1 DAY), 1),
+  (4, 1, 1, 'Folha de Ponto dos Colaboradores', 'Folhas de ponto assinadas de todos os colaboradores para fechamento da folha.', DATE_SUB(CURRENT_DATE, INTERVAL 10 DAY), 'aceita', NULL, 'folha_ponto_out.pdf', 'Folhas_Ponto_Outubro_Assinadas.pdf', DATE_SUB(NOW(), INTERVAL 8 DAY), 1),
+  (5, 1, 1, 'Comprovante de Energia Elétrica', 'Conta de energia do estabelecimento para dedução de custos.', DATE_SUB(CURRENT_DATE, INTERVAL 4 DAY), 'recusada', 'O arquivo enviado está ilegível. Favor enviar foto ou digitalização nítida.', 'conta_luz_out.jpg', 'Conta_Luz_Ilegivel.jpg', DATE_SUB(NOW(), INTERVAL 3 DAY), 1),
+  (6, 1, 2, 'Extrato Bancário - Itaú (Outubro)', 'Extrato de conta corrente da pessoa jurídica do mês de Outubro.', DATE_ADD(CURRENT_DATE, INTERVAL 5 DAY), 'aberta', NULL, NULL, NULL, NULL, 1),
+  (7, 1, 2, 'Relatório de Vendas com Cartão', 'Relatório de maquininha de cartão de crédito/débito.', DATE_SUB(CURRENT_DATE, INTERVAL 1 DAY), 'enviada', NULL, 'vendas_cartao_out.pdf', 'Relatorio_Maquininhas_Outubro.pdf', NOW(), 1),
+  (8, 1, 3, 'Contrato de Locação Renovado', 'Cópia digitalizada do termo aditivo de renovação do aluguel do imóvel.', DATE_ADD(CURRENT_DATE, INTERVAL 10 DAY), 'aberta', NULL, NULL, NULL, NULL, 1),
+  (9, 1, 4, 'Relatório Mensal de Faturamento MEI', 'Relatório com o somatório das vendas brutas com e sem nota fiscal.', DATE_SUB(CURRENT_DATE, INTERVAL 8 DAY), 'aceita', NULL, 'relatorio_mei_out.pdf', 'Faturamento_MEI_Outubro.pdf', DATE_SUB(NOW(), INTERVAL 6 DAY), 1),
+  (10, 1, 5, 'Inventário de Estoque Trimestral', 'Planilha ou relatório de inventário físico com valores de custo.', DATE_ADD(CURRENT_DATE, INTERVAL 15 DAY), 'aberta', NULL, NULL, NULL, NULL, 1),
+  (11, 1, 6, 'Comprovante de Despesas Médicas', 'Recibos e notas de compras de insumos para compensação.', DATE_SUB(CURRENT_DATE, INTERVAL 3 DAY), 'recusada', 'Faltou o carimbo do profissional emitente no recibo.', 'recibo_insumos.pdf', 'Recibos_Incompletos.pdf', DATE_SUB(NOW(), INTERVAL 2 DAY), 1),
+  (12, 1, 7, 'Extrato Bancário - Santander (Outubro)', 'Extrato mensal consolidado da Livraria.', DATE_ADD(CURRENT_DATE, INTERVAL 2 DAY), 'aberta', NULL, NULL, NULL, NULL, 1);
+
+-- Avaliações de satisfação e usabilidade
+INSERT INTO avaliacoes (id, escritorio_id, usuario_id, nota, facilidade, comentario, criado_em) VALUES
+  (1, 1, 5, 5, 5, 'Excelente plataforma! Ficou muito mais rápido enviar documentos e ver as guias sem precisar ficar caçando mensagem no WhatsApp.', DATE_SUB(NOW(), INTERVAL 3 DAY)),
+  (2, 1, 6, 5, 4, 'O semáforo de regularidade ajudou muito a entender o que estava pendente na oficina.', DATE_SUB(NOW(), INTERVAL 2 DAY)),
+  (3, 1, 2, 4, 5, 'Como colaboradora, o painel centralizado me economiza pelo menos 1 hora por dia de cobrança de clientes.', DATE_SUB(NOW(), INTERVAL 1 DAY)),
+  (4, 1, 9, 5, 5, 'Facilidade impressionante no celular. Em 2 minutos anexei o comprovante do Simples.', NOW());
 
 SET FOREIGN_KEY_CHECKS=1;

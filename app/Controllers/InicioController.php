@@ -12,6 +12,6 @@ final class InicioController extends Controller
 {
     public function index(Request $request): Response
     {
-        return $this->view('inicio/index', ['titulo' => 'Início'], 200, 'auth');
+        return $this->view('inicio/index', ['titulo' => 'Início', 'redirecionarPara' => url('/login')], 200, 'auth');
     }
 }

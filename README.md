@@ -63,14 +63,24 @@ O **-Tributo** resolve essa dor:
    - Classificação em semáforos: **Verde** (em dia), **Amarelo** (atenção), **Vermelho** (crítico) e **Sem Histórico**.
 6. **Painel do Escritório (GE02 e Q05):**
    - Resumo dinâmico de obrigações (vencem hoje, em 7 dias, atrasadas, entregues no mês e taxa de pontualidade).
+   - Cartão dedicado de **Documentos dos Clientes** com alertas de arquivos aguardando conferência e solicitações vencidas.
    - Semáforo consolidado da carteira ativa.
    - Tabela dos 5 piores índices com **diagnóstico rápido e recomendação de ação imediata/preventiva (Q05)** com link direto para as pendências.
    - Carga de trabalho de obrigações por responsável da equipe.
    - Alternância de escopo entre "Todo o escritório" e "Minhas obrigações e empresas".
-7. **Suíte Consolidada de Segurança (Q01):**
-   - Bateria completa de testes automatizados cobrindo isolamento entre tenants (ID de outro escritório retorna 404), CSRF (ausência de token retorna 419), XSS, injeção de SQL e escalada de privilégios.
-8. **Validação com Usuário Real (Q03):**
-   - Roteiro executado com contador autônomo em atividade (14 anos de experiência, 55 clientes), obtendo 100% de sucesso nas tarefas e notas 4.8 a 5.0 nos critérios de usabilidade e relevância (ver [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md)).
+7. **INOVAÇÃO — Pendências e Portal do Cliente:**
+   - O contador cria solicitações formais de documentos com prazo limite e orientações personalizadas.
+   - O empresário acessa pelo celular ou computador um portal responsivo e acolhedor (`/portal`), visualiza pendências em destaque e próximas guias a vencer.
+   - Envio seguro de arquivos pelo próprio portal (PDF, XML, JPG, PNG até 5 MB) com validação de tipo MIME real por `finfo`.
+   - Fluxo de conferência: o contador analisa e pode **Aceitar** ou **Recusar com motivo**, registrando histórico transparente para ambos. Substitui com excelência as cobranças perdidas no WhatsApp.
+8. **Módulo de Avaliação de Satisfação:**
+   - Coleta de nota geral (1 a 5 estrelas), facilidade de uso e comentários abertos dos usuários (contador e empresário).
+   - Painel analítico para a equipe contábil acompanhar a média de satisfação e ler feedbacks recebidos.
+9. **Suíte Consolidada de Segurança e Testes Automatizados:**
+   - 731 testes automatizados (Unitários, Integração e E2E) com 100% de sucesso.
+   - Bateria completa de testes cobrindo isolamento multi-tenant (HTTP 404 em ID de outro escritório), CSRF (HTTP 419 em ausência de token), sanitização XSS, injeção de SQL e controle estrito de perfis.
+10. **Validação com Usuário Real (Q03):**
+   - Roteiro executado com contador autônomo em atividade (14 anos de experiência, 55 clientes), obtendo 100% de sucesso nas tarefas e notas 4.8 a 5.0 nos critérios de usabilidade e relevância (ver [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) e [docs/RELATORIO.md](docs/RELATORIO.md)).
 
 ---
 
@@ -129,12 +139,13 @@ Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo see
 
 | E-mail | Perfil | Escritório / Empresa | Finalidade de Teste |
 |---|:---:|---|---|
-| `admin@exemplo.test` | **ADMIN** | Exemplo Contábil (ID 1) | Acesso total gerencial: cadastro de empresas, painel, obrigações, reabertura e exclusões |
+| **`contador@teste.com`** | **CONTADOR** (`ADMIN`) | Exemplo Contábil (ID 1) | **Usuário principal do escritório:** acesso a empresas, obrigações, painel, criação e conferência de solicitações de documentos e visualização de avaliações |
+| **`empresario@teste.com`** | **EMPRESÁRIO** (`CLIENTE`) | Padaria Alvorada Ltda | **Usuário principal do cliente:** acesso mobile/desktop ao portal da empresa, acompanhamento de guias fiscais, upload de documentos solicitados e tela de avaliação |
+| `admin@exemplo.test` | **ADMIN** | Exemplo Contábil (ID 1) | Usuário administrativo secundário para testes |
 | `ana@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional: visualização de suas obrigações ("meus"), baixa e filtros |
 | `bruno@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional secundário para testes de carga por responsável |
-| `cliente.padaria@exemplo.test` | **CLIENTE** | Padaria Alvorada Ltda | Acesso restrito ao perfil cliente (bloqueado nas rotas internas de gestão) |
-| `cliente.oficina@exemplo.test` | **CLIENTE** | Auto Mecânica Central | Acesso restrito ao perfil cliente |
-| `admin@modelo.test` | **ADMIN** | Escritório Modelo (ID 2) | **Teste de isolamento multi-tenant:** não vê nem acessa nenhuma empresa ou obrigação do Escritório 1 |
+| `cliente.oficina@exemplo.test` | **CLIENTE** | Auto Mecânica Central | Cliente secundário (outra empresa) |
+| `admin@modelo.test` | **ADMIN** | Escritório Modelo (ID 2) | **Teste de isolamento multi-tenant:** não vê nem acessa nenhuma empresa, obrigação ou documento do Escritório 1 |
 
 ---
 
@@ -222,6 +233,8 @@ tributo/
 
 ## 9. Documentação Complementar
 
+- [docs/RELATORIO.md](docs/RELATORIO.md) — Relatório acadêmico completo com problema, solução, diagrama ER Mermaid, medidas de segurança e aprendizados.
+- [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md) — Roteiro de 15 minutos para apresentação e defesa perante a banca.
 - [docs/ROADMAP.md](docs/ROADMAP.md) — Quadro de situação das tarefas e mapa de dependências.
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Contratos do núcleo, regras de negócio e fórmulas.
 - [docs/DATABASE.md](docs/DATABASE.md) — Modelo relacional, DDL e isolamento multi-tenant.
@@ -229,3 +242,15 @@ tributo/
 - [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) — Registro completo do teste com usuário real.
 - [docs/DECISIONS.md](docs/DECISIONS.md) — Registro de Decisões Arquiteturais (ADRs).
 - [AGENTS.md](AGENTS.md) — Regras invioláveis de desenvolvimento e convenções do projeto.
+
+---
+
+## 10. Roadmap Futuro (Fora do Escopo do MVP)
+
+As funcionalidades abaixo foram planejadas na visão de produto de longo prazo, mas deliberadamente mantidas fora do MVP para garantir máxima confiabilidade e entrega pontual da disciplina:
+
+- **BPO Financeiro:** Contas a pagar, contas a receber, conciliação e fluxo de caixa operacional.
+- **Módulo Consultivo:** Análise preditiva de enquadramento tributário e simulações de transição de regime.
+- **Disparos Automáticos:** Notificações ativas por E-mail e WhatsApp via webhook/API oficial.
+- **Integrações Externas:** Conexão direta com Web Services da Receita Federal, SEFAZ estaduais e bancos via Open Finance.
+- **Cálculo de Tributos:** Geração e apuração automática de valores de impostos (a plataforma atua como controle gerencial e administrativo de prazos).
