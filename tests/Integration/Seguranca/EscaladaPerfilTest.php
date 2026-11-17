@@ -172,6 +172,9 @@ final class EscaladaPerfilTest extends E2ETestCase
             'vencimento' => '2026-08-20',
             'status' => 'ENTREGUE',
             'versao' => '1',
+            'nota' => '5',
+            'facilidade' => '5',
+            'comentario' => 'Muito bom',
         ];
     }
 

@@ -154,6 +154,9 @@ final class CsrfRotasTest extends E2ETestCase
             'titulo' => 'Doc Teste CSRF',
             'prazo' => '2026-12-31',
             'motivo_recusa' => 'Motivo teste',
+            'nota' => '5',
+            'facilidade' => '5',
+            'comentario' => 'Muito bom',
         ];
     }
 
