@@ -20,6 +20,22 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
     <meta name="theme-color" content="#153e75">
     <title><?= e($tituloPagina) ?> - -Tributo!</title>
+    <style>
+        .menu-icone { font-size: 0 !important; color: transparent !important; }
+        html.sidebar-colapsada .estrutura-aplicacao,
+        body.sidebar-colapsada .estrutura-aplicacao { grid-template-columns: 4.8rem minmax(0, 1fr); }
+        html.sidebar-colapsada .navegacao-principal a,
+        body.sidebar-colapsada .navegacao-principal a { font-size: 0 !important; justify-content: center; }
+    </style>
+    <script>
+        (function() {
+            try {
+                if (localStorage.getItem('tributo_sidebar_colapsada') === '1' && window.innerWidth > 768) {
+                    document.documentElement.classList.add('sidebar-colapsada');
+                }
+            } catch(e) {}
+        })();
+    </script>
     <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
     <script src="<?= e(url('/assets/js/app.js')) ?>" defer></script>
 </head>
