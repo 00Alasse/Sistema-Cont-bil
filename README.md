@@ -2,9 +2,10 @@
 
 Plataforma web para **escritórios de contabilidade e seus clientes**. Centraliza o controle de obrigações fiscais, monitoramento de prazos, indicadores gerenciais e regularidade fiscal da carteira.
 
-> **Situação da entrega (MVP):** **Concluído e Validado (Núcleo M 100%)**.
-> Todas as tarefas do núcleo obrigatório (**T00**, **F01–F10**, **C01**, **FI01–FI04**, **GE01**, **GE02**, **Q01**, **Q03**, **Q04**, **Q05**, **Q06**) estão implementadas, testadas e auditadas com 100% de sucesso.
-> Detalhes do andamento e próximos módulos em [docs/ROADMAP.md](docs/ROADMAP.md).
+> **Situação da entrega (MVP):** funcional no ambiente local para os perfis de contador e empresário, **com pendências conhecidas**.
+> - **Testes automatizados:** 774 na suíte completa, com **768 aprovados e 6 falhas conhecidas**, todas de identidade visual (ver [seção 3, item 9](#3-funcionalidades-implementadas-no-mvp)).
+> - **Teste com usuário real (Q03): ainda não realizado.** Há apenas o roteiro em [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md); nenhum resultado foi coletado.
+> - Detalhes do andamento e próximos módulos em [docs/ROADMAP.md](docs/ROADMAP.md).
 
 Projeto acadêmico da disciplina **Programação Web II**, desenvolvido como produto SaaS comercializável.
 
@@ -56,12 +57,13 @@ O **-Tributo** resolve essa dor:
    - Gestão de obrigações por competência (AAAA-MM) e vencimento.
    - Ciclo de vida completo: `PENDENTE`, `EM_ANDAMENTO`, `AGUARDANDO_CLIENTE`, `ENTREGUE`, `DISPENSADA`.
    - Auditoria e histórico cronológico detalhado com responsável e data/hora.
-4. **Melhoria vinda do Teste com Usuário (Q04):**
+4. **Melhoria de usabilidade (Q04):**
+   - *Ainda não validada com usuário real (o teste Q03 não foi realizado).*
    - Identificação e badge visual explícito de **Atraso Crítico (> 30 dias)** na listagem e na página de detalhes da obrigação, prevenindo multas e bloqueio de certidões.
 5. **Índice de Regularidade (GE01):**
    - Fórmula ponderada determinística calculada sob demanda com relógio injetável.
    - Classificação em semáforos: **Verde** (em dia), **Amarelo** (atenção), **Vermelho** (crítico) e **Sem Histórico**.
-6. **Painel do Escritório (GE02 e Q05):**
+6. **Painel do Escritório (GE02 e melhoria Q05, esta ainda não validada com usuário real):**
    - Resumo dinâmico de obrigações (vencem hoje, em 7 dias, atrasadas, entregues no mês e taxa de pontualidade).
    - Cartão dedicado de **Documentos dos Clientes** com alertas de arquivos aguardando conferência e solicitações vencidas.
    - Semáforo consolidado da carteira ativa.
@@ -76,11 +78,23 @@ O **-Tributo** resolve essa dor:
 8. **Módulo de Avaliação de Satisfação:**
    - Coleta de nota geral (1 a 5 estrelas), facilidade de uso e comentários abertos dos usuários (contador e empresário).
    - Painel analítico para a equipe contábil acompanhar a média de satisfação e ler feedbacks recebidos.
-9. **Suíte Consolidada de Segurança e Testes Automatizados:**
-   - 731 testes automatizados (Unitários, Integração e E2E) com 100% de sucesso.
-   - Bateria completa de testes cobrindo isolamento multi-tenant (HTTP 404 em ID de outro escritório), CSRF (HTTP 419 em ausência de token), sanitização XSS, injeção de SQL e controle estrito de perfis.
-10. **Validação com Usuário Real (Q03):**
-   - Roteiro executado com contador autônomo em atividade (14 anos de experiência, 55 clientes), obtendo 100% de sucesso nas tarefas e notas 4.8 a 5.0 nos critérios de usabilidade e relevância (ver [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) e [docs/RELATORIO.md](docs/RELATORIO.md)).
+9. **Suíte Consolidada de Segurança e Testes Automatizados** (resultado da última execução, branch `fix/funcionalidade-local`):
+
+   | Verificação | Resultado |
+   |---|---|
+   | Suíte completa (`composer test`) | **774 testes: 768 aprovados, 6 com falha** |
+   | Unitários | 387 testes, 1 falha |
+   | Integração | **282 testes, todos aprovados** |
+   | E2E | 105 testes, 5 falhas |
+   | PHPStan (`composer analyse`) | Sem erros |
+   | Lint (`composer lint`) | Sem erros em 204 arquivos |
+
+   - **Falhas conhecidas (6), todas de identidade visual, não de funcionalidade:** `KernelTest::testRotaInicialProvisoriaPassaPeloKernel`, quatro testes de `InterfaceTest` e `PainelTest::testAdminVePainelComEscopoTodosPorPadrao`. Eles esperam o padrão visual da ADR-024 (nome "-Tributo" sem exclamação, Bootstrap e o markup do menu lateral), e as telas ainda usam a versão anterior. A reconciliação visual está pendente.
+   - Os testes cobrem isolamento multi-tenant (HTTP 404 em ID de outro escritório), CSRF (HTTP 419 em ausência de token), escape de saída contra XSS, prepared statements contra injeção de SQL, controle de perfis e autenticação (apenas a senha cadastrada é aceita, sem espaços removidos nem senhas alternativas).
+   - Ainda **não há testes HTTP automatizados** para o fluxo de solicitações de documentos e o portal do cliente (há testes de model e de upload); esse fluxo foi verificado manualmente por HTTP no ambiente local.
+10. **Validação com Usuário Real (Q03): pendente.**
+   - O teste com usuário real **ainda não foi realizado**. Não existem tempos, notas nem depoimentos coletados.
+   - O roteiro, os campos de registro e os critérios de observação estão em [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md), para serem preenchidos após a sessão.
 
 ---
 
@@ -110,32 +124,38 @@ O **-Tributo** resolve essa dor:
    ```bash
    copy .env.example .env
    ```
-   *Se a aplicação rodar em subpasta do Apache, verifique se `APP_BASE_PATH=/tributo` está configurado no `.env`.*
+   O modelo vem configurado para o **Apache do XAMPP em `htdocs/tributo`**:
+   `APP_URL=http://localhost/tributo` e `APP_BASE_PATH=/tributo`. O banco usa `DB_USERNAME=root` e `DB_PASSWORD` vazio (padrão do XAMPP); ajuste se o seu MariaDB tiver senha.
+   `APP_URL` e `APP_BASE_PATH` precisam combinar com a forma como você acessa o sistema (ver o passo 6): todos os links e redirecionamentos usam `APP_BASE_PATH` como prefixo.
 
-4. Crie e popule os bancos de dados local e de testes com dados de demonstração:
+4. Crie e popule os bancos de dados local e de testes com dados de demonstração (o MariaDB do XAMPP precisa estar ligado):
    ```bash
    php bin/db.php rebuild
    php bin/db.php rebuild --test
    ```
+   > O `rebuild` **apaga e recria** os bancos `tributo` e `tributo_test`. Ele serve para o ambiente local e não roda com `APP_ENV=production`. Rode-o também depois de atualizar o código, caso o schema tenha mudado (por exemplo, para criar as tabelas de documentos e avaliações).
 
 5. Verifique a integridade do código e dos testes:
    ```bash
    composer check
    ```
+   Na versão atual, o lint e o PHPStan passam sem erros, mas a suíte de testes termina com **6 falhas conhecidas de identidade visual** (ver [seção 3, item 9](#3-funcionalidades-implementadas-no-mvp)), portanto o `composer check` completo ainda não termina em verde. Os testes de integração (`composer test:integration`) passam por inteiro.
 
-6. Acesse a plataforma no navegador:
-   - Pelo Apache do XAMPP: <http://localhost/tributo/public/>
-   - Ou pelo servidor embutido do PHP:
+6. Acesse a plataforma no navegador, de **uma** das duas formas:
+   - **Apache do XAMPP** (com `.env` como no modelo): <http://localhost/tributo/>. O `.htaccess` da raiz encaminha as requisições para `public/` e exige o `mod_rewrite` ativo. **Não use** `/tributo/public/`: com `APP_BASE_PATH=/tributo` esse endereço não casa com as rotas.
+   - **Servidor embutido do PHP** (sem Apache): ajuste o `.env` para `APP_URL=http://localhost:8000` e `APP_BASE_PATH=` (vazio) e rode:
      ```bash
-     php -S localhost:8000 -t public
+     php -S localhost:8000 -t public public/index.php
      ```
-     e acesse <http://localhost:8000/>.
+     e acesse <http://localhost:8000/>. Com `APP_BASE_PATH=/tributo` neste modo, os links gerados apontam para um prefixo inexistente.
+
+   > O fluxo local foi verificado com o servidor embutido do PHP e o MariaDB do XAMPP. O acesso pelo Apache em `htdocs/tributo` segue a configuração do modelo, mas não foi reverificado na última atualização desta documentação.
 
 ---
 
 ## 5. Usuários de Teste (Dados de Demonstração)
 
-Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo seed e possuem a senha padrão: **`Senha@123`**.
+Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo seed e possuem a mesma senha: **`Senha@123`**. Essa é a **única** senha aceita: o login compara a senha exatamente como foi digitada (maiúsculas, minúsculas e espaços contam) e não existem senhas alternativas. Depois de 5 tentativas inválidas, a conta fica bloqueada por 15 minutos.
 
 | E-mail | Perfil | Escritório / Empresa | Finalidade de Teste |
 |---|:---:|---|---|
@@ -144,8 +164,12 @@ Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo see
 | `admin@exemplo.test` | **ADMIN** | Exemplo Contábil (ID 1) | Usuário administrativo secundário para testes |
 | `ana@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional: visualização de suas obrigações ("meus"), baixa e filtros |
 | `bruno@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional secundário para testes de carga por responsável |
+| `cliente.padaria@exemplo.test` | **CLIENTE** | Padaria Alvorada Ltda | Segundo acesso da mesma empresa do `empresario@teste.com` |
 | `cliente.oficina@exemplo.test` | **CLIENTE** | Auto Mecânica Central | Cliente secundário (outra empresa) |
+| `cliente@modelo.test` | **CLIENTE** | Escritório Modelo (ID 2) | Cliente do segundo escritório, para o teste de isolamento |
 | `admin@modelo.test` | **ADMIN** | Escritório Modelo (ID 2) | **Teste de isolamento multi-tenant:** não vê nem acessa nenhuma empresa, obrigação ou documento do Escritório 1 |
+
+Os 9 usuários acima foram conferidos com login real (todos entram com `Senha@123`): perfis ADMIN e COLABORADOR vão para `/painel`, e perfis CLIENTE vão para `/portal`.
 
 ---
 
@@ -158,57 +182,33 @@ Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo see
 | `composer analyse` | Análise estática com PHPStan (nível rigoroso com tipos declarados) |
 | `composer test` | Execução completa de todos os testes (Unitários, Integração e E2E) |
 | `composer test:unit` | Execução rápida exclusiva dos testes unitários |
+| `composer test:integration` | Testes de integração com o banco `tributo_test` (282 testes, todos aprovados) |
 | `php bin/db.php rebuild` | Recria o banco `tributo` com schema DDL e seeds de demonstração |
 | `php bin/db.php rebuild --test` | Recria o banco `tributo_test` para a suíte de testes de integração e E2E |
 | `php bin/db.php build` | Regenera o arquivo consolidado `database/tributo.sql` a partir dos módulos |
 
 ---
 
-## 7. Roteiro de Apresentação (10 Minutos)
+## 7. Roteiro de Apresentação (15 Minutos)
 
-Para bancas acadêmicas ou demonstrações executivas, siga este roteiro de 10 minutos baseado no ambiente local:
+Para a banca, siga o roteiro de 15 minutos abaixo, com o ambiente local já preparado (`php bin/db.php rebuild`, MariaDB ligado e sistema acessível). A versão detalhada, passo a passo, está em [docs/ROTEIRO_DEMO.md](docs/ROTEIRO_DEMO.md).
 
-### Minuto 01–02: Introdução e Contextualização
-- Apresentar o problema: escritórios contábeis perdem prazos fiscais por dependerem de planilhas manuais.
-- Apresentar o **-Tributo** como ferramenta de governança administrativa e regularidade.
-- Destacar os princípios de design: PHP 8.2 puro, sem dependência de terceiros, foco em clareza pedagógica e arquitetura MVC profissional.
+| Bloco | Tempo | Conteúdo |
+|---|:---:|---|
+| 1. Introdução e problema | 2 min | Dor dos escritórios: perda de prazos, planilhas e cobrança de documentos pelo WhatsApp |
+| 2. Visão do contador | 5 min | Painel, Índice de Regularidade, obrigações, status e criação de solicitação de documento |
+| 3. Visão do empresário | 3 min | Portal, pendências, guias a vencer e envio de arquivo |
+| 4. Inovação e conferência | 2 min | Contador confere e aceita (ou recusa com motivo) o documento; tela de avaliação |
+| 5. Arquitetura, segurança e qualidade | 2 min | MVC próprio, isolamento entre escritórios, testes e verificações |
+| 6. Teste com usuário e próximos passos | 1 min | Apresentar o que o teste com usuário real mostrou **somente se ele já tiver sido realizado**; caso contrário, declarar que está pendente e apresentar o roteiro |
 
-### Minuto 03–05: Demonstração Prática da Solução (Ao Vivo)
-1. Fazer login como `admin@exemplo.test`.
-2. **Painel do Escritório:**
-   - Explicar os indicadores do topo (obrigações que vencem hoje, nos próximos 7 dias e atrasadas).
-   - Mostrar a tabela dos **5 piores índices** e a **Recomendação de Ação Preventiva/Imediata** (Melhoria Q05).
-   - Clicar no link de recomendação e navegar direto para as pendências filtradas da empresa.
-3. **Listagem e Gestão de Obrigações:**
-   - Apresentar o **badge de Atraso Crítico (> 30 dias)** em vermelho destacado (Melhoria Q04).
-   - Mostrar os filtros avançados por empresa, status, competência e responsável.
-   - Abrir o detalhe de uma obrigação, registrar protocolo e avançar o status para `ENTREGUE`.
-   - Mostrar o histórico cronológico de auditoria registrado automaticamente.
-4. **Visão da Equipe:**
-   - Alternar o escopo do painel para "Minhas obrigações e empresas" e demonstrar a adaptação dos números ao usuário autenticado.
-
-### Minuto 06–07: Arquitetura Técnica e Isolamento Multi-tenant
-- Explicar o modelo MVC artesanal com ponto único de entrada (`public/index.php`).
-- Explicar como o isolamento entre escritórios contábeis é mantido:
-  - Todo model exige `int $escritorioId` obrigatório como primeiro parâmetro.
-  - O banco de dados utiliza chaves compostas `UNIQUE (id, escritorio_id)`.
-  - Tentar acessar o ID de outro escritório resulta imediatamente em HTTP 404.
-- Fazer logout e entrar com `admin@modelo.test` (Escritório 2) para comprovar que nenhuma informação do Escritório 1 é visível.
-
-### Minuto 08–08: Segurança e Qualidade Automatizada
-- Mostrar a execução dos testes no terminal: `composer check`.
-- Apresentar a suíte consolidada de segurança (Q01) com testes para CSRF (token em todos os formulários POST), escape XSS (`e()`), sanitização SQL e controle estrito de perfis.
-
-### Minuto 09–09: Validação com Usuário Real (Q03)
-- Apresentar os resultados do teste prático documentado em [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) com um contador autônomo (14 anos de atuação, 55 clientes).
-- Explicar como o feedback do usuário gerou diretamente as melhorias **Q04** (destaque de atraso crítico > 30 dias) e **Q05** (orientação prática no painel).
-
-### Minuto 10–10: Conclusão e Próximos Passos
-- Apresentar o roadmap futuro (BPO financeiro com contas a pagar/receber e portal do cliente para envio de documentos).
-- Agradecer e abrir para perguntas da banca.
+Pontos de atenção para a demonstração:
+- **Contador:** entrar com `contador@teste.com`. **Empresário:** entrar com `empresario@teste.com`. Isolamento: `admin@modelo.test`. Senha de todos: `Senha@123`.
+- **Qualidade:** ao mostrar os testes, informar o resultado real (774 testes, 768 aprovados e 6 falhas conhecidas de identidade visual; 282 testes de integração aprovados; PHPStan e lint sem erros).
+- **Teste com usuário real (Q03):** ainda não realizado. Não apresente tempos, notas ou depoimentos como resultados; use [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) como roteiro e registre os resultados depois da sessão.
+- **Melhorias Q04 e Q05:** estão implementadas, mas só poderão ser apresentadas como "originadas do teste com usuário" depois que o teste ocorrer e as justificativas forem registradas.
 
 ---
-
 ## 8. Estrutura do Código
 
 ```
@@ -239,7 +239,7 @@ tributo/
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Contratos do núcleo, regras de negócio e fórmulas.
 - [docs/DATABASE.md](docs/DATABASE.md) — Modelo relacional, DDL e isolamento multi-tenant.
 - [docs/API.md](docs/API.md) — Especificação detalhada de endpoints, payloads e respostas.
-- [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) — Registro completo do teste com usuário real.
+- [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) — Roteiro e ficha de registro do teste com usuário real (**ainda não executado**; resultados a preencher).
 - [docs/DECISIONS.md](docs/DECISIONS.md) — Registro de Decisões Arquiteturais (ADRs).
 - [AGENTS.md](AGENTS.md) — Regras invioláveis de desenvolvimento e convenções do projeto.
 
