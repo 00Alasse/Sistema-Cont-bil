@@ -30,6 +30,8 @@ final class Obrigacao extends Model
 
     private const ATRASADA = self::ABERTA . ' AND o.vencimento < ref.hoje';
 
+    private const ATRASO_CRITICO = self::ABERTA . ' AND o.vencimento < DATE_SUB(ref.hoje, INTERVAL 30 DAY)';
+
     private const ENTREGUE_COM_ATRASO = "o.status = 'ENTREGUE' AND DATE(o.entregue_em) > o.vencimento";
 
     /**
@@ -51,6 +53,7 @@ final class Obrigacao extends Model
     private const COLUNAS = 'SELECT o.*, e.razao_social AS empresa_nome, t.nome AS tipo_nome,
         u.nome AS responsavel_nome,
         (' . self::ATRASADA . ') AS atrasada,
+        (' . self::ATRASO_CRITICO . ') AS atraso_critico,
         (' . self::ENTREGUE_COM_ATRASO . ') AS entregue_com_atraso ';
 
     private readonly Relogio $relogio;

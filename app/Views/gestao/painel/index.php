@@ -100,6 +100,7 @@ $numero = static function (array $item): string {
                             <th scope="col">Índice</th>
                             <th scope="col">Situação</th>
                             <th scope="col">Motivos</th>
+                            <th scope="col">Recomendação</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -114,6 +115,14 @@ $numero = static function (array $item): string {
                                             <li><?= e((string) $motivo) ?></li>
                                         <?php endforeach; ?>
                                     </ul>
+                                </td>
+                                <td>
+                                    <?php if (!empty($pior['recomendacao'])) : ?>
+                                        <p><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
+                                        <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>">Ver pendências</a>
+                                    <?php else : ?>
+                                        —
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

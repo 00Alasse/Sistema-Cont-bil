@@ -224,8 +224,28 @@ Rotas `/empresas/{empresa}/consultivo*` e de ações exigem `consultivo_ativo = 
 
 ## 10. Situação de implementação
 
-Nenhuma rota de negócio está implementada. Atualize esta seção quando cada tarefa for concluída, indicando a tarefa e a data.
+Rotas concluídas no MVP (Núcleo M). Cada rota foi validada por testes de integração, testes E2E e pela suíte de segurança consolidada (Q01).
 
-| Rota | Situação |
-|------|----------|
-| `GET /` (página provisória da T00) | Provisória: confirma apenas a instalação das dependências |
+| Rota | Método | Módulo | Perfil | Situação / Tarefa |
+|---|:---:|:---:|:---:|---|
+| `/` | GET | Núcleo | Público | Concluída: redireciona para `/painel` se logado, ou `/login` (F05) |
+| `/login` | GET, POST | Autenticação | Público | Concluída: formulário, autenticação com hash e bloqueio por IP/e-mail (F08) |
+| `/logout` | POST | Autenticação | A, C, CL | Concluída: invalidação de sessão e regeneração (F08) |
+| `/empresas` | GET | Cadastro | A, C | Concluída: listagem paginada, busca textual e filtros (C01) |
+| `/empresas/nova` | GET | Cadastro | A, C | Concluída: formulário de cadastro com validação (C01) |
+| `/empresas` | POST | Cadastro | A, C | Concluída: criação de empresa com auditoria (C01) |
+| `/empresas/{id}` | GET | Cadastro | A, C | Concluída: detalhes da empresa e abas modulares (C01) |
+| `/empresas/{id}/editar` | GET | Cadastro | A, C | Concluída: formulário de edição com dados pré-carregados (C01) |
+| `/empresas/{id}` | POST | Cadastro | A, C | Concluída: atualização com controle de concorrência e auditoria (C01) |
+| `/empresas/{id}/inativar` | POST | Cadastro | A | Concluída: inativação lógica da empresa (C01) |
+| `/tipos-obrigacao` | GET | Fiscal | A, C | Concluída: listagem de tipos de obrigação do escritório (FI02) |
+| `/tipos-obrigacao/novo` | GET, POST | Fiscal | A | Concluída: criação de tipo de obrigação com periodicidade (FI02) |
+| `/tipos-obrigacao/{id}/editar` | GET, POST | Fiscal | A | Concluída: edição e exclusão restrita (FI02) |
+| `/empresas/{id}/tipos-obrigacao` | POST | Fiscal | A, C | Concluída: habilitação de tipos de obrigação para empresa (FI02) |
+| `/obrigacoes` | GET | Fiscal | A, C | Concluída: listagem de obrigações com filtros e destaque de atraso crítico > 30d (FI03, Q04) |
+| `/obrigacoes/nova` | GET, POST | Fiscal | A, C | Concluída: cadastro de obrigação com vencimento sugerido (FI03) |
+| `/obrigacoes/{id}` | GET | Fiscal | A, C | Concluída: detalhe, histórico e badge de atraso crítico (FI03, Q04) |
+| `/obrigacoes/{id}/editar` | GET, POST | Fiscal | A, C | Concluída: edição de obrigação com controle de concorrência (FI03) |
+| `/obrigacoes/{id}/excluir` | POST | Fiscal | A | Concluída: exclusão restrita com auditoria (FI03) |
+| `/obrigacoes/{id}/status` | POST | Fiscal | A, C | Concluída: transição de status (PENDENTE, EM_ANDAMENTO, ENTREGUE, DISPENSADA) com auditoria (FI04) |
+| `/painel` | GET | Gestão | A, C | Concluída: painel do escritório, 5 piores índices com recomendação (Q05), semáforo e carga (GE02) |

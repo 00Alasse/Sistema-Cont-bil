@@ -33,7 +33,12 @@ $entregueEm = $valor('entregue_em');
         </div>
     </header>
 
-    <?php if ($valor('atrasada') === '1') : ?>
+    <?php if ($valor('atraso_critico') === '1') : ?>
+        <p class="alert alert-danger" role="status">
+            <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atraso crítico (&gt; 30 dias)</span>:
+            o vencimento já passou há mais de 30 dias e a obrigação continua em aberto. Risco de cancelamento de certidão e multas.
+        </p>
+    <?php elseif ($valor('atrasada') === '1') : ?>
         <p class="alert alert-danger" role="status">
             <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada</span>:
             o vencimento já passou e a obrigação ainda está em aberto.

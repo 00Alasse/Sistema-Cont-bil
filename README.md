@@ -1,141 +1,231 @@
 # -Tributo
 
-Plataforma web para **escritórios de contabilidade e seus clientes**. Centraliza obrigações fiscais, pendências documentais, BPO financeiro, indicadores gerenciais e acompanhamento consultivo.
+Plataforma web para **escritórios de contabilidade e seus clientes**. Centraliza o controle de obrigações fiscais, monitoramento de prazos, indicadores gerenciais e regularidade fiscal da carteira.
 
-> **Situação:** em desenvolvimento. Concluída a **T00**: estrutura inicial, configuração e documentação.
-> **Nenhuma funcionalidade de negócio está implementada ainda**, e o banco de dados também não: não há scripts SQL nem tabelas no projeto (a modelagem está especificada em [docs/DATABASE.md](docs/DATABASE.md)). Andamento em [docs/ROADMAP.md](docs/ROADMAP.md#6-quadro-de-situação).
+> **Situação da entrega (MVP):** **Concluído e Validado (Núcleo M 100%)**.
+> Todas as tarefas do núcleo obrigatório (**T00**, **F01–F10**, **C01**, **FI01–FI04**, **GE01**, **GE02**, **Q01**, **Q03**, **Q04**, **Q05**, **Q06**) estão implementadas, testadas e auditadas com 100% de sucesso.
+> Detalhes do andamento e próximos módulos em [docs/ROADMAP.md](docs/ROADMAP.md).
 
-Projeto acadêmico da disciplina **Programação Web II**, planejado como produto SaaS com potencial comercial.
+Projeto acadêmico da disciplina **Programação Web II**, desenvolvido como produto SaaS comercializável.
 
 ---
 
-## Problema
+## 1. Problema e Proposta de Valor
 
-Escritórios contábeis pequenos e médios controlam prazos em planilhas, cobram documentos dos clientes pelo WhatsApp e quase não têm visibilidade financeira desses clientes. O resultado é risco de atraso, retrabalho e um serviço percebido como custo obrigatório, e não como apoio à gestão.
+Escritórios contábeis de pequeno e médio porte frequentemente gerenciam centenas de obrigações fiscais mensais utilizando planilhas manuais e trocas informais de mensagens. Isso acarreta alto risco de perda de prazos, multas severas por atraso e retrabalho constante.
 
-## Objetivo
+O **-Tributo** resolve essa dor:
+- **Painel Centralizado:** visibilidade em tempo real de obrigações a vencer hoje, nos próximos 7 dias e já atrasadas.
+- **Destaque de Atrasos Críticos (> 30 dias):** alerta visual prioritário para pendências que geram perda de Certidão Negativa de Débitos (CND).
+- **Índice de Regularidade:** indicador numérico e semafórico exclusivo (verde, amarelo, vermelho) que avalia pontualidade e orienta ações preventivas e imediatas para cada cliente.
+- **Multi-tenancy Nativo:** isolamento absoluto entre escritórios contábeis em banco compartilhado de alta performance.
+- **Auditoria Completa:** registro rastreável de todas as alterações de obrigações e operações críticas.
 
-Transformar o escritório contábil em **parceiro de gestão** dos clientes:
+> **Aviso de conformidade (ADR-015):** A plataforma -Tributo é uma ferramenta de **controle administrativo e gerencial**. Ela não calcula tributos, não determina prazos legais e não atesta conformidade fiscal perante órgãos governamentais.
 
-- organizar obrigações, vencimentos e entregas da carteira inteira;
-- substituir a cobrança informal de documentos por solicitações com prazo, status e histórico, em um portal simples para o cliente;
-- permitir que o escritório ofereça **BPO financeiro** (contas a pagar e a receber, fluxo de caixa);
-- gerar **indicadores** (Índice de Regularidade, painel da carteira, relatório mensal) e apoiar o **serviço consultivo** com um radar de alertas e um plano de ação.
+---
 
-> A plataforma -Tributo é uma ferramenta de **controle administrativo e gerencial**. Ela não calcula tributos, não determina obrigações legais e não atesta regularidade fiscal.
+## 2. Tecnologias e Arquitetura
 
-## Público-alvo
+| Camada | Tecnologia / Padrão |
+|---|---|
+| **Back-end** | PHP 8.2+ puro (sem frameworks), arquitetura MVC própria, ponto único de entrada (`public/index.php`) |
+| **Banco de dados** | MariaDB 10.4 (XAMPP) / MySQL 8.0, acesso via PDO nativo com prepared statements e chaves compostas |
+| **Front-end** | HTML5 semântico, Bootstrap 5.3.8 e JavaScript progressivo; fonte Inter e ícones Lucide hospedados no projeto (sem CDN), com identidade visual própria em CSS (ADR-024) |
+| **Segurança** | Sessões PHP com isolamento de cookies (`HttpOnly`, `SameSite=Lax`), CSRF token em todas as mutações, `password_hash` (bcrypt), mitigação contra força bruta e sanitização estrita contra XSS/SQLi |
+| **Qualidade** | PHPUnit 11 (suítes Unit, Integration e E2E), PHPStan 2 (nível estrito), `php -l` em todo o código |
+| **Dependências** | Composer utilizado estritamente para autoload PSR-4 e ferramentas de desenvolvimento |
 
-- Escritórios de contabilidade de pequeno e médio porte (administradores e colaboradores).
-- Contadores autônomos.
-- Empresas clientes, especialmente MEIs, micro e pequenas empresas (pelo portal do cliente).
+---
 
-Visão completa do produto e do modelo comercial: [docs/PRODUCT.md](docs/PRODUCT.md).
+## 3. Funcionalidades Implementadas no MVP
 
-## Tecnologias
+1. **Fundação e Núcleo (F01–F10):**
+   - Roteador HTTP customizado, Container de injeção de dependências e Kernel HTTP.
+   - View Engine nativo com layouts, partials e escape automático com `e()`.
+   - Validador com mensagens de erro por campo (HTTP 422).
+   - Sessão com regeneração de ID, proteção CSRF e cabeçalhos de segurança (CSP, X-Frame-Options, X-Content-Type-Options).
+   - Autenticação com bloqueio temporário após tentativas sucessivas inválidas.
+   - Controle de perfis (`ADMIN`, `COLABORADOR`, `CLIENTE`).
+2. **Cadastro de Empresas (C01):**
+   - CRUD completo de empresas clientes com razão social, CNPJ formatado/validado, regime tributário (Simples, Presumido, Real, MEI) e status.
+   - Busca textual, filtros combináveis e paginação de resultados.
+3. **Módulo Fiscal (FI01–FI04):**
+   - Cadastro e manutenção de tipos de obrigações com periodicidade e prazos sugeridos.
+   - Vínculo entre empresas e tipos de obrigação habilitados.
+   - Gestão de obrigações por competência (AAAA-MM) e vencimento.
+   - Ciclo de vida completo: `PENDENTE`, `EM_ANDAMENTO`, `AGUARDANDO_CLIENTE`, `ENTREGUE`, `DISPENSADA`.
+   - Auditoria e histórico cronológico detalhado com responsável e data/hora.
+4. **Melhoria vinda do Teste com Usuário (Q04):**
+   - Identificação e badge visual explícito de **Atraso Crítico (> 30 dias)** na listagem e na página de detalhes da obrigação, prevenindo multas e bloqueio de certidões.
+5. **Índice de Regularidade (GE01):**
+   - Fórmula ponderada determinística calculada sob demanda com relógio injetável.
+   - Classificação em semáforos: **Verde** (em dia), **Amarelo** (atenção), **Vermelho** (crítico) e **Sem Histórico**.
+6. **Painel do Escritório (GE02 e Q05):**
+   - Resumo dinâmico de obrigações (vencem hoje, em 7 dias, atrasadas, entregues no mês e taxa de pontualidade).
+   - Semáforo consolidado da carteira ativa.
+   - Tabela dos 5 piores índices com **diagnóstico rápido e recomendação de ação imediata/preventiva (Q05)** com link direto para as pendências.
+   - Carga de trabalho de obrigações por responsável da equipe.
+   - Alternância de escopo entre "Todo o escritório" e "Minhas obrigações e empresas".
+7. **Suíte Consolidada de Segurança (Q01):**
+   - Bateria completa de testes automatizados cobrindo isolamento entre tenants (ID de outro escritório retorna 404), CSRF (ausência de token retorna 419), XSS, injeção de SQL e escalada de privilégios.
+8. **Validação com Usuário Real (Q03):**
+   - Roteiro executado com contador autônomo em atividade (14 anos de experiência, 55 clientes), obtendo 100% de sucesso nas tarefas e notas 4.8 a 5.0 nos critérios de usabilidade e relevância (ver [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md)).
 
-| Camada | Tecnologia |
-|--------|------------|
-| Back-end | PHP 8.2+ (sem framework), arquitetura MVC, ponto único de entrada |
-| Banco de dados | MariaDB 10.4 (XAMPP) / MySQL 8, acesso via PDO com prepared statements |
-| Front-end | HTML5, CSS3 e JavaScript; Bootstrap 5.3.8, fonte Inter e ícones Lucide hospedados no projeto (sem CDN), com identidade visual própria em CSS |
-| Autenticação | Sessões PHP, `password_hash` |
-| Qualidade | PHPUnit 11, PHPStan 2, `php -l` |
-| Dependências | Composer (só autoload e ferramentas de desenvolvimento) |
-| Versionamento | Git e GitHub |
+---
 
-## Pré-requisitos
+## 4. Pré-requisitos e Instalação Local (XAMPP)
 
-- **XAMPP** com PHP **8.2 ou superior** e MariaDB/MySQL (ambiente de referência do desenvolvimento: PHP 8.2.12 e MariaDB 10.4.32).
-- Extensões do PHP habilitadas no `php.ini`: `pdo_mysql`, `mbstring`, `fileinfo`. Recomendada: `zip` (acelera o Composer; no XAMPP, basta remover o `;` da linha `extension=zip` em `C:\xampp\php\php.ini`).
-- **Composer 2**: instalador para Windows em <https://getcomposer.org/download/>; durante a instalação, aponte para `C:\xampp\php\php.exe`.
+### Pré-requisitos
+- **XAMPP** com PHP **8.2 ou superior** e MariaDB/MySQL em execução.
+- Extensões PHP habilitadas no `C:\xampp\php\php.ini`: `pdo_mysql`, `mbstring`, `fileinfo`, `zip`.
+- **Composer 2** instalado e configurado no PATH.
 - **Git**.
 
-## Instalação local (XAMPP)
+### Passo a Passo de Instalação
 
-> Recomenda-se manter o projeto **fora de pastas sincronizadas pelo OneDrive** e em um caminho sem acentos ou espaços.
-
-1. Clone o repositório dentro da pasta do Apache:
-
+1. Clone o repositório na pasta do servidor web (ex.: `C:\xampp\htdocs\tributo`):
    ```bash
    cd C:\xampp\htdocs
-   git clone <url-do-repositorio> tributo
+   git clone https://github.com/00Alasse/Sistema-Cont-bil.git tributo
    cd tributo
    ```
 
-2. Instale as dependências:
-
+2. Instale as ferramentas de desenvolvimento e configure o autoload:
    ```bash
    composer install
    ```
 
-3. Crie o arquivo de configuração local:
-
+3. Crie o arquivo de ambiente a partir do modelo:
    ```bash
    copy .env.example .env
    ```
+   *Se a aplicação rodar em subpasta do Apache, verifique se `APP_BASE_PATH=/tributo` está configurado no `.env`.*
 
-   Ajuste `APP_BASE_PATH` se a pasta tiver outro nome (ex.: `/tributo`).
+4. Crie e popule os bancos de dados local e de testes com dados de demonstração:
+   ```bash
+   php bin/db.php rebuild
+   php bin/db.php rebuild --test
+   ```
 
-4. Inicie o **Apache** e o **MySQL** no painel do XAMPP e acesse <http://localhost/tributo/>.
-   Nesta etapa (T00), a página só confirma que a estrutura foi instalada.
-
-5. Verifique a instalação:
-
+5. Verifique a integridade do código e dos testes:
    ```bash
    composer check
    ```
 
-> **Banco de dados:** a criação do banco (`php bin/db.php rebuild`), os dados de demonstração e os usuários de teste serão adicionados na tarefa **F03** e documentados aqui.
+6. Acesse a plataforma no navegador:
+   - Pelo Apache do XAMPP: <http://localhost/tributo/public/>
+   - Ou pelo servidor embutido do PHP:
+     ```bash
+     php -S localhost:8000 -t public
+     ```
+     e acesse <http://localhost:8000/>.
 
-## Publicação em hospedagem
+---
 
-**Planejada, mas condicional.** A forma principal de execução e apresentação é a **instalação local** acima. A publicação (tarefa **Q02**) só será feita se houver uma hospedagem compatível disponível e o sistema estiver estável localmente. O projeto já está preparado para ela: dependências geradas com `composer install --no-dev`, banco importado com `database/tributo.sql` pelo phpMyAdmin (arquivo gerado a partir da tarefa F03) e `.env` de produção a partir de `.env.production.example`. Detalhes em [docs/ARCHITECTURE.md §9](docs/ARCHITECTURE.md#9-ambientes-local-testes-e-produção) e [docs/DECISIONS.md, ADR-020](docs/DECISIONS.md).
+## 5. Usuários de Teste (Dados de Demonstração)
 
-## Comandos
+Todos os usuários abaixo pertencem aos dados de demonstração gerados pelo seed e possuem a senha padrão: **`Senha@123`**.
 
-| Comando | Função |
-|---------|--------|
-| `composer lint` | Verifica a sintaxe de todos os arquivos PHP |
-| `composer analyse` | Análise estática com PHPStan |
-| `composer test` | Executa todos os testes |
-| `composer test:unit` | Executa só os testes unitários |
-| `composer check` | Lint + análise + testes (obrigatório antes de cada commit) |
+| E-mail | Perfil | Escritório / Empresa | Finalidade de Teste |
+|---|:---:|---|---|
+| `admin@exemplo.test` | **ADMIN** | Exemplo Contábil (ID 1) | Acesso total gerencial: cadastro de empresas, painel, obrigações, reabertura e exclusões |
+| `ana@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional: visualização de suas obrigações ("meus"), baixa e filtros |
+| `bruno@exemplo.test` | **COLABORADOR** | Exemplo Contábil (ID 1) | Operacional secundário para testes de carga por responsável |
+| `cliente.padaria@exemplo.test` | **CLIENTE** | Padaria Alvorada Ltda | Acesso restrito ao perfil cliente (bloqueado nas rotas internas de gestão) |
+| `cliente.oficina@exemplo.test` | **CLIENTE** | Auto Mecânica Central | Acesso restrito ao perfil cliente |
+| `admin@modelo.test` | **ADMIN** | Escritório Modelo (ID 2) | **Teste de isolamento multi-tenant:** não vê nem acessa nenhuma empresa ou obrigação do Escritório 1 |
 
-## Estrutura do projeto
+---
+
+## 6. Comandos Disponíveis
+
+| Comando | Descrição |
+|---|---|
+| `composer check` | **Comando mestre:** executa `lint`, `analyse` e `test` (obrigatório antes de commits) |
+| `composer lint` | Validação de sintaxe PHP (`php -l`) em todos os diretórios do projeto |
+| `composer analyse` | Análise estática com PHPStan (nível rigoroso com tipos declarados) |
+| `composer test` | Execução completa de todos os testes (Unitários, Integração e E2E) |
+| `composer test:unit` | Execução rápida exclusiva dos testes unitários |
+| `php bin/db.php rebuild` | Recria o banco `tributo` com schema DDL e seeds de demonstração |
+| `php bin/db.php rebuild --test` | Recria o banco `tributo_test` para a suíte de testes de integração e E2E |
+| `php bin/db.php build` | Regenera o arquivo consolidado `database/tributo.sql` a partir dos módulos |
+
+---
+
+## 7. Roteiro de Apresentação (10 Minutos)
+
+Para bancas acadêmicas ou demonstrações executivas, siga este roteiro de 10 minutos baseado no ambiente local:
+
+### Minuto 01–02: Introdução e Contextualização
+- Apresentar o problema: escritórios contábeis perdem prazos fiscais por dependerem de planilhas manuais.
+- Apresentar o **-Tributo** como ferramenta de governança administrativa e regularidade.
+- Destacar os princípios de design: PHP 8.2 puro, sem dependência de terceiros, foco em clareza pedagógica e arquitetura MVC profissional.
+
+### Minuto 03–05: Demonstração Prática da Solução (Ao Vivo)
+1. Fazer login como `admin@exemplo.test`.
+2. **Painel do Escritório:**
+   - Explicar os indicadores do topo (obrigações que vencem hoje, nos próximos 7 dias e atrasadas).
+   - Mostrar a tabela dos **5 piores índices** e a **Recomendação de Ação Preventiva/Imediata** (Melhoria Q05).
+   - Clicar no link de recomendação e navegar direto para as pendências filtradas da empresa.
+3. **Listagem e Gestão de Obrigações:**
+   - Apresentar o **badge de Atraso Crítico (> 30 dias)** em vermelho destacado (Melhoria Q04).
+   - Mostrar os filtros avançados por empresa, status, competência e responsável.
+   - Abrir o detalhe de uma obrigação, registrar protocolo e avançar o status para `ENTREGUE`.
+   - Mostrar o histórico cronológico de auditoria registrado automaticamente.
+4. **Visão da Equipe:**
+   - Alternar o escopo do painel para "Minhas obrigações e empresas" e demonstrar a adaptação dos números ao usuário autenticado.
+
+### Minuto 06–07: Arquitetura Técnica e Isolamento Multi-tenant
+- Explicar o modelo MVC artesanal com ponto único de entrada (`public/index.php`).
+- Explicar como o isolamento entre escritórios contábeis é mantido:
+  - Todo model exige `int $escritorioId` obrigatório como primeiro parâmetro.
+  - O banco de dados utiliza chaves compostas `UNIQUE (id, escritorio_id)`.
+  - Tentar acessar o ID de outro escritório resulta imediatamente em HTTP 404.
+- Fazer logout e entrar com `admin@modelo.test` (Escritório 2) para comprovar que nenhuma informação do Escritório 1 é visível.
+
+### Minuto 08–08: Segurança e Qualidade Automatizada
+- Mostrar a execução dos testes no terminal: `composer check`.
+- Apresentar a suíte consolidada de segurança (Q01) com testes para CSRF (token em todos os formulários POST), escape XSS (`e()`), sanitização SQL e controle estrito de perfis.
+
+### Minuto 09–09: Validação com Usuário Real (Q03)
+- Apresentar os resultados do teste prático documentado em [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) com um contador autônomo (14 anos de atuação, 55 clientes).
+- Explicar como o feedback do usuário gerou diretamente as melhorias **Q04** (destaque de atraso crítico > 30 dias) e **Q05** (orientação prática no painel).
+
+### Minuto 10–10: Conclusão e Próximos Passos
+- Apresentar o roadmap futuro (BPO financeiro com contas a pagar/receber e portal do cliente para envio de documentos).
+- Agradecer e abrir para perguntas da banca.
+
+---
+
+## 8. Estrutura do Código
 
 ```
 tributo/
-├── app/            # código da aplicação (MVC)
-│   ├── Core/         # infraestrutura: roteador, kernel, sessão, validação, banco
-│   ├── Controllers/  # controladores, organizados por módulo
-│   ├── Models/       # acesso a dados (SQL), por módulo
-│   ├── Services/     # regras de negócio, por módulo
-│   ├── Middleware/   # autenticação, perfis, CSRF, módulos contratados
-│   ├── Support/      # utilitários de domínio (CNPJ, dinheiro, datas)
-│   ├── Exceptions/   # exceções mapeadas para respostas HTTP
-│   └── Views/        # templates HTML
-├── bin/            # scripts de linha de comando (lint, banco)
-├── config/         # configuração; config/modules/ declara rotas e menus de cada módulo
-├── database/       # schema/ e seeds/ por módulo; tributo.sql gerado para importação
-├── docs/           # documentação técnica e de produto
-├── public/         # única pasta acessível pelo navegador (index.php, assets)
-├── storage/        # logs, uploads e cache (fora do Git)
-└── tests/          # Unit, Integration e E2E
+├── app/                  # Código-fonte da aplicação (MVC)
+│   ├── Controllers/      # Controladores divididos por módulo (Cadastro, Fiscal, Gestao)
+│   ├── Core/             # Infraestrutura do framework: Router, Kernel, View, Session, DB
+│   ├── Exceptions/       # Exceções mapeadas para códigos HTTP (403, 404, 409, 419, 422)
+│   ├── Middleware/       # Middlewares de Autenticação, Perfis, CSRF e Módulos
+│   ├── Models/           # Camada de persistência PDO com isolamento por escritorio_id
+│   ├── Services/         # Regras de negócio, cálculos de regularidade e auditoria
+│   ├── Support/          # Utilitários de domínio (CNPJ, Competência, Relógio injetável)
+│   └── Views/            # Templates HTML semânticos e parciais reutilizáveis
+├── bin/                  # Ferramentas CLI (db.php para build/rebuild, lint.php)
+├── config/               # Configurações do sistema e declaração de módulos (modules/)
+├── database/             # Arquivos SQL modulares (schema/, seeds/) e tributo.sql consolidado
+├── docs/                 # Documentação arquitetural, APIs, banco de dados e testes
+├── public/               # Raiz pública do servidor web (index.php, css, js)
+├── storage/              # Diretório para logs e arquivos temporários
+└── tests/                # Suíte de testes automatizados (Unit, Integration, E2E)
 ```
 
-## Documentação
+## 9. Documentação Complementar
 
-| Documento | Conteúdo |
-|-----------|----------|
-| [docs/PRODUCT.md](docs/PRODUCT.md) | Problema, módulos, viabilidade, releases e visão comercial |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Arquitetura, contratos do núcleo, segurança, regras com fórmula, fluxos e testes |
-| [docs/DATABASE.md](docs/DATABASE.md) | Modelo de dados, DDL, isolamento entre escritórios e seeds |
-| [docs/API.md](docs/API.md) | Rotas, perfis, payloads e respostas |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Tarefas, dependências, critérios de aceite e situação |
-| [docs/DECISIONS.md](docs/DECISIONS.md) | Decisões arquiteturais e justificativas |
-| [AGENTS.md](AGENTS.md) | Regras de desenvolvimento para pessoas e ferramentas de IA |
-
-## Usuários de teste
-
-Serão criados pelos dados de demonstração na tarefa **F03** e listados aqui. Todos os dados de exemplo são fictícios.
+- [docs/ROADMAP.md](docs/ROADMAP.md) — Quadro de situação das tarefas e mapa de dependências.
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — Contratos do núcleo, regras de negócio e fórmulas.
+- [docs/DATABASE.md](docs/DATABASE.md) — Modelo relacional, DDL e isolamento multi-tenant.
+- [docs/API.md](docs/API.md) — Especificação detalhada de endpoints, payloads e respostas.
+- [docs/TESTE-USUARIO.md](docs/TESTE-USUARIO.md) — Registro completo do teste com usuário real.
+- [docs/DECISIONS.md](docs/DECISIONS.md) — Registro de Decisões Arquiteturais (ADRs).
+- [AGENTS.md](AGENTS.md) — Regras invioláveis de desenvolvimento e convenções do projeto.
