@@ -43,13 +43,13 @@ if ($responsavelAtual !== '' && !in_array((int) $responsavelAtual, $idsResponsav
             <h1><?= e($emEdicao ? 'Editar obrigação' : 'Cadastrar obrigação') ?></h1>
             <p>O vencimento é informado pelo escritório e não é conferido pelo sistema: confira o prazo vigente na fonte oficial.</p>
         </div>
-        <a class="botao botao-secundario" href="<?= e(url($voltar)) ?>">Cancelar</a>
+        <a class="btn btn-outline-secondary" href="<?= e(url($voltar)) ?>">Cancelar</a>
     </header>
 
-    <form class="cartao formulario" method="post" action="<?= e(url($acao)) ?>">
+    <form class="card card-body formulario" method="post" action="<?= e(url($acao)) ?>">
         <?= csrf_campo() ?>
         <?php if ($erros !== []) : ?>
-            <div class="aviso aviso-erro" role="alert">
+            <div class="alert alert-danger" role="alert">
                 <p>Revise os campos indicados:</p>
                 <ul>
                     <?php foreach ($erros as $campoErro => $mensagensErro) : ?>
@@ -74,11 +74,11 @@ if ($responsavelAtual !== '' && !in_array((int) $responsavelAtual, $idsResponsav
             <input type="hidden" name="versao" value="<?= e($valor('versao')) ?>">
         <?php endif; ?>
 
-        <div class="grade-formulario">
+        <div class="row g-3">
             <?php if (!$emEdicao) : ?>
-                <div class="campo campo-largo">
-                    <label for="empresa_id">Empresa <span aria-hidden="true">*</span></label>
-                    <select id="empresa_id" name="empresa_id" required<?= $invalido('empresa_id') ?>>
+                <div class="col-12">
+                    <label class="form-label" for="empresa_id">Empresa <span aria-hidden="true">*</span></label>
+                    <select class="form-select" id="empresa_id" name="empresa_id" required<?= $invalido('empresa_id') ?>>
                         <option value="">Selecione</option>
                         <?php foreach ($empresas as $empresa) : ?>
                             <option value="<?= e((string) $empresa['id']) ?>"<?= $selecionado('empresa_id', (int) $empresa['id']) ?>><?= e($empresa['nome']) ?></option>
@@ -86,9 +86,9 @@ if ($responsavelAtual !== '' && !in_array((int) $responsavelAtual, $idsResponsav
                     </select>
                     <?php $campo = 'empresa_id'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
-                <div class="campo campo-largo">
-                    <label for="tipo_obrigacao_id">Tipo de obrigação <span aria-hidden="true">*</span></label>
-                    <select id="tipo_obrigacao_id" name="tipo_obrigacao_id" required<?= $invalido('tipo_obrigacao_id') ?>>
+                <div class="col-12">
+                    <label class="form-label" for="tipo_obrigacao_id">Tipo de obrigação <span aria-hidden="true">*</span></label>
+                    <select class="form-select" id="tipo_obrigacao_id" name="tipo_obrigacao_id" required<?= $invalido('tipo_obrigacao_id') ?>>
                         <option value="">Selecione</option>
                         <?php foreach ($tipos as $tipo) : ?>
                             <option value="<?= e((string) $tipo['id']) ?>"<?= $selecionado('tipo_obrigacao_id', (int) $tipo['id']) ?>><?= e($tipo['nome']) ?></option>
@@ -96,26 +96,26 @@ if ($responsavelAtual !== '' && !in_array((int) $responsavelAtual, $idsResponsav
                     </select>
                     <?php $campo = 'tipo_obrigacao_id'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
-                <div class="campo">
-                    <label for="competencia">Competência <span aria-hidden="true">*</span></label>
-                    <input id="competencia" name="competencia" type="month" placeholder="AAAA-MM" required
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="competencia">Competência <span aria-hidden="true">*</span></label>
+                    <input class="form-control" id="competencia" name="competencia" type="month" placeholder="AAAA-MM" required
                         value="<?= e($valor('competencia')) ?>"<?= $invalido('competencia') ?>>
                     <?php $campo = 'competencia'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
             <?php endif; ?>
-            <div class="campo">
-                <label for="vencimento">Vencimento <span aria-hidden="true">*</span></label>
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="vencimento">Vencimento <span aria-hidden="true">*</span></label>
                 <?php // Na criação, o campo pode ir em branco para receber a data sugerida pelo tipo. ?>
-                <input id="vencimento" name="vencimento" type="date"<?= $emEdicao ? ' required' : '' ?>
+                <input class="form-control" id="vencimento" name="vencimento" type="date"<?= $emEdicao ? ' required' : '' ?>
                     value="<?= e($valor('vencimento')) ?>"<?= $invalido('vencimento') ?>>
                 <?php if (!$emEdicao) : ?>
                     <small>Se deixar em branco, o sistema sugere a data calculada pelo tipo para você conferir.</small>
                 <?php endif; ?>
                 <?php $campo = 'vencimento'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
-                <label for="responsavel_id">Responsável</label>
-                <select id="responsavel_id" name="responsavel_id"<?= $invalido('responsavel_id') ?>>
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="responsavel_id">Responsável</label>
+                <select class="form-select" id="responsavel_id" name="responsavel_id"<?= $invalido('responsavel_id') ?>>
                     <option value="">Sem responsável</option>
                     <?php foreach ($responsaveis as $responsavel) : ?>
                         <option value="<?= e((string) $responsavel['id']) ?>"<?= $selecionado('responsavel_id', (int) $responsavel['id']) ?>><?= e($responsavel['nome']) ?></option>
@@ -123,16 +123,16 @@ if ($responsavelAtual !== '' && !in_array((int) $responsavelAtual, $idsResponsav
                 </select>
                 <?php $campo = 'responsavel_id'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo campo-largo">
-                <label for="observacao">Observação interna</label>
-                <textarea id="observacao" name="observacao" rows="4"<?= $invalido('observacao') ?>><?= e($valor('observacao')) ?></textarea>
+            <div class="col-12">
+                <label class="form-label" for="observacao">Observação interna</label>
+                <textarea class="form-control" id="observacao" name="observacao" rows="4"<?= $invalido('observacao') ?>><?= e($valor('observacao')) ?></textarea>
                 <small>Uso interno do escritório; não é exibida ao cliente.</small>
                 <?php $campo = 'observacao'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
         </div>
 
         <div class="acoes-formulario">
-            <button class="botao" type="submit"><?= e($emEdicao ? 'Salvar alterações' : 'Cadastrar obrigação') ?></button>
+            <button class="btn btn-primary" type="submit"><?= e($emEdicao ? 'Salvar alterações' : 'Cadastrar obrigação') ?></button>
         </div>
     </form>
 </section>

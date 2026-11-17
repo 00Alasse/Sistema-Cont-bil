@@ -32,7 +32,7 @@ $iniciais = $partesNome === []
         </span>
         <form method="post" action="<?= e(url('/logout')) ?>">
             <?= csrf_campo() ?>
-            <button class="botao botao-secundario botao-compacto" type="submit">
+            <button class="btn btn-outline-secondary btn-sm" type="submit">
                 <?php $icone = 'sair'; require __DIR__ . '/icone.php'; ?>
                 <span>Sair</span>
             </button>

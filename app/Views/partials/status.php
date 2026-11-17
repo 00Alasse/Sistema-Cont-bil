@@ -16,5 +16,5 @@ $tomSelo = is_string($seloTom ?? null) && in_array($seloTom, ['sucesso', 'aviso'
 unset($seloRotulo, $seloTom);
 ?>
 <?php if ($rotuloSelo !== '') : ?>
-    <span class="selo selo-<?= e($tomSelo) ?>"><?= e($rotuloSelo) ?></span>
+    <span class="badge selo selo-<?= e($tomSelo) ?>"><?= e($rotuloSelo) ?></span>
 <?php endif; ?>

@@ -27,12 +27,13 @@ final class InterfaceTest extends E2ETestCase
     public function testTelasCarregamEstilosScriptEFavicon(): void
     {
         foreach ($this->telas() as $caminho => $resposta) {
+            self::assertStringContainsString('href="/assets/vendor/bootstrap/bootstrap.min.css"', $resposta->corpo, $caminho);
             self::assertStringContainsString('href="/assets/css/app.css"', $resposta->corpo, $caminho);
             self::assertStringContainsString('<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">', $resposta->corpo, $caminho);
         }
 
         $raiz = dirname(__DIR__, 2) . '/public/assets';
-        foreach (['css/app.css', 'js/app.js', 'img/favicon.svg', 'fonts/inter-latin-variable.woff2'] as $arquivo) {
+        foreach (['css/app.css', 'js/app.js', 'img/favicon.svg', 'fonts/inter-latin-variable.woff2', 'vendor/bootstrap/bootstrap.min.css', 'vendor/bootstrap/bootstrap.bundle.min.js', 'vendor/bootstrap/LICENSE-Bootstrap.txt'] as $arquivo) {
             self::assertFileExists($raiz . '/' . $arquivo);
         }
         $css = (string) file_get_contents($raiz . '/css/app.css');
@@ -59,8 +60,12 @@ final class InterfaceTest extends E2ETestCase
         self::assertStringContainsString('<a class="pular-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>', $painel->corpo);
         self::assertStringContainsString('id="conteudo-principal"', $painel->corpo);
         self::assertStringContainsString('aria-label="Navegação principal"', $painel->corpo);
-        self::assertStringContainsString('<button class="menu-botao" type="button" data-menu-botao aria-controls="menu-principal" aria-expanded="false">', $painel->corpo);
-        self::assertStringContainsString('id="menu-principal"', $painel->corpo);
+        // Menu lateral: offcanvas do Bootstrap no celular, com botão de abrir, de fechar e de recolher no desktop.
+        self::assertStringContainsString('id="barra-lateral"', $painel->corpo);
+        self::assertStringContainsString('data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-controls="barra-lateral"', $painel->corpo);
+        self::assertStringContainsString('data-bs-dismiss="offcanvas"', $painel->corpo);
+        self::assertStringContainsString('aria-label="Fechar menu"', $painel->corpo);
+        self::assertStringContainsString('data-barra-recolher aria-expanded="true"', $painel->corpo);
         // O menu é feito de links comuns: funciona sem JavaScript.
         self::assertGreaterThanOrEqual(3, preg_match_all('#<a class="menu-item" href="/[^"]+" title="[^"]+">#', $painel->corpo));
         // O destaque da página atual é melhoria progressiva (app.js), nunca marcação do servidor.
@@ -90,6 +95,8 @@ final class InterfaceTest extends E2ETestCase
         self::assertStringContainsString('The MIT License (MIT)', $creditos);
         self::assertStringContainsString('Inter', $creditos);
         self::assertStringContainsString('Lucide', $creditos);
+        self::assertStringContainsString('Bootstrap', $creditos);
+        self::assertStringContainsString('Licensed under MIT', (string) file_get_contents($raiz . '/public/assets/vendor/bootstrap/bootstrap.min.css'));
     }
 
     /**

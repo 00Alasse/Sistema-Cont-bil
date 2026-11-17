@@ -5,7 +5,7 @@
     <p class="acesso-subtitulo">Acesse com o e-mail e a senha cadastrados pelo escritório.</p>
 
     <?php foreach ($mensagens ?? [] as $mensagem) : ?>
-        <p role="alert" class="aviso aviso-com-icone aviso-<?= e($mensagem['tipo']) ?>">
+        <p role="alert" class="alert alert-com-icone alert-<?= e(["sucesso" => "success", "erro" => "danger", "aviso" => "warning"][$mensagem["tipo"]] ?? "info") ?>">
             <?php
             $icone = ['sucesso' => 'sucesso', 'erro' => 'erro', 'aviso' => 'aviso'][$mensagem['tipo']] ?? 'info';
             require dirname(__DIR__) . '/partials/icone.php';
@@ -17,19 +17,19 @@
     <form class="formulario" method="post" action="<?= e(url('/login')) ?>" novalidate>
         <?= csrf_campo() ?>
 
-        <div class="campo">
-            <label for="email">E-mail</label>
-            <input type="email" id="email" name="email" maxlength="150" autocomplete="username"
+        <div class="mb-3">
+            <label class="form-label" for="email">E-mail</label>
+            <input class="form-control" type="email" id="email" name="email" maxlength="150" autocomplete="username"
                    value="<?= e((string) ($antigos['email'] ?? '')) ?>" required>
             <?= erro_campo($erros ?? [], 'email') ?>
         </div>
 
-        <div class="campo">
-            <label for="senha">Senha</label>
-            <input type="password" id="senha" name="senha" autocomplete="current-password" required>
+        <div class="mb-3">
+            <label class="form-label" for="senha">Senha</label>
+            <input class="form-control" type="password" id="senha" name="senha" autocomplete="current-password" required>
             <?= erro_campo($erros ?? [], 'senha') ?>
         </div>
 
-        <button class="botao" type="submit">Entrar</button>
+        <button class="btn btn-primary w-100" type="submit">Entrar</button>
     </form>
 </section>

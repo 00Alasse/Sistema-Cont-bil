@@ -92,8 +92,8 @@ $numero = static function (array $item): string {
         <?php if ($piores === []) : ?>
             <p class="painel-nota">Nenhuma empresa com histórico para comparar.</p>
         <?php else : ?>
-            <div class="cartao tabela-responsiva">
-                <table>
+            <div class="card cartao-tabela"><div class="table-responsive">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th scope="col">Empresa</th>
@@ -120,14 +120,15 @@ $numero = static function (array $item): string {
                     </tbody>
                 </table>
             </div>
+            </div>
         <?php endif; ?>
     </section>
 
     <section class="painel-secao" aria-labelledby="titulo-carga">
         <h2 id="titulo-carga">Carga por responsável</h2>
         <p class="painel-nota">Equipe inteira, em qualquer escopo.</p>
-        <div class="cartao tabela-responsiva">
-            <table>
+        <div class="card cartao-tabela"><div class="table-responsive">
+            <table class="table table-hover align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Responsável</th>
@@ -148,6 +149,7 @@ $numero = static function (array $item): string {
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
         </div>
     </section>
 

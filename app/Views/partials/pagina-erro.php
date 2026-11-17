@@ -24,5 +24,5 @@ $iconeErro = is_string($erroIcone ?? null) ? $erroIcone : 'aviso';
     <?php if ($detalheErro !== '') : ?>
         <p class="painel-nota"><?= e($detalheErro) ?></p>
     <?php endif; ?>
-    <a class="botao" href="<?= e(url('/')) ?>">Ir para a página inicial</a>
+    <a class="btn btn-primary" href="<?= e(url('/')) ?>">Ir para a página inicial</a>
 </section>

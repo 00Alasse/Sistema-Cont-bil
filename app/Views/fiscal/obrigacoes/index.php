@@ -33,57 +33,57 @@ $ordens = [
             <h1>Obrigações</h1>
             <p>Obrigações das empresas atendidas, com vencimento e responsável.</p>
         </div>
-        <a class="botao" href="<?= e(url('/obrigacoes/nova')) ?>">
+        <a class="btn btn-primary" href="<?= e(url('/obrigacoes/nova')) ?>">
             <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
             Cadastrar obrigação
         </a>
     </header>
 
-    <form class="cartao formulario-filtros" method="get" action="<?= e(url('/obrigacoes')) ?>">
-        <div class="grade-formulario">
-            <div class="campo campo-largo">
-                <label for="q">Busca</label>
-                <input id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>" placeholder="Empresa ou tipo de obrigação">
+    <form class="card card-body formulario-filtros" method="get" action="<?= e(url('/obrigacoes')) ?>">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label" for="q">Busca</label>
+                <input class="form-control" id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>" placeholder="Empresa ou tipo de obrigação">
             </div>
-            <div class="campo">
-                <label for="empresa_id">Empresa</label>
-                <select id="empresa_id" name="empresa_id">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="empresa_id">Empresa</label>
+                <select class="form-select" id="empresa_id" name="empresa_id">
                     <option value="">Todas</option>
                     <?php foreach ($empresas as $empresa) : ?>
                         <option value="<?= e((string) $empresa['id']) ?>"<?= $selecionado('empresa_id', (string) $empresa['id']) ?>><?= e($empresa['nome']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="tipo_id">Tipo</label>
-                <select id="tipo_id" name="tipo_id">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="tipo_id">Tipo</label>
+                <select class="form-select" id="tipo_id" name="tipo_id">
                     <option value="">Todos</option>
                     <?php foreach ($tipos as $tipo) : ?>
                         <option value="<?= e((string) $tipo['id']) ?>"<?= $selecionado('tipo_id', (string) $tipo['id']) ?>><?= e($tipo['nome']) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="status">Status</label>
-                <select id="status" name="status">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-select" id="status" name="status">
                     <option value="">Todos</option>
                     <?php foreach ($rotulosStatus as $codigo => $rotulo) : ?>
                         <option value="<?= e((string) $codigo) ?>"<?= $selecionado('status', (string) $codigo) ?>><?= e((string) $rotulo) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="situacao">Situação</label>
-                <select id="situacao" name="situacao">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="situacao">Situação</label>
+                <select class="form-select" id="situacao" name="situacao">
                     <option value="">Todas</option>
                     <?php foreach ($rotulosSituacao as $codigo => $rotulo) : ?>
                         <option value="<?= e((string) $codigo) ?>"<?= $selecionado('situacao', (string) $codigo) ?>><?= e((string) $rotulo) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="responsavel">Responsável</label>
-                <select id="responsavel" name="responsavel">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="responsavel">Responsável</label>
+                <select class="form-select" id="responsavel" name="responsavel">
                     <option value="">Todos</option>
                     <option value="meus"<?= $selecionado('responsavel', 'meus') ?>>Minhas obrigações</option>
                     <?php foreach ($responsaveis as $responsavel) : ?>
@@ -91,29 +91,29 @@ $ordens = [
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="competencia">Competência</label>
-                <input id="competencia" name="competencia" type="month" placeholder="AAAA-MM" value="<?= e($valorFiltro('competencia')) ?>">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="competencia">Competência</label>
+                <input class="form-control" id="competencia" name="competencia" type="month" placeholder="AAAA-MM" value="<?= e($valorFiltro('competencia')) ?>">
             </div>
-            <div class="campo">
-                <label for="de">Vencimento a partir de</label>
-                <input id="de" name="de" type="date" value="<?= e($valorFiltro('de')) ?>">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="de">Vencimento a partir de</label>
+                <input class="form-control" id="de" name="de" type="date" value="<?= e($valorFiltro('de')) ?>">
             </div>
-            <div class="campo">
-                <label for="ate">Vencimento até</label>
-                <input id="ate" name="ate" type="date" value="<?= e($valorFiltro('ate')) ?>">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="ate">Vencimento até</label>
+                <input class="form-control" id="ate" name="ate" type="date" value="<?= e($valorFiltro('ate')) ?>">
             </div>
-            <div class="campo">
-                <label for="entregue_de">Entregue a partir de</label>
-                <input id="entregue_de" name="entregue_de" type="date" value="<?= e($valorFiltro('entregue_de')) ?>">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="entregue_de">Entregue a partir de</label>
+                <input class="form-control" id="entregue_de" name="entregue_de" type="date" value="<?= e($valorFiltro('entregue_de')) ?>">
             </div>
-            <div class="campo">
-                <label for="entregue_ate">Entregue até</label>
-                <input id="entregue_ate" name="entregue_ate" type="date" value="<?= e($valorFiltro('entregue_ate')) ?>">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="entregue_ate">Entregue até</label>
+                <input class="form-control" id="entregue_ate" name="entregue_ate" type="date" value="<?= e($valorFiltro('entregue_ate')) ?>">
             </div>
-            <div class="campo">
-                <label for="ordem">Ordenar por</label>
-                <select id="ordem" name="ordem">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="ordem">Ordenar por</label>
+                <select class="form-select" id="ordem" name="ordem">
                     <?php foreach ($ordens as $codigo => $rotulo) : ?>
                         <option value="<?= e($codigo) ?>"<?= $selecionado('ordem', $codigo) ?>><?= e($rotulo) ?></option>
                     <?php endforeach; ?>
@@ -121,8 +121,8 @@ $ordens = [
             </div>
         </div>
         <div class="acoes-formulario">
-            <button class="botao" type="submit">Aplicar filtros</button>
-            <a class="botao botao-secundario" href="<?= e(url('/obrigacoes')) ?>">Limpar</a>
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-secondary" href="<?= e(url('/obrigacoes')) ?>">Limpar</a>
         </div>
     </form>
 
@@ -131,8 +131,8 @@ $ordens = [
     require dirname(__DIR__, 2) . '/partials/filtros-ativos.php';
     ?>
 
-    <div class="cartao tabela-responsiva">
-        <table>
+    <div class="card cartao-tabela"><div class="table-responsive">
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
                     <th scope="col">Empresa</th>
@@ -182,9 +182,9 @@ $ordens = [
                         </td>
                         <td><?= e($texto('responsavel_nome') !== '' ? $texto('responsavel_nome') : '—') ?></td>
                         <td>
-                            <a class="botao botao-secundario botao-compacto" href="<?= e(url('/obrigacoes/' . $id)) ?>">
+                            <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/obrigacoes/' . $id)) ?>">
                                 <?php $icone = 'ver'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
-                                Ver<span class="texto-acessivel"> <?= e($texto('tipo_nome')) ?> de <?= e($texto('empresa_nome')) ?></span>
+                                <span class="texto-acessivel">Ver <?= e($texto('tipo_nome')) ?> de <?= e($texto('empresa_nome')) ?></span>
                             </a>
                         </td>
                     </tr>
@@ -194,6 +194,7 @@ $ordens = [
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
     </div>
 
     <?php

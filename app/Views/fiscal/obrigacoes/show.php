@@ -22,11 +22,11 @@ $entregueEm = $valor('entregue_em');
             <p><?= e($valor('empresa_nome')) ?> · competência <?= e(substr($competencia, 5, 2) . '/' . substr($competencia, 0, 4)) ?></p>
         </div>
         <div class="acoes-cabecalho">
-            <a class="botao" href="<?= e(url('/obrigacoes/' . $obrigacaoId . '/editar')) ?>">
+            <a class="btn btn-primary" href="<?= e(url('/obrigacoes/' . $obrigacaoId . '/editar')) ?>">
                 <?php $icone = 'editar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Editar
             </a>
-            <a class="botao botao-secundario" href="<?= e(url('/obrigacoes')) ?>">
+            <a class="btn btn-outline-secondary" href="<?= e(url('/obrigacoes')) ?>">
                 <?php $icone = 'voltar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Voltar à lista
             </a>
@@ -34,17 +34,17 @@ $entregueEm = $valor('entregue_em');
     </header>
 
     <?php if ($valor('atrasada') === '1') : ?>
-        <p class="aviso aviso-erro" role="status">
+        <p class="alert alert-danger" role="status">
             <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada</span>:
             o vencimento já passou e a obrigação ainda está em aberto.
         </p>
     <?php elseif ($valor('entregue_com_atraso') === '1') : ?>
-        <p class="aviso aviso-aviso" role="status">
+        <p class="alert alert-warning" role="status">
             <span class="semaforo semaforo-amarelo"><span class="semaforo-ponto" aria-hidden="true"></span>Entregue com atraso</span>
         </p>
     <?php endif; ?>
 
-    <dl class="cartao detalhes-empresa">
+    <dl class="card card-body detalhes-empresa">
         <div>
             <dt>Empresa</dt>
             <dd><a href="<?= e(url('/empresas/' . $valor('empresa_id'))) ?>"><?= e($valor('empresa_nome')) ?></a></dd>
@@ -75,11 +75,11 @@ $entregueEm = $valor('entregue_em');
     <?php require __DIR__ . '/_historico.php'; ?>
 
     <?php if ($usuarioAdmin) : ?>
-        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/obrigacoes/' . $obrigacaoId . '/excluir')) ?>"
+        <form class="card card-body acao-exclusao" method="post" action="<?= e(url('/obrigacoes/' . $obrigacaoId . '/excluir')) ?>"
               data-confirmar="Excluir esta obrigação? Essa ação não poderá ser desfeita.">
             <?= csrf_campo() ?>
             <p>Excluir esta obrigação? Essa ação não poderá ser desfeita.</p>
-            <button class="botao botao-perigo" type="submit">
+            <button class="btn btn-outline-danger" type="submit">
                 <?php $icone = 'excluir'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Excluir obrigação
             </button>

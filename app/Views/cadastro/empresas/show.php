@@ -22,11 +22,11 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
             <p>Detalhes cadastrais da empresa.</p>
         </div>
         <div class="acoes-cabecalho">
-            <a class="botao" href="<?= e(url('/empresas/' . $empresaId . '/editar')) ?>">
+            <a class="btn btn-primary" href="<?= e(url('/empresas/' . $empresaId . '/editar')) ?>">
                 <?php $icone = 'editar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Editar
             </a>
-            <a class="botao botao-secundario" href="<?= e(url('/empresas')) ?>">
+            <a class="btn btn-outline-secondary" href="<?= e(url('/empresas')) ?>">
                 <?php $icone = 'voltar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Voltar à lista
             </a>
@@ -37,7 +37,7 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
     require dirname(__DIR__, 2) . '/partials/abas-empresa.php';
     ?>
 
-    <dl class="cartao detalhes-empresa">
+    <dl class="card card-body detalhes-empresa">
         <div><dt>Nome fantasia</dt><dd><?= e($valor('nome_fantasia') !== '' ? $valor('nome_fantasia') : '—') ?></dd></div>
         <div><dt>CNPJ</dt><dd><?= e(Cnpj::formatar($cnpj)) ?></dd></div>
         <div><dt>Regime tributário</dt><dd><?= e($regimes[$valor('regime_tributario')] ?? $valor('regime_tributario')) ?></dd></div>
@@ -59,11 +59,11 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
     </dl>
 
     <?php if ($usuarioAdmin) : ?>
-        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/empresas/' . $empresaId . '/excluir')) ?>"
+        <form class="card card-body acao-exclusao" method="post" action="<?= e(url('/empresas/' . $empresaId . '/excluir')) ?>"
               data-confirmar="Excluir esta empresa? Essa ação não poderá ser desfeita.">
             <?= csrf_campo() ?>
             <p>Excluir esta empresa? Essa ação não poderá ser desfeita.</p>
-            <button class="botao botao-perigo" type="submit">
+            <button class="btn btn-outline-danger" type="submit">
                 <?php $icone = 'excluir'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
                 Excluir empresa
             </button>

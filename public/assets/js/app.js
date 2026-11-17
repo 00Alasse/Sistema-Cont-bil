@@ -38,26 +38,38 @@ document.querySelectorAll(".abas-empresa").forEach((abas) => {
     });
 });
 
-// Menu em telas pequenas: botão que abre e fecha a lista; Esc fecha e devolve o foco ao botão.
-const botaoMenu = document.querySelector("[data-menu-botao]");
-if (botaoMenu !== null) {
-    const barra = botaoMenu.closest(".barra-lateral");
-
-    const definirMenu = (aberto) => {
-        botaoMenu.setAttribute("aria-expanded", aberto ? "true" : "false");
-        botaoMenu.querySelector(".texto-acessivel").textContent = aberto ? "Fechar menu" : "Abrir menu";
-        barra.classList.toggle("menu-aberto", aberto);
+// Menu em telas largas: o botão "Recolher menu" reduz a barra a ícones e lembra a escolha.
+// Em telas pequenas o menu é o offcanvas do Bootstrap (abre pelo botão Menu, fecha por X, Esc ou clique fora).
+const estrutura = document.querySelector(".estrutura-aplicacao");
+const botaoRecolher = document.querySelector("[data-barra-recolher]");
+if (estrutura !== null && botaoRecolher !== null) {
+    const chave = "tributo.barra-recolhida";
+    const guardar = (valor) => {
+        try {
+            window.localStorage.setItem(chave, valor ? "1" : "0");
+        } catch (erro) {
+            // Navegação privada ou armazenamento bloqueado: a escolha só vale nesta página.
+        }
+    };
+    const lembrada = () => {
+        try {
+            return window.localStorage.getItem(chave) === "1";
+        } catch (erro) {
+            return false;
+        }
+    };
+    const definirBarra = (recolhida) => {
+        estrutura.classList.toggle("barra-recolhida", recolhida);
+        botaoRecolher.setAttribute("aria-expanded", recolhida ? "false" : "true");
+        botaoRecolher.setAttribute("title", recolhida ? "Expandir menu" : "Recolher menu");
+        botaoRecolher.querySelector(".barra-recolher-rotulo").textContent = recolhida ? "Expandir menu" : "Recolher menu";
     };
 
-    definirMenu(false);
-    botaoMenu.addEventListener("click", () => {
-        definirMenu(botaoMenu.getAttribute("aria-expanded") !== "true");
-    });
-    document.addEventListener("keydown", (evento) => {
-        if (evento.key === "Escape" && botaoMenu.getAttribute("aria-expanded") === "true") {
-            definirMenu(false);
-            botaoMenu.focus();
-        }
+    definirBarra(lembrada());
+    botaoRecolher.addEventListener("click", () => {
+        const recolher = botaoRecolher.getAttribute("aria-expanded") === "true";
+        definirBarra(recolher);
+        guardar(recolher);
     });
 }
 

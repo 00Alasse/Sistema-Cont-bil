@@ -1,13 +1,10 @@
 /*
- * -Tributo: folha de estilo da interface (ADR-024).
+ * -Tributo: identidade visual sobre o Bootstrap 5 (ADR-024, revisada).
  *
- * Organização: 1 fonte e variáveis · 2 base · 3 estrutura · 4 barra lateral e menu · 5 cabeçalho ·
- * 6 página · 7 cartão · 8 botões · 9 formulários · 10 tabelas · 11 selos e alertas ·
- * 12 listas e navegação auxiliar · 13 painel · 14 detalhes · 15 acesso e erros ·
- * 16 responsivo · 17 movimento reduzido · 18 impressão.
- *
- * Regra de ouro: cores, espaços, raios e sombras vêm das variáveis abaixo. Não há estilo em
- * atributo style="" (a CSP não permite) nem CSS avulso por tela.
+ * O Bootstrap (public/assets/vendor/bootstrap) fornece a base: grade, formularios, botoes, tabelas,
+ * alertas, selos, paginacao e o menu lateral (offcanvas). Este arquivo so define as cores, a
+ * tipografia e os componentes proprios do produto (barra lateral, painel, detalhes, acesso e erros).
+ * Nao ha style="" em atributo (a CSP nao permite).
  */
 
 /* ---------------------------------------------------------------- 1. Fonte e variáveis */
@@ -95,60 +92,52 @@
     text-size-adjust: 100%;
 }
 
-/* ---------------------------------------------------------------- 2. Base */
 
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
+
+/* ---------------------------------------------------------------- 2. Bootstrap: identidade do -Tributo */
+
+/* O Bootstrap 5 (local, MIT) cuida de grade, formulários, botões, tabelas, alertas, selos, paginação
+ * e offcanvas. Aqui só trocamos as cores e a tipografia para a identidade do produto. */
+:root {
+    --bs-body-font-family: var(--fonte);
+    --bs-body-font-size: 0.95rem;
+    --bs-body-line-height: 1.55;
+    --bs-body-color: var(--cor-texto);
+    --bs-body-color-rgb: 23, 43, 77;
+    --bs-body-bg: var(--cor-fundo);
+    --bs-secondary-color: var(--cor-texto-suave);
+    --bs-border-color: var(--cor-borda);
+    --bs-border-radius: 0.5rem;
+    --bs-border-radius-sm: 0.375rem;
+    --bs-border-radius-lg: 0.75rem;
+    --bs-primary: #153e75;
+    --bs-primary-rgb: 21, 62, 117;
+    --bs-link-color: var(--cor-link);
+    --bs-link-color-rgb: 23, 74, 134;
+    --bs-link-hover-color: var(--cor-marca-escura);
+    --bs-link-hover-color-rgb: 15, 45, 87;
+    --bs-focus-ring-color: rgba(26, 100, 214, 0.3);
 }
 
 body {
     min-width: 20rem;
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.55;
-    color: var(--cor-texto);
-    background: var(--cor-fundo);
 }
 
 h1,
 h2,
-h3 {
-    margin: 0 0 var(--espaco-2);
-    line-height: 1.25;
+h3,
+h4 {
     font-weight: 700;
     letter-spacing: -0.01em;
+    color: var(--cor-texto);
 }
 
 h1 {
-    font-size: clamp(1.45rem, 1.2rem + 1vw, 1.85rem);
+    font-size: clamp(1.4rem, 1.15rem + 0.9vw, 1.75rem);
 }
 
 h2 {
-    font-size: 1.15rem;
-}
-
-h3 {
-    font-size: 1rem;
-}
-
-p {
-    margin: 0 0 var(--espaco-3);
-}
-
-small {
-    color: var(--cor-texto-suave);
-    font-size: 0.85em;
-}
-
-a {
-    color: var(--cor-link);
-    text-underline-offset: 0.18em;
-}
-
-a:hover {
-    color: var(--cor-marca-escura);
+    font-size: 1.1rem;
 }
 
 :focus-visible {
@@ -171,582 +160,177 @@ a:hover {
 
 .pular-conteudo {
     position: absolute;
-    z-index: 20;
-    top: var(--espaco-2);
-    left: var(--espaco-2);
+    z-index: 2000;
+    top: 0.5rem;
+    left: 0.5rem;
     padding: 0.65rem 1rem;
     transform: translateY(-200%);
-    border-radius: var(--raio-p);
+    border-radius: 0.375rem;
     color: #fff;
     background: var(--cor-marca);
     font-weight: 600;
 }
 
 .pular-conteudo:focus {
+    color: #fff;
     transform: translateY(0);
 }
 
 .icone {
     flex: 0 0 auto;
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.15em;
+    height: 1.15em;
 }
 
-/* ---------------------------------------------------------------- 3. Estrutura */
-
-.estrutura-aplicacao {
-    display: grid;
-    grid-template-columns: var(--largura-barra) minmax(0, 1fr);
-    min-height: 100vh;
-}
-
-.area-principal {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-}
-
-.conteudo-principal {
-    flex: 1;
-    width: 100%;
-    max-width: 84rem;
-    padding: var(--espaco-5) clamp(1rem, 3vw, 2.25rem) var(--espaco-6);
-}
-
-.conteudo-principal:focus {
-    outline: none;
-}
-
-/* ---------------------------------------------------------------- 4. Barra lateral e menu */
-
-.barra-lateral {
-    position: sticky;
-    top: 0;
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    overflow-y: auto;
-    color: var(--cor-barra-texto);
-    background: var(--cor-barra);
-}
-
-.barra-topo {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--espaco-3);
-    min-height: var(--altura-cabecalho);
-    padding: var(--espaco-3) var(--espaco-4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.barra-menu {
-    flex: 1;
-    padding: var(--espaco-4) var(--espaco-3);
-}
-
-/* Marca: monograma + nome. As cores do símbolo vêm de variáveis para servir em fundo claro e escuro. */
-.marca {
-    --marca-fundo: #ffffff;
-    --marca-t: var(--cor-marca);
-    --marca-traco: var(--cor-destaque);
-
+/* Botões */
+.btn {
+    --bs-btn-font-weight: 600;
+    --bs-btn-padding-y: 0.45rem;
+    --bs-btn-padding-x: 0.95rem;
+    --bs-btn-border-radius: 0.5rem;
     display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    color: #fff;
-    font-size: 1.2rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    text-decoration: none;
-}
-
-a.marca:hover {
-    color: #fff;
-}
-
-.marca-sobre-claro {
-    --marca-fundo: var(--cor-marca);
-    --marca-t: #ffffff;
-
-    color: var(--cor-marca);
-}
-
-a.marca-sobre-claro:hover {
-    color: var(--cor-marca-escura);
-}
-
-.marca-simbolo {
-    width: 2rem;
-    height: 2rem;
-    flex: 0 0 auto;
-}
-
-.marca-fundo {
-    fill: var(--marca-fundo);
-}
-
-.marca-t {
-    fill: var(--marca-t);
-}
-
-.marca-traco {
-    fill: var(--marca-traco);
-}
-
-.navegacao-principal ul,
-.paginacao ul,
-.abas-empresa ul,
-.filtros-ativos,
-.indicadores {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.navegacao-principal ul {
-    display: grid;
-    gap: var(--espaco-1);
-}
-
-.menu-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    min-height: 2.75rem;
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--raio-p);
-    color: var(--cor-barra-texto);
-    font-weight: 500;
-    text-decoration: none;
-    transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.menu-item:hover {
-    color: #fff;
-    background: var(--cor-barra-hover);
-}
-
-.menu-item[aria-current="page"] {
-    color: #fff;
-    background: var(--cor-barra-ativo);
-    font-weight: 600;
-    box-shadow: inset 3px 0 0 var(--cor-destaque);
-}
-
-.menu-icone {
-    display: inline-flex;
-}
-
-.barra-lateral :focus-visible {
-    outline-color: var(--cor-foco-barra);
-}
-
-.menu-botao {
-    display: none;
     align-items: center;
     justify-content: center;
-    width: 2.75rem;
-    height: 2.75rem;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    border-radius: var(--raio-p);
-    color: #fff;
-    background: transparent;
-    cursor: pointer;
+    gap: 0.45rem;
+    position: relative;
 }
 
-.menu-botao:hover {
-    background: var(--cor-barra-hover);
+.btn-sm {
+    --bs-btn-padding-y: 0.3rem;
+    --bs-btn-padding-x: 0.65rem;
+    --bs-btn-font-size: 0.85rem;
 }
 
-/* ---------------------------------------------------------------- 5. Cabeçalho */
+.btn-primary {
+    --bs-btn-bg: var(--cor-marca);
+    --bs-btn-border-color: var(--cor-marca);
+    --bs-btn-hover-bg: var(--cor-marca-escura);
+    --bs-btn-hover-border-color: var(--cor-marca-escura);
+    --bs-btn-active-bg: var(--cor-marca-escura);
+    --bs-btn-active-border-color: var(--cor-marca-escura);
+    --bs-btn-disabled-bg: var(--cor-marca);
+    --bs-btn-disabled-border-color: var(--cor-marca);
+}
 
-.cabecalho {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--espaco-4);
-    min-height: var(--altura-cabecalho);
-    padding: var(--espaco-2) clamp(1rem, 3vw, 2.25rem);
-    border-bottom: 1px solid var(--cor-borda);
+.btn-outline-secondary {
+    --bs-btn-color: var(--cor-neutro);
+    --bs-btn-border-color: var(--cor-borda-forte);
+    --bs-btn-hover-color: var(--cor-marca-escura);
+    --bs-btn-hover-bg: var(--cor-marca-suave);
+    --bs-btn-hover-border-color: var(--cor-marca);
+    --bs-btn-active-color: var(--cor-marca-escura);
+    --bs-btn-active-bg: var(--cor-marca-suave);
+    --bs-btn-active-border-color: var(--cor-marca);
     background: var(--cor-superficie);
 }
 
-.cabecalho-contexto {
-    margin: 0;
-    color: var(--cor-texto-suave);
-    font-size: 0.875rem;
-    font-weight: 600;
+.btn-outline-danger {
+    --bs-btn-color: var(--cor-perigo);
+    --bs-btn-border-color: var(--cor-perigo);
+    --bs-btn-hover-bg: var(--cor-perigo);
+    --bs-btn-hover-border-color: var(--cor-perigo);
+    --bs-btn-active-bg: var(--cor-perigo);
+    --bs-btn-active-border-color: var(--cor-perigo);
 }
 
-.usuario-atual {
-    display: flex;
-    align-items: center;
-    gap: var(--espaco-3);
-}
-
-.usuario-atual form {
-    margin: 0;
-}
-
-.usuario-avatar {
-    display: inline-grid;
-    flex: 0 0 auto;
-    place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 50%;
-    color: #fff;
-    background: var(--cor-marca);
-    font-size: 0.8rem;
-    font-weight: 700;
-}
-
-.usuario-dados {
-    display: flex;
-    flex-direction: column;
-    line-height: 1.25;
-}
-
-.usuario-nome {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-
-.usuario-perfil {
-    color: var(--cor-texto-suave);
-    font-size: 0.78rem;
-}
-
-/* ---------------------------------------------------------------- 6. Página */
-
-.pagina {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espaco-4);
-}
-
-.pagina-cabecalho {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: var(--espaco-4);
-}
-
-.pagina-cabecalho p {
-    margin: 0;
-    color: var(--cor-texto-suave);
-}
-
-.acoes-cabecalho {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--espaco-2);
-}
-
-.pagina-formulario {
-    max-width: 60rem;
-}
-
-/* ---------------------------------------------------------------- 7. Cartão */
-
-.cartao {
-    margin: 0;
-    padding: var(--espaco-5);
-    border: 1px solid var(--cor-borda);
-    border-radius: var(--raio);
-    background: var(--cor-superficie);
+/* Cartões */
+.card {
+    --bs-card-border-color: var(--cor-borda);
+    --bs-card-border-radius: 0.75rem;
+    --bs-card-inner-border-radius: 0.7rem;
+    --bs-card-spacer-y: 1.25rem;
+    --bs-card-spacer-x: 1.25rem;
+    --bs-card-bg: var(--cor-superficie);
     box-shadow: var(--sombra-1);
 }
 
-.cartao > :first-child {
-    margin-top: 0;
-}
-
-.cartao > :last-child {
-    margin-bottom: 0;
-}
-
-.cartao h2 {
-    margin-bottom: var(--espaco-3);
-}
-
-.cartao.tabela-responsiva {
-    padding: 0;
-}
-
-/* ---------------------------------------------------------------- 8. Botões */
-
-.botao {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--espaco-2);
-    min-height: 2.6rem;
-    padding: 0.5rem 1.1rem;
-    border: 1px solid var(--cor-marca);
-    border-radius: 0.5rem;
-    color: #fff;
-    background: var(--cor-marca);
-    font: inherit;
-    font-size: 0.925rem;
-    font-weight: 600;
-    line-height: 1.2;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.botao:hover {
-    border-color: var(--cor-marca-hover);
-    color: #fff;
-    background: var(--cor-marca-hover);
-}
-
-.botao:disabled {
-    cursor: wait;
-    opacity: 0.65;
-}
-
-.botao-secundario {
-    border-color: var(--cor-borda-forte);
-    color: var(--cor-texto);
-    background: var(--cor-superficie);
-}
-
-.botao-secundario:hover {
-    border-color: var(--cor-marca);
-    color: var(--cor-marca-escura);
-    background: var(--cor-marca-suave);
-}
-
-.botao-perigo {
-    border-color: var(--cor-perigo);
-    background: var(--cor-perigo);
-}
-
-.botao-perigo:hover {
-    border-color: #7a1414;
-    background: #7a1414;
-}
-
-.botao-compacto {
-    min-height: 2.25rem;
-    padding: 0.3rem 0.8rem;
-}
-
-/* ---------------------------------------------------------------- 9. Formulários */
-
-label {
-    display: block;
-    margin-bottom: 0.35rem;
-    font-size: 0.875rem;
-    font-weight: 600;
-}
-
-input,
-select,
-textarea {
-    width: 100%;
-    max-width: 100%;
-    min-height: 2.6rem;
-    padding: 0.5rem 0.75rem;
-    border: 1px solid var(--cor-borda-forte);
-    border-radius: 0.5rem;
-    color: var(--cor-texto);
-    background: var(--cor-superficie);
-    font: inherit;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-input:focus-visible,
-select:focus-visible,
-textarea:focus-visible {
-    border-color: var(--cor-foco);
-    outline-offset: 0;
-}
-
-textarea {
-    min-height: 7rem;
-    resize: vertical;
-}
-
-input::placeholder,
-textarea::placeholder {
-    color: var(--cor-texto-suave);
-    opacity: 1;
-}
-
-input[type="checkbox"],
-input[type="radio"] {
-    width: 1.15rem;
-    min-height: 1.15rem;
-    height: 1.15rem;
-    padding: 0;
-    accent-color: var(--cor-marca);
-}
-
-[aria-invalid="true"] {
-    border-color: var(--cor-perigo);
-    background: #fffafa;
-}
-
-.erro-campo {
-    display: block;
-    margin-top: 0.3rem;
-    color: var(--cor-perigo);
+/* Formulários */
+.form-label {
+    margin-bottom: 0.3rem;
     font-size: 0.85rem;
     font-weight: 600;
 }
 
-.formulario {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espaco-4);
-}
-
-.grade-formulario {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
-    gap: var(--espaco-4) var(--espaco-5);
-}
-
-.campo {
-    min-width: 0;
-}
-
-.campo-largo {
-    grid-column: 1 / -1;
-}
-
-fieldset.campo {
-    margin: 0;
-    padding: var(--espaco-3) var(--espaco-4) var(--espaco-4);
-    border: 1px solid var(--cor-borda);
+.form-control,
+.form-select {
+    border-color: var(--cor-borda-forte);
     border-radius: 0.5rem;
+    color: var(--cor-texto);
 }
 
-legend {
-    padding: 0 var(--espaco-2);
-    font-size: 0.875rem;
-    font-weight: 600;
+.form-control::placeholder {
+    color: #6b7a90;
 }
 
-.opcoes-inline {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--espaco-2) var(--espaco-5);
+.form-control:focus,
+.form-select:focus,
+.form-check-input:focus {
+    border-color: var(--cor-foco);
+    box-shadow: 0 0 0 0.2rem rgba(26, 100, 214, 0.25);
 }
 
-.opcao {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--espaco-2);
-    margin: 0;
-    font-size: 0.95rem;
+.form-check-input:checked {
+    border-color: var(--cor-marca);
+    background-color: var(--cor-marca);
+}
+
+[aria-invalid="true"] {
+    border-color: var(--cor-perigo);
+}
+
+.erro-campo {
+    display: block;
+    margin-top: 0.25rem;
+    color: var(--cor-perigo);
+    font-size: 0.85rem;
     font-weight: 500;
 }
 
-.acoes-formulario {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--espaco-3);
-}
-
-.formulario-filtros {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espaco-4);
-}
-
-/* ---------------------------------------------------------------- 10. Tabelas */
-
-/* position: relative mantém o texto só para leitores de tela (position: absolute) dentro da rolagem da tabela. */
-.tabela-responsiva {
-    position: relative;
-    min-width: 0;
-    overflow-x: auto;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* Tabelas */
+.table {
+    --bs-table-bg: transparent;
+    --bs-table-hover-bg: var(--cor-superficie-alt);
+    margin-bottom: 0;
     font-size: 0.9rem;
 }
 
-.tabela-responsiva table {
-    min-width: 38rem;
+.table > :not(caption) > * > * {
+    padding: 0.8rem 1rem;
 }
 
-thead th {
-    padding: 0.7rem var(--espaco-4);
+.table thead th {
     border-bottom: 1px solid var(--cor-borda);
     color: var(--cor-texto-suave);
     background: var(--cor-superficie-alt);
     font-size: 0.75rem;
     font-weight: 700;
     letter-spacing: 0.05em;
-    text-align: left;
     text-transform: uppercase;
     white-space: nowrap;
 }
 
-tbody th,
-tbody td {
-    padding: 0.8rem var(--espaco-4);
-    border-bottom: 1px solid var(--cor-borda);
-    text-align: left;
-    vertical-align: middle;
-}
-
-tbody th {
-    min-width: 11rem;
+.table tbody th {
     font-weight: 600;
 }
 
-tbody tr:last-child th,
-tbody tr:last-child td {
-    border-bottom: 0;
+.cartao-tabela {
+    overflow: hidden;
+    padding: 0;
 }
 
-tbody tr:hover {
-    background: var(--cor-superficie-alt);
-}
-
-td ul {
-    margin: 0;
-    padding-left: 1.1rem;
-}
-
-td select {
-    min-width: 12rem;
-}
-
-td[colspan] {
-    padding: var(--espaco-6) var(--espaco-4);
-    color: var(--cor-texto-suave);
-    text-align: center;
-}
-
-/* ---------------------------------------------------------------- 11. Selos e alertas */
-
+/* Selos e alertas */
 .selo {
+    --bs-badge-padding-x: 0.6rem;
+    --bs-badge-padding-y: 0.3rem;
+    --bs-badge-font-size: 0.78rem;
+    --bs-badge-border-radius: 999px;
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.15rem 0.65rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    font-size: 0.78rem;
+    gap: 0.35rem;
+    border: 1px solid var(--cor-neutro-borda);
     font-weight: 600;
-    line-height: 1.5;
-    white-space: nowrap;
+    color: var(--cor-neutro);
+    background: var(--cor-neutro-fundo);
 }
 
 .selo::before {
@@ -781,93 +365,515 @@ td[colspan] {
     background: var(--cor-info-fundo);
 }
 
-.selo-neutro {
-    border-color: var(--cor-neutro-borda);
-    color: var(--cor-neutro);
-    background: var(--cor-neutro-fundo);
+.alert {
+    --bs-alert-border-radius: 0.625rem;
+    font-size: 0.92rem;
 }
 
-.aviso {
-    margin: 0;
-    padding: 0.85rem var(--espaco-4);
-    border: 1px solid var(--cor-neutro-borda);
-    border-left-width: 4px;
-    border-radius: var(--raio);
-    color: var(--cor-texto);
-    background: var(--cor-superficie);
-}
-
-.aviso p {
-    margin: 0 0 var(--espaco-2);
-}
-
-.aviso ul {
-    margin: 0;
-    padding-left: 1.2rem;
-}
-
-.aviso-com-icone {
+.alert-com-icone {
     display: flex;
     align-items: flex-start;
     gap: 0.65rem;
 }
 
-.aviso-com-icone .icone {
+.alert p:last-child,
+.alert ul:last-child {
+    margin-bottom: 0;
+}
+
+.alert > .icone {
     margin-top: 0.15rem;
 }
 
-.aviso-sucesso {
-    border-color: var(--cor-sucesso-borda);
-    border-left-color: var(--cor-sucesso);
-    background: var(--cor-sucesso-fundo);
+.alert-success {
+    --bs-alert-color: var(--cor-sucesso);
+    --bs-alert-bg: var(--cor-sucesso-fundo);
+    --bs-alert-border-color: var(--cor-sucesso-borda);
 }
 
-.aviso-sucesso .icone {
-    color: var(--cor-sucesso);
+.alert-warning {
+    --bs-alert-color: var(--cor-aviso);
+    --bs-alert-bg: var(--cor-aviso-fundo);
+    --bs-alert-border-color: var(--cor-aviso-borda);
 }
 
-.aviso-erro {
-    border-color: var(--cor-perigo-borda);
-    border-left-color: var(--cor-perigo);
-    background: var(--cor-perigo-fundo);
+.alert-danger {
+    --bs-alert-color: var(--cor-perigo);
+    --bs-alert-bg: var(--cor-perigo-fundo);
+    --bs-alert-border-color: var(--cor-perigo-borda);
 }
 
-.aviso-erro .icone {
-    color: var(--cor-perigo);
+.alert-info {
+    --bs-alert-color: var(--cor-info);
+    --bs-alert-bg: var(--cor-info-fundo);
+    --bs-alert-border-color: var(--cor-info-borda);
 }
 
-.aviso-aviso {
-    border-color: var(--cor-aviso-borda);
-    border-left-color: var(--cor-aviso);
-    background: var(--cor-aviso-fundo);
+/* Paginação */
+.pagination {
+    --bs-pagination-color: var(--cor-marca);
+    --bs-pagination-hover-color: var(--cor-marca-escura);
+    --bs-pagination-active-bg: var(--cor-marca);
+    --bs-pagination-active-border-color: var(--cor-marca);
+    --bs-pagination-border-color: var(--cor-borda-forte);
+    margin: 0;
 }
 
-.aviso-aviso .icone {
-    color: var(--cor-aviso);
+.paginacao {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    color: var(--cor-texto-suave);
+    font-size: 0.9rem;
 }
 
-.aviso-info {
-    border-color: var(--cor-info-borda);
-    border-left-color: var(--cor-info);
-    background: var(--cor-info-fundo);
+/* ---------------------------------------------------------------- 3. Estrutura: barra lateral e cabeçalho */
+
+.estrutura-aplicacao {
+    --largura-barra: 16rem;
+    --largura-barra-recolhida: 4.5rem;
+    min-height: 100vh;
 }
 
-.aviso-info .icone {
-    color: var(--cor-info);
+.area-principal {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.conteudo-principal {
+    flex: 1;
+    width: 100%;
+    max-width: 84rem;
+    padding: 1.5rem clamp(1rem, 3vw, 2.25rem) 2.5rem;
+}
+
+.conteudo-principal:focus {
+    outline: none;
+}
+
+/* Barra lateral: o contêiner estica até o fim da página (fundo contínuo) e o conteúdo dela fica
+ * preso à janela, então nunca aparece um bloco escuro "solto" no meio da tela. */
+.barra-lateral {
+    --bs-offcanvas-width: 17rem;
+    --bs-offcanvas-bg: var(--cor-barra);
+    --bs-offcanvas-color: var(--cor-barra-texto);
+    --bs-offcanvas-border-width: 0;
+    color: var(--cor-barra-texto);
+    background: var(--cor-barra);
+}
+
+.barra-interna {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 100%;
+}
+
+.barra-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    min-height: 3.75rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.barra-menu {
+    flex: 1;
+    padding: 1rem 0.75rem;
+    overflow-y: auto;
+}
+
+.barra-rodape {
+    padding: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.barra-lateral :focus-visible {
+    outline-color: var(--cor-foco-barra);
+}
+
+.marca {
+    --marca-fundo: #ffffff;
+    --marca-t: var(--cor-marca);
+    --marca-traco: var(--cor-destaque);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-decoration: none;
+}
+
+a.marca:hover {
+    color: #fff;
+}
+
+.marca-sobre-claro {
+    --marca-fundo: var(--cor-marca);
+    --marca-t: #ffffff;
+    color: var(--cor-marca);
+}
+
+a.marca-sobre-claro:hover {
+    color: var(--cor-marca-escura);
+}
+
+.marca-simbolo {
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+}
+
+.marca-fundo {
+    fill: var(--marca-fundo);
+}
+
+.marca-t {
+    fill: var(--marca-t);
+}
+
+.marca-traco {
+    fill: var(--marca-traco);
+}
+
+.navegacao-principal ul {
+    display: grid;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 0.85rem;
+    border-left: 3px solid transparent;
+    border-radius: 0.5rem;
+    color: var(--cor-barra-texto);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.menu-item:hover {
+    color: #fff;
+    background: var(--cor-barra-hover);
+}
+
+.menu-item[aria-current="page"] {
+    border-left-color: var(--cor-destaque);
+    color: #fff;
+    background: var(--cor-barra-ativo);
+    font-weight: 600;
+}
+
+.menu-icone {
+    display: inline-flex;
+    flex: 0 0 auto;
+}
+
+.menu-icone .icone {
+    width: 1.3rem;
+    height: 1.3rem;
+}
+
+.barra-recolher {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    min-height: 2.5rem;
+    padding: 0.4rem 0.85rem;
+    border: 0;
+    border-radius: 0.5rem;
+    color: var(--cor-barra-texto);
+    background: transparent;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+}
+
+.barra-recolher:hover {
+    color: #fff;
+    background: var(--cor-barra-hover);
+}
+
+.recolher-icone-abrir {
+    display: none;
+}
+
+.cabecalho {
+    position: sticky;
+    z-index: 100;
+    top: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.75rem;
+    padding: 0.5rem clamp(1rem, 3vw, 2.25rem);
+    border-bottom: 1px solid var(--cor-borda);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(6px);
+}
+
+.cabecalho-contexto {
+    flex: 1;
+    margin: 0;
+    color: var(--cor-texto-suave);
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.usuario-atual {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.usuario-avatar {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    color: #fff;
+    background: var(--cor-marca);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.usuario-dados {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.usuario-nome {
+    font-size: 0.88rem;
+    font-weight: 600;
+}
+
+.usuario-perfil {
+    color: var(--cor-texto-suave);
+    font-size: 0.78rem;
+}
+
+/* Sem JavaScript: o menu vira um bloco visível no topo e os botões que dependem de JS somem. */
+html:not(.js) .barra-lateral {
+    position: static;
+    width: auto;
+    height: auto;
+    transform: none;
+    visibility: visible;
+}
+
+html:not(.js) [data-bs-toggle="offcanvas"],
+html:not(.js) .barra-lateral .btn-close {
+    display: none !important;
+}
+
+/* Telas largas (>= 992 px): duas colunas; a segunda é o conteúdo. */
+@media (min-width: 992px) {
+    .estrutura-aplicacao {
+        display: grid;
+        grid-template-columns: var(--largura-barra) minmax(0, 1fr);
+        transition: grid-template-columns 0.2s ease;
+    }
+
+    .barra-lateral {
+        position: static;
+        width: auto;
+        visibility: visible;
+        transform: none;
+    }
+
+    .barra-interna {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+    }
+
+    .js .barra-recolher {
+        display: flex;
+    }
+
+    .estrutura-aplicacao.barra-recolhida {
+        grid-template-columns: var(--largura-barra-recolhida) minmax(0, 1fr);
+    }
+
+    .barra-recolhida .marca-nome,
+    .barra-recolhida .menu-rotulo,
+    .barra-recolhida .barra-recolher-rotulo {
+        position: absolute !important;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+    }
+
+    .barra-recolhida .barra-topo {
+        justify-content: center;
+        padding: 0;
+    }
+
+    .barra-recolhida .menu-item,
+    .barra-recolhida .barra-recolher {
+        justify-content: center;
+        padding-inline: 0;
+    }
+
+    .barra-recolhida .recolher-icone-fechar {
+        display: none;
+    }
+
+    .barra-recolhida .recolher-icone-abrir {
+        display: inline-flex;
+    }
+}
+
+/* Telas pequenas (< 992 px): o menu é o offcanvas do Bootstrap. */
+@media (max-width: 991.98px) {
+    .barra-interna {
+        height: 100%;
+    }
+
+    .botao-menu .icone {
+        width: 1.2rem;
+        height: 1.2rem;
+    }
+
+    .usuario-dados {
+        display: none;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .cabecalho-contexto {
+        display: none;
+    }
+
+    .cabecalho {
+        justify-content: space-between;
+    }
+}
+
+/* ---------------------------------------------------------------- 4. Página */
+
+.pagina {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.pagina-formulario {
+    max-width: 62rem;
+}
+
+.pagina-cabecalho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.pagina-cabecalho h1 {
+    margin-bottom: 0.15rem;
+}
+
+.pagina-cabecalho p {
+    margin: 0;
+    color: var(--cor-texto-suave);
+}
+
+.acoes-cabecalho,
+.acoes-formulario {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.acoes-formulario {
+    margin-top: 1.25rem;
+}
+
+.opcao {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+.opcoes-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.mensagens-flash {
+    display: grid;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.mensagens-flash .alert {
+    margin: 0;
+}
+
+.formulario-filtros {
+    padding: 1.25rem;
 }
 
 .aviso-gerencial {
-    padding: 0.85rem var(--espaco-4);
+    margin: 0;
+}
+
+@media (min-width: 992px) {
+    .barra-lateral.offcanvas-lg {
+        background-color: var(--cor-barra) !important;
+    }
+}
+
+
+/* ---------------------------------------------------------------- 3b. Ajustes de componentes próprios */
+
+h3 {
+    font-size: 1rem;
+}
+
+.indicadores,
+.filtros-ativos,
+.abas-empresa ul,
+.paginacao .pagination,
+.navegacao-principal ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.aviso-gerencial {
+    padding: 0.85rem 1rem;
     border: 1px solid var(--cor-info-borda);
     border-left: 4px solid var(--cor-info);
-    border-radius: var(--raio);
+    border-radius: 0.625rem;
     color: var(--cor-texto);
     background: var(--cor-info-fundo);
     font-size: 0.9rem;
 }
 
 .aviso-gerencial h2 {
-    margin-bottom: var(--espaco-1);
+    margin-bottom: 0.25rem;
     font-size: 1rem;
 }
 
@@ -875,15 +881,8 @@ td[colspan] {
     margin: 0;
 }
 
-.aviso-gerencial .botao {
-    margin-top: var(--espaco-3);
-}
-
-.mensagens-flash {
-    display: flex;
-    flex-direction: column;
-    gap: var(--espaco-2);
-    margin-bottom: var(--espaco-4);
+.aviso-gerencial .btn {
+    margin-top: 0.75rem;
 }
 
 .semaforo {
@@ -927,7 +926,119 @@ td[colspan] {
     background: #d94b4b;
 }
 
-/* ---------------------------------------------------------------- 12. Listas e navegação auxiliar */
+/* Tabelas densas (obrigações têm 8 colunas): menos respiro e números sem quebra. */
+.table > :not(caption) > * > * {
+    padding: 0.65rem 0.75rem;
+}
+
+.table td .semaforo,
+.table td .selo {
+    white-space: nowrap;
+}
+
+.table td .btn {
+    white-space: nowrap;
+}
+
+.card-body > :last-child {
+    margin-bottom: 0;
+}
+
+.table > :not(caption) > * > * {
+    padding: 0.55rem 0.6rem;
+}
+
+.table {
+    font-size: 0.85rem;
+}
+
+.table td .semaforo {
+    white-space: normal;
+}
+
+.table td:first-child,
+.table th:first-child {
+    padding-left: 1rem;
+}
+
+.table td:last-child,
+.table th:last-child {
+    padding-right: 1rem;
+}
+
+.conteudo-principal {
+    padding-inline: clamp(1rem, 2.2vw, 1.75rem);
+}
+
+.cabecalho {
+    padding-inline: clamp(1rem, 2.2vw, 1.75rem);
+}
+
+.indicador .semaforo {
+    white-space: normal;
+}
+
+@media (max-width: 991.98px) {
+    .barra-rodape {
+        display: none;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .indicadores > :last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+    }
+}
+
+.form-control,
+.form-select,
+.form-check-input:not(:checked) {
+    background-color: #fff;
+}
+
+.form-control:disabled,
+.form-select:disabled {
+    background-color: var(--cor-neutro-fundo);
+}
+
+legend,
+.formulario h2,
+.card-body > h2 {
+    float: none;
+    width: auto;
+    margin-bottom: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.acao-exclusao {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+/* O texto só para leitores de tela (position: absolute) precisa ficar preso à rolagem da tabela. */
+.table-responsive {
+    position: relative;
+}
+
+.pagina > .alert,
+.pagina > .aviso-gerencial {
+    margin: 0;
+}
+
+.opcao {
+    white-space: nowrap;
+}
+
+/* Celular: a tabela mantém uma largura mínima e rola dentro do cartão, em vez de espremer as colunas. */
+@media (max-width: 767.98px) {
+    .table-responsive > .table {
+        min-width: 38rem;
+    }
+}
 
 .filtros-ativos {
     display: flex;
@@ -973,41 +1084,6 @@ td[colspan] {
 .abas-empresa a[aria-current="page"] {
     border-bottom-color: var(--cor-marca);
     color: var(--cor-marca);
-}
-
-.paginacao {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--espaco-4);
-    color: var(--cor-texto-suave);
-    font-size: 0.9rem;
-}
-
-.paginacao ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--espaco-2);
-}
-
-.paginacao a {
-    display: inline-flex;
-    align-items: center;
-    min-height: 2.25rem;
-    padding: 0.3rem 0.9rem;
-    border: 1px solid var(--cor-borda-forte);
-    border-radius: 0.5rem;
-    color: var(--cor-texto);
-    background: var(--cor-superficie);
-    font-weight: 600;
-    text-decoration: none;
-}
-
-.paginacao a:hover {
-    border-color: var(--cor-marca);
-    color: var(--cor-marca-escura);
-    background: var(--cor-marca-suave);
 }
 
 /* Alternador de escopo (painel): grupo de dois botões com o atual destacado. */
@@ -1164,8 +1240,7 @@ td .indicador-valor,
     place-items: center;
     min-height: 100vh;
     padding: var(--espaco-5) var(--espaco-4);
-    background:
-        linear-gradient(180deg, var(--cor-barra) 0, var(--cor-barra) 14rem, var(--cor-fundo) 14rem);
+    background: linear-gradient(160deg, var(--cor-barra) 0%, var(--cor-marca) 100%);
 }
 
 .cartao-acesso {
@@ -1239,169 +1314,40 @@ td .indicador-valor,
     margin-top: var(--espaco-2);
 }
 
-/* ---------------------------------------------------------------- 16. Responsivo */
 
-/* Trilho: até 64rem a barra vira uma coluna estreita só com ícones (o texto continua para leitores de tela). */
-@media (max-width: 64rem) {
-    .estrutura-aplicacao {
-        grid-template-columns: var(--largura-trilho) minmax(0, 1fr);
-    }
-
-    .barra-topo {
-        justify-content: center;
-        padding-inline: var(--espaco-2);
-    }
-
-    .marca-nome,
-    .menu-rotulo {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: -1px;
-        overflow: hidden;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-
-    .barra-menu {
-        padding-inline: var(--espaco-2);
-    }
-
-    .menu-item {
-        justify-content: center;
-        padding-inline: 0;
-    }
-
-    .menu-item[aria-current="page"] {
-        box-shadow: inset 3px 0 0 var(--cor-destaque);
-    }
+.pagina-erro .painel-nota {
+    margin-top: 1.25rem;
 }
 
-/* Telefone: a barra vira topo; com JS o menu vira gaveta aberta por botão, sem JS fica sempre visível. */
-@media (max-width: 40rem) {
-    .estrutura-aplicacao {
-        grid-template-columns: minmax(0, 1fr);
-    }
+.pagina-erro p {
+    color: var(--cor-texto-suave);
+}
 
-    .barra-lateral {
-        position: static;
-        height: auto;
-        overflow: visible;
-    }
 
-    .barra-topo {
-        justify-content: space-between;
-        padding-inline: var(--espaco-4);
-    }
+/* ---------------------------------------------------------------- 6. Responsivo (componentes do produto) */
 
-    .marca-nome {
-        position: static;
-        width: auto;
-        height: auto;
-        margin: 0;
-        overflow: visible;
-        clip: auto;
-        clip-path: none;
-    }
-
-    .barra-menu {
-        padding: var(--espaco-2) var(--espaco-3) var(--espaco-3);
-    }
-
-    .navegacao-principal ul {
-        display: flex;
-        overflow-x: auto;
-    }
-
-    .menu-rotulo {
-        position: static;
-        width: auto;
-        height: auto;
-        margin: 0;
-        overflow: visible;
-        clip: auto;
-        clip-path: none;
-        white-space: nowrap;
-    }
-
-    .menu-item {
-        justify-content: flex-start;
-        padding-inline: 0.75rem;
-        white-space: nowrap;
-    }
-
-    .js .menu-botao {
-        display: inline-flex;
-    }
-
-    .js .barra-menu {
-        display: none;
-    }
-
-    .js .barra-lateral.menu-aberto .barra-menu {
-        display: block;
-    }
-
-    .js .navegacao-principal ul {
-        display: grid;
-        overflow: visible;
-    }
-
-    .cabecalho {
-        position: static;
-        justify-content: flex-end;
-        min-height: 3.25rem;
-    }
-
+@media (max-width: 767.98px) {
     .indicadores {
         grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: var(--espaco-3);
-    }
-
-    .indicador {
-        padding: var(--espaco-3) var(--espaco-4);
-    }
-
-    .indicador-valor {
-        font-size: 1.6rem;
+        gap: 0.75rem;
     }
 
     .alternador {
         display: flex;
-        width: 100%;
     }
 
     .alternador > * {
-        flex: 1 1 0;
+        flex: 1;
         justify-content: center;
         text-align: center;
     }
 
-    .cabecalho-contexto,
-    .usuario-dados {
-        display: none;
-    }
-
-    .conteudo-principal {
-        padding-top: var(--espaco-4);
-    }
-
-    .cartao {
-        padding: var(--espaco-4);
-    }
-
-    .pagina-cabecalho .botao,
-    .acoes-cabecalho .botao {
-        flex: 1 1 auto;
-    }
-
     .cartao-acesso {
-        padding: var(--espaco-5);
+        padding: 1.5rem;
     }
 }
 
-/* ---------------------------------------------------------------- 17. Movimento reduzido */
+/* ---------------------------------------------------------------- 7. Movimento reduzido */
 
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -1413,7 +1359,7 @@ td .indicador-valor,
     }
 }
 
-/* ---------------------------------------------------------------- 18. Impressão */
+/* ---------------------------------------------------------------- 8. Impressão */
 
 @media print {
     body {
@@ -1431,8 +1377,8 @@ td .indicador-valor,
     .acao-exclusao,
     .alternador,
     .abas-empresa,
-    .botao,
-    .cartao:has(.formulario) {
+    .btn,
+    .card:has(form) {
         display: none !important;
     }
 
@@ -1445,19 +1391,15 @@ td .indicador-valor,
         padding: 0;
     }
 
-    .cartao,
+    .card,
     .indicador {
         border-color: #999;
         box-shadow: none;
         break-inside: avoid;
     }
 
-    .tabela-responsiva {
+    .table-responsive {
         overflow: visible;
-    }
-
-    .tabela-responsiva table {
-        min-width: 0;
     }
 
     thead {

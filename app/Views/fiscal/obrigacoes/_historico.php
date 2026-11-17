@@ -13,14 +13,14 @@ $rotulo = static fn (?string $status): string => $status === null
     : (string) ($rotulosStatus[$status] ?? $status);
 $ouTracoHistorico = static fn (?string $texto): string => $texto !== null && $texto !== '' ? $texto : '—';
 ?>
-<section class="cartao" aria-labelledby="titulo-historico">
+<section class="card card-body" aria-labelledby="titulo-historico">
     <h2 id="titulo-historico">Histórico de status</h2>
 
     <?php if ($historico === []) : ?>
         <p>Nenhuma mudança de status registrada.</p>
     <?php else : ?>
-        <div class="tabela-responsiva">
-            <table>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Quando</th>

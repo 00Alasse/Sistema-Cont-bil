@@ -19,15 +19,15 @@ $rotulos = ['tipos' => 'Tipos', 'responsavel_padrao' => 'Responsável padrão'];
             <h1><?= e($razaoSocial) ?></h1>
             <p>Tipos de obrigação que se aplicam a esta empresa. A escolha é do escritório.</p>
         </div>
-        <a class="botao botao-secundario" href="<?= e(url('/empresas')) ?>">Voltar à lista</a>
+        <a class="btn btn-outline-secondary" href="<?= e(url('/empresas')) ?>">Voltar à lista</a>
     </header>
 
     <?php require dirname(__DIR__, 2) . '/partials/abas-empresa.php'; ?>
 
-    <form class="cartao formulario" method="post" action="<?= e(url('/empresas/' . $empresaId . '/tipos-obrigacao')) ?>">
+    <form class="card card-body formulario" method="post" action="<?= e(url('/empresas/' . $empresaId . '/tipos-obrigacao')) ?>">
         <?= csrf_campo() ?>
         <?php if ($erros !== []) : ?>
-            <div class="aviso aviso-erro" role="alert">
+            <div class="alert alert-danger" role="alert">
                 <p>Revise os vínculos:</p>
                 <ul>
                     <?php foreach ($erros as $campoErro => $mensagensErro) : ?>
@@ -49,8 +49,8 @@ $rotulos = ['tipos' => 'Tipos', 'responsavel_padrao' => 'Responsável padrão'];
                 <?php endif; ?>
             </p>
         <?php else : ?>
-            <div class="tabela-responsiva">
-                <table>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
                     <thead>
                         <tr>
                             <th scope="col">Aplica-se</th>
@@ -74,11 +74,11 @@ $rotulos = ['tipos' => 'Tipos', 'responsavel_padrao' => 'Responsável padrão'];
                             ?>
                             <tr>
                                 <td>
-                                    <input id="<?= e($idCampo) ?>" type="checkbox" name="tipos[]"
+                                    <input class="form-check-input" id="<?= e($idCampo) ?>" type="checkbox" name="tipos[]"
                                         value="<?= e((string) $tipoId) ?>"<?= $marcado ? ' checked' : '' ?>>
                                 </td>
                                 <th scope="row">
-                                    <label for="<?= e($idCampo) ?>"><?= e($nome) ?></label>
+                                    <label class="form-label" for="<?= e($idCampo) ?>"><?= e($nome) ?></label>
                                     <?php if ($inativo) : ?>
                                         <small>(inativo: pode ser mantido, mas não incluído de novo)</small>
                                     <?php endif; ?>
@@ -88,7 +88,7 @@ $rotulos = ['tipos' => 'Tipos', 'responsavel_padrao' => 'Responsável padrão'];
                                     <label class="texto-acessivel" for="responsavel-<?= e((string) $tipoId) ?>">
                                         Responsável padrão de <?= e($nome) ?>
                                     </label>
-                                    <select id="responsavel-<?= e((string) $tipoId) ?>"
+                                    <select class="form-select" id="responsavel-<?= e((string) $tipoId) ?>"
                                         name="responsavel_padrao[<?= e((string) $tipoId) ?>]">
                                         <option value="">Responsável da empresa</option>
                                         <?php foreach ($responsaveis as $responsavel) : ?>
@@ -109,7 +109,7 @@ $rotulos = ['tipos' => 'Tipos', 'responsavel_padrao' => 'Responsável padrão'];
         <?php endif; ?>
 
         <div class="acoes-formulario">
-            <button class="botao" type="submit">Salvar tipos da empresa</button>
+            <button class="btn btn-primary" type="submit">Salvar tipos da empresa</button>
         </div>
     </form>
 </section>
