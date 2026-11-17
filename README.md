@@ -145,7 +145,7 @@ O **-Tributo** resolve essa dor:
    - **Apache do XAMPP** (com `.env` como no modelo): <http://localhost/tributo/>. O `.htaccess` da raiz encaminha as requisições para `public/` e exige o `mod_rewrite` ativo. **Não use** `/tributo/public/`: com `APP_BASE_PATH=/tributo` esse endereço não casa com as rotas.
    - **Servidor embutido do PHP** (sem Apache): ajuste o `.env` para `APP_URL=http://localhost:8000` e `APP_BASE_PATH=` (vazio) e rode:
      ```bash
-     php -S localhost:8000 -t public public/index.php
+     php -S localhost:8000 -t public
      ```
      e acesse <http://localhost:8000/>. Com `APP_BASE_PATH=/tributo` neste modo, os links gerados apontam para um prefixo inexistente.
 
