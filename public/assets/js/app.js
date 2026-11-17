@@ -119,3 +119,210 @@ document.querySelectorAll("[data-preencher-login]").forEach((botao) => {
         }
     });
 })();
+
+/* ==========================================================================
+   Filtros Dinâmicos por Cards no Portal do Empresário
+   ========================================================================== */
+(function () {
+    const cards = document.querySelectorAll("[data-filtro-portal]");
+    const barraFiltro = document.getElementById("barra-filtro-portal");
+    const textoFiltro = document.getElementById("texto-filtro-ativo");
+    const botaoLimpar = document.getElementById("botao-limpar-filtro");
+    const secaoDocumentos = document.getElementById("secao-documentos-portal");
+    const secaoGuias = document.getElementById("secao-guias-portal");
+    const docsItems = document.querySelectorAll(".card-documento-item");
+    const avisoNenhum = document.getElementById("aviso-nenhum-doc-filtro");
+
+    if (!cards.length) return;
+
+    let filtroAtual = null;
+
+    function aplicarFiltro(tipo, rotulo) {
+        if (filtroAtual === tipo) {
+            removerFiltro();
+            return;
+        }
+
+        filtroAtual = tipo;
+        cards.forEach((c) => {
+            c.classList.toggle("kpi-card-ativo", c.getAttribute("data-filtro-portal") === tipo);
+        });
+
+        if (barraFiltro) {
+            barraFiltro.style.display = "flex";
+            if (textoFiltro) {
+                textoFiltro.innerHTML = `Mostrando apenas: <strong>${rotulo}</strong>`;
+            }
+        }
+
+        if (tipo === "guias") {
+            if (secaoDocumentos) secaoDocumentos.style.display = "none";
+            if (secaoGuias) secaoGuias.style.display = "block";
+            if (secaoGuias) secaoGuias.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else {
+            if (secaoGuias) secaoGuias.style.display = "none";
+            if (secaoDocumentos) secaoDocumentos.style.display = "block";
+
+            let visiveis = 0;
+            docsItems.forEach((doc) => {
+                const grupo = doc.getAttribute("data-grupo-portal");
+                const mostrar = (grupo === tipo);
+                doc.style.display = mostrar ? "block" : "none";
+                if (mostrar) visiveis++;
+            });
+
+            if (avisoNenhum) {
+                avisoNenhum.style.display = (visiveis === 0) ? "block" : "none";
+            }
+            if (secaoDocumentos) {
+                secaoDocumentos.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }
+    }
+
+    function removerFiltro() {
+        filtroAtual = null;
+        cards.forEach((c) => c.classList.remove("kpi-card-ativo"));
+        if (barraFiltro) barraFiltro.style.display = "none";
+        if (secaoDocumentos) secaoDocumentos.style.display = "block";
+        if (secaoGuias) secaoGuias.style.display = "block";
+        docsItems.forEach((doc) => {
+            doc.style.display = "block";
+        });
+        if (avisoNenhum) avisoNenhum.style.display = "none";
+    }
+
+    cards.forEach((card) => {
+        card.addEventListener("click", () => {
+            const tipo = card.getAttribute("data-filtro-portal");
+            const rotuloElem = card.querySelector(".kpi-rotulo");
+            const rotulo = rotuloElem ? rotuloElem.textContent.trim() : tipo;
+            aplicarFiltro(tipo, rotulo);
+        });
+
+        card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                card.click();
+            }
+        });
+    });
+
+    if (botaoLimpar) {
+        botaoLimpar.addEventListener("click", removerFiltro);
+    }
+})();
+
+/* ==========================================================================
+   Filtros Dinâmicos no Painel do Contador (Semáforos)
+   ========================================================================== */
+(function () {
+    const cardsSemaforo = document.querySelectorAll("[data-filtro-semaforo]");
+    const barraFiltro = document.getElementById("barra-filtro-semaforo");
+    const textoFiltro = document.getElementById("texto-filtro-semaforo");
+    const botaoLimpar = document.getElementById("botao-limpar-filtro-semaforo");
+    const linhasTabela = document.querySelectorAll(".linha-empresa-indice");
+    const avisoSemEmpresa = document.getElementById("aviso-sem-empresa-filtro");
+
+    if (!cardsSemaforo.length) return;
+
+    let corAtiva = null;
+
+    function aplicarFiltroSemaforo(cor, rotulo) {
+        if (corAtiva === cor) {
+            removerFiltroSemaforo();
+            return;
+        }
+
+        corAtiva = cor;
+        cardsSemaforo.forEach((c) => {
+            c.classList.toggle("card-semaforo-ativo", c.getAttribute("data-filtro-semaforo") === cor);
+        });
+
+        if (barraFiltro) {
+            barraFiltro.style.display = "flex";
+            if (textoFiltro) {
+                textoFiltro.innerHTML = `Situação: <strong>${rotulo}</strong>`;
+            }
+        }
+
+        let visiveis = 0;
+        linhasTabela.forEach((linha) => {
+            const corLinha = linha.getAttribute("data-semaforo-linha");
+            const mostrar = (corLinha === cor);
+            linha.style.display = mostrar ? "" : "none";
+            if (mostrar) visiveis++;
+        });
+
+        if (avisoSemEmpresa) {
+            avisoSemEmpresa.style.display = (visiveis === 0) ? "block" : "none";
+        }
+    }
+
+    function removerFiltroSemaforo() {
+        corAtiva = null;
+        cardsSemaforo.forEach((c) => c.classList.remove("card-semaforo-ativo"));
+        if (barraFiltro) barraFiltro.style.display = "none";
+        linhasTabela.forEach((linha) => {
+            linha.style.display = "";
+        });
+        if (avisoSemEmpresa) avisoSemEmpresa.style.display = "none";
+    }
+
+    cardsSemaforo.forEach((card) => {
+        card.addEventListener("click", () => {
+            const cor = card.getAttribute("data-filtro-semaforo");
+            const cabecalho = card.querySelector(".semaforo-cabecalho");
+            const rotulo = cabecalho ? cabecalho.textContent.trim() : cor;
+            aplicarFiltroSemaforo(cor, rotulo);
+        });
+
+        card.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                card.click();
+            }
+        });
+    });
+
+    if (botaoLimpar) {
+        botaoLimpar.addEventListener("click", removerFiltroSemaforo);
+    }
+})();
+
+/* ==========================================================================
+   Feedback Visual no Input de Arquivos
+   ========================================================================== */
+(function () {
+    document.querySelectorAll(".input-arquivo-oculto").forEach((input) => {
+        input.addEventListener("change", () => {
+            const container = input.closest(".box-upload-moderno");
+            if (!container) return;
+
+            const label = container.querySelector(".label-upload-customizado");
+            if (!label) return;
+
+            const textoInstrucao = label.querySelector(".texto-upload-instrucao");
+            const nomeExibicao = label.querySelector(".nome-arquivo-escolhido");
+
+            if (input.files && input.files.length > 0) {
+                const file = input.files[0];
+                const tamanhoKb = Math.round(file.size / 1024);
+                if (nomeExibicao) {
+                    nomeExibicao.textContent = `✓ ${file.name} (${tamanhoKb} KB selecionado)`;
+                    nomeExibicao.style.display = "block";
+                }
+                if (textoInstrucao) {
+                    textoInstrucao.style.display = "none";
+                }
+            } else {
+                if (nomeExibicao) {
+                    nomeExibicao.style.display = "none";
+                }
+                if (textoInstrucao) {
+                    textoInstrucao.style.display = "block";
+                }
+            }
+        });
+    });
+})();

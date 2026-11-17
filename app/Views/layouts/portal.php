@@ -39,7 +39,7 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
                     <line x1="18" y1="3" x2="18" y2="21"></line>
                 </svg>
             </button>
-            <a class="marca" href="<?= e(url('/portal')) ?>">-Tributo!</a>
+            <a class="marca" href="<?= e(url('/portal')) ?>"><span class="marca-hifen">-</span>Tributo!</a>
             <span class="badge-perfil">Portal Cliente</span>
         </div>
         <?php if ($nomeUsuario !== '') : ?>
@@ -60,7 +60,7 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
                 <span class="sidebar-titulo-mobile">Menu do Cliente</span>
                 <button id="botao-fechar-menu-mobile" class="botao-fechar-mobile" type="button" aria-label="Fechar menu">✕</button>
             </div>
-            <ul>
+            <ul class="lista-menu-principal">
                 <?php foreach ($itensMenu as $item) : ?>
                     <?php
                     $ehAtivo = ($item['url'] === '/portal' && ($caminhoAtual === '/portal' || $caminhoAtual === ''))
@@ -73,6 +73,25 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
                     </li>
                 <?php endforeach; ?>
             </ul>
+
+            <?php if ($nomeUsuario !== '') : ?>
+                <div class="sidebar-rodape-usuario">
+                    <div class="usuario-info-sidebar">
+                        <span class="avatar-sidebar" aria-hidden="true"><?= e(strtoupper(substr($nomeUsuario, 0, 1))) ?></span>
+                        <div class="usuario-textos-sidebar">
+                            <span class="usuario-nome-sidebar" title="<?= e($nomeUsuario) ?>"><?= e($nomeUsuario) ?></span>
+                            <span class="usuario-perfil-sidebar">Portal Cliente</span>
+                        </div>
+                    </div>
+                    <form method="post" action="<?= e(url('/logout')) ?>" class="form-logout-sidebar">
+                        <?= csrf_campo() ?>
+                        <button class="botao-sair-sidebar" type="submit" title="Encerrar sessão">
+                            <span class="menu-icone icone-logout-svg" aria-hidden="true">S</span>
+                            <span class="rotulo-sair">Sair</span>
+                        </button>
+                    </form>
+                </div>
+            <?php endif; ?>
         </nav>
 
         <main id="conteudo-principal" class="conteudo-principal" tabindex="-1">

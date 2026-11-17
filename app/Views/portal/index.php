@@ -58,10 +58,10 @@ foreach ($documentos as $d) {
         </div>
     </header>
 
-    <!-- Grid de Indicadores Rápidos do Empresário -->
-    <div class="grid-kpis" style="margin-bottom: 1.5rem;">
+    <!-- Grid de Indicadores Rápidos do Empresário (Filtros Clicáveis) -->
+    <div class="grid-kpis grid-kpis-interativos" style="margin-bottom: 1.25rem;">
         <!-- Card 1: Documentos Pendentes -->
-        <div class="kpi-card <?= $pendenciasCount > 0 ? 'kpi-alerta' : 'kpi-sucesso' ?>">
+        <div class="kpi-card <?= $pendenciasCount > 0 ? 'kpi-alerta' : 'kpi-sucesso' ?>" role="button" tabindex="0" data-filtro-portal="pendentes" title="Clique para filtrar apenas documentos pendentes de envio">
             <div class="kpi-icone"><?= $pendenciasCount > 0 ? '⚠️' : '✅' ?></div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Documentos Pendentes</span>
@@ -75,7 +75,7 @@ foreach ($documentos as $d) {
         </div>
 
         <!-- Card 2: Em Análise -->
-        <div class="kpi-card kpi-info">
+        <div class="kpi-card kpi-info" role="button" tabindex="0" data-filtro-portal="conferencia" title="Clique para filtrar documentos em conferência pelo escritório">
             <div class="kpi-icone">📥</div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Em Conferência</span>
@@ -87,7 +87,7 @@ foreach ($documentos as $d) {
         </div>
 
         <!-- Card 3: Documentos Aprovados -->
-        <div class="kpi-card kpi-sucesso">
+        <div class="kpi-card kpi-sucesso" role="button" tabindex="0" data-filtro-portal="aceitos" title="Clique para filtrar documentos aceitos">
             <div class="kpi-icone">📁</div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Documentos Aceitos</span>
@@ -99,7 +99,7 @@ foreach ($documentos as $d) {
         </div>
 
         <!-- Card 4: Guias a Vencer -->
-        <div class="kpi-card">
+        <div class="kpi-card" role="button" tabindex="0" data-filtro-portal="guias" title="Clique para ver apenas as guias e tributos">
             <div class="kpi-icone">📅</div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Guias da Empresa</span>
@@ -111,8 +111,19 @@ foreach ($documentos as $d) {
         </div>
     </div>
 
+    <!-- Barra de Filtro Ativo -->
+    <div id="barra-filtro-portal" class="barra-filtro-ativo" style="display: none;">
+        <div class="filtro-info-texto">
+            <span class="filtro-rotulo-icone">🔍</span>
+            <span id="texto-filtro-ativo">Filtrando conteúdo</span>
+        </div>
+        <button type="button" id="botao-limpar-filtro" class="botao-limpar-filtro">
+            ✕ Mostrar tudo
+        </button>
+    </div>
+
     <!-- Bloco 1: Solicitações de Documentos (Envio Interativo) -->
-    <div class="cartao" style="margin-bottom: 1.75rem;">
+    <div id="secao-documentos-portal" class="cartao" style="margin-bottom: 1.75rem;">
         <div class="cartao-cabecalho-flex" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
             <div>
                 <h2 style="font-size: 1.25rem; margin: 0 0 0.25rem; color: #0f172a;">Documentos Solicitados pelo Escritório</h2>
@@ -130,7 +141,7 @@ foreach ($documentos as $d) {
                 <p style="font-size: 0.9rem; margin: 0;">Quando o escritório solicitar extratos ou comprovantes, eles aparecerão aqui para envio direto.</p>
             </div>
         <?php else : ?>
-            <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+            <div id="lista-documentos-portal" style="display: flex; flex-direction: column; gap: 1.25rem;">
                 <?php foreach ($documentos as $doc) : ?>
                     <?php
                         $st = (string) $doc['status'];
@@ -138,8 +149,9 @@ foreach ($documentos as $d) {
                         $prazoStr = date('d/m/Y', strtotime((string) $doc['prazo']));
                         $atrasado = (int) ($doc['atrasada'] ?? 0) === 1;
                         $precisaEnviar = in_array($st, ['aberta', 'recusada'], true);
+                        $grupoFiltro = $precisaEnviar ? 'pendentes' : ($st === 'enviada' ? 'conferencia' : 'aceitos');
                     ?>
-                    <div style="background: #ffffff; border: 1px solid <?= $atrasado ? '#fca5a5' : '#cbd5e1' ?>; border-left: 5px solid <?= e($info['cor']) ?>; border-radius: 8px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                    <div class="card-documento-item" data-grupo-portal="<?= e($grupoFiltro) ?>" style="background: #ffffff; border: 1px solid <?= $atrasado ? '#fca5a5' : '#cbd5e1' ?>; border-left: 5px solid <?= e($info['cor']) ?>; border-radius: 10px; padding: 1.25rem; box-shadow: 0 2px 6px rgba(0,0,0,0.04);">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.75rem;">
                             <div style="flex: 1; min-width: 240px;">
                                 <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
@@ -151,7 +163,7 @@ foreach ($documentos as $d) {
                                     </span>
                                 </div>
                                 <div style="margin-top: 0.35rem; font-size: 0.85rem; color: #64748b; display: flex; align-items: center; gap: 0.4rem;">
-                                    <span>Prazo limite: <strong style="<?= $atrasado ? 'color: #dc2626;' : '#0f172a' ?>"><?= e($prazoStr) ?></strong></span>
+                                    <span>Prazo de entrega: <strong style="<?= $atrasado ? 'color: #dc2626;' : 'color: #0f172a;' ?>"><?= e($prazoStr) ?></strong></span>
                                     <?php if ($atrasado) : ?>
                                         <span class="badge badge-perigo" style="font-size: 0.72rem;">Prazo Vencido</span>
                                     <?php endif; ?>
@@ -192,30 +204,35 @@ foreach ($documentos as $d) {
                         <?php endif; ?>
 
                         <?php if ($precisaEnviar) : ?>
-                            <form method="post" action="<?= e(url('/portal/documentos/' . $doc['id'] . '/enviar')) ?>" enctype="multipart/form-data" style="margin-top: 0.75rem; background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1.5px dashed #94a3b8;">
+                            <form method="post" action="<?= e(url('/portal/documentos/' . $doc['id'] . '/enviar')) ?>" enctype="multipart/form-data" class="form-envio-documento">
                                 <?= csrf_campo() ?>
-                                <label for="arquivo_<?= e((string) $doc['id']) ?>" style="display: block; font-weight: 700; font-size: 0.9rem; color: #1e293b; margin-bottom: 0.5rem;">
-                                    <?= ($st === 'recusada') ? '📤 Selecionar novo arquivo corrigido:' : '📤 Selecionar arquivo para envio:' ?>
-                                </label>
-                                <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
-                                    <input type="file" id="arquivo_<?= e((string) $doc['id']) ?>" name="arquivo" accept=".pdf,.jpg,.jpeg,.png,.xml" required style="font-size: 0.88rem; flex: 1; min-width: 200px;">
-                                    <button type="submit" class="botao botao-primario" style="white-space: nowrap;">
+                                <div class="box-upload-moderno">
+                                    <label for="arquivo_<?= e((string) $doc['id']) ?>" class="label-upload-customizado">
+                                        <span class="icone-upload-nuvem" aria-hidden="true">📁</span>
+                                        <span class="texto-upload-instrucao">
+                                            <?= ($st === 'recusada') ? 'Clique para anexar arquivo corrigido' : 'Clique para escolher o arquivo' ?>
+                                            <small class="texto-formatos-upload">(PDF, JPG, PNG ou XML até 5 MB)</small>
+                                        </span>
+                                        <span class="nome-arquivo-escolhido" style="display: none;"></span>
+                                    </label>
+                                    <input type="file" id="arquivo_<?= e((string) $doc['id']) ?>" name="arquivo" class="input-arquivo-oculto" accept=".pdf,.jpg,.jpeg,.png,.xml" required>
+                                    <button type="submit" class="botao botao-primario botao-submit-upload">
                                         Enviar Documento
                                     </button>
                                 </div>
-                                <small style="display: block; margin-top: 0.5rem; color: #64748b; font-size: 0.78rem;">
-                                    Formatos aceitos: PDF, JPG, PNG e XML (Tamanho máximo permitido: 5 MB).
-                                </small>
                             </form>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
+            <p id="aviso-nenhum-doc-filtro" style="display: none; text-align: center; color: #64748b; padding: 2rem 0; font-style: italic;">
+                Nenhum documento com este status no momento.
+            </p>
         <?php endif; ?>
     </div>
 
     <!-- Bloco 2: Próximas Guias e Obrigações Fiscais da Empresa -->
-    <div class="cartao">
+    <div id="secao-guias-portal" class="cartao">
         <div class="cartao-cabecalho-flex" style="border-bottom: 1px solid #e2e8f0; padding-bottom: 0.75rem; margin-bottom: 1.25rem;">
             <div>
                 <h2 style="font-size: 1.25rem; margin: 0 0 0.25rem; color: #0f172a;">Próximas Guias e Obrigações da Empresa</h2>

@@ -118,7 +118,7 @@ $numero = static function (array $item): string {
 
         <div class="grid-semaforo">
             <?php foreach ($rotulosSemaforo as $cor => $rotuloCor) : ?>
-                <div class="card-semaforo card-semaforo-<?= e($cor) ?>">
+                <div class="card-semaforo card-semaforo-<?= e($cor) ?> card-semaforo-clicavel" role="button" tabindex="0" data-filtro-semaforo="<?= e($cor) ?>" title="Clique para filtrar empresas com situação <?= e($rotuloCor) ?>">
                     <div class="semaforo-cabecalho">
                         <?php if ($cor === 'sem_historico') : ?>
                             <span style="display: inline-block; width: 0.75rem; height: 0.75rem; border-radius: 50%; background: #94a3b8;"></span>
@@ -136,12 +136,19 @@ $numero = static function (array $item): string {
             <?php endforeach; ?>
         </div>
 
-        <h3 style="margin-top: 1.75rem; margin-bottom: 0.75rem;">5 piores índices</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <h3 style="margin: 0;">5 piores índices</h3>
+            <div id="barra-filtro-semaforo" class="barra-filtro-ativo" style="display: none; margin: 0; padding: 0.35rem 0.75rem;">
+                <span id="texto-filtro-semaforo" style="font-size: 0.85rem;"></span>
+                <button type="button" id="botao-limpar-filtro-semaforo" class="botao-limpar-filtro" style="font-size: 0.8rem;">✕ Ver todas</button>
+            </div>
+        </div>
+
         <?php if ($piores === []) : ?>
             <p class="texto-mutado">Nenhuma empresa com histórico para comparar.</p>
         <?php else : ?>
             <div class="tabela-responsiva">
-                <table>
+                <table id="tabela-piores-indices">
                     <thead>
                         <tr>
                             <th scope="col">Empresa</th>
@@ -153,7 +160,7 @@ $numero = static function (array $item): string {
                     </thead>
                     <tbody>
                         <?php foreach ($piores as $pior) : ?>
-                            <tr>
+                            <tr class="linha-empresa-indice" data-semaforo-linha="<?= e((string) $pior['semaforo']) ?>">
                                 <th scope="row"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
                                 <td><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
                                 <td><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
@@ -176,6 +183,9 @@ $numero = static function (array $item): string {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
+                <p id="aviso-sem-empresa-filtro" style="display: none; text-align: center; color: #64748b; padding: 1.5rem 0; font-style: italic;">
+                    Nenhuma empresa entre os 5 piores índices com esta situação.
+                </p>
             </div>
         <?php endif; ?>
     </section>
