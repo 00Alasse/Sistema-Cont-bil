@@ -40,3 +40,18 @@ document.querySelectorAll('input[data-mascara="valor"]').forEach((campo) => {
         campo.value = `R$ ${formatados},${centavos}`;
     });
 });
+
+document.querySelectorAll("[data-preencher-login]").forEach((botao) => {
+    botao.addEventListener("click", () => {
+        const email = botao.getAttribute("data-email");
+        const senha = botao.getAttribute("data-senha");
+        const campoEmail = document.getElementById("email");
+        const campoSenha = document.getElementById("senha");
+        if (campoEmail && email) {
+            campoEmail.value = email;
+        }
+        if (campoSenha && senha) {
+            campoSenha.value = senha;
+        }
+    });
+});

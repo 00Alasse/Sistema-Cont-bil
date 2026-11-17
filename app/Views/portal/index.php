@@ -20,7 +20,7 @@ $statusLabels = [
         <div>
             <h1>Portal da Empresa: <?= e((string) ($empresa['nome_fantasia'] ?: $empresa['razao_social'])) ?></h1>
             <p style="margin-top: 0.25rem; color: #64748b;">
-                CNPJ: <?= e((string) $empresa['cnpj']) ?> • Regime: <?= e((string) $empresa['regime']) ?>
+                CNPJ: <?= e(\App\Support\Cnpj::formatar((string) $empresa['cnpj'])) ?> • Regime: <?= e((string) ($empresa['regime_tributario'] ?? $empresa['regime'] ?? 'Simples Nacional')) ?>
             </p>
         </div>
         <div>
