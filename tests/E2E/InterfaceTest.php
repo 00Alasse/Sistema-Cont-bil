@@ -49,6 +49,8 @@ final class InterfaceTest extends E2ETestCase
         foreach ($this->telas() as $caminho => $resposta) {
             self::assertDoesNotMatchRegularExpression('/\sstyle\s*=/i', $resposta->corpo, 'style="" em ' . $caminho);
             self::assertDoesNotMatchRegularExpression('/<style\b/i', $resposta->corpo, '<style> em ' . $caminho);
+            // A CSP (script-src 'self') bloqueia handlers inline (onsubmit, onclick...): use data-confirmar e o app.js.
+            self::assertDoesNotMatchRegularExpression('/\son[a-z]+\s*=/i', $resposta->corpo, 'handler on*= em ' . $caminho);
             self::assertDoesNotMatchRegularExpression('#(?:src|href)="https?://#i', $resposta->corpo, 'Recurso externo em ' . $caminho);
         }
     }
@@ -85,6 +87,75 @@ final class InterfaceTest extends E2ETestCase
         }
     }
 
+    public function testTelasAutenticadasCarregamOBootstrapJsDoOffcanvas(): void
+    {
+        foreach ($this->telasAutenticadas() as $caminho => $resposta) {
+            self::assertStringContainsString(
+                'src="/assets/vendor/bootstrap/bootstrap.bundle.min.js"',
+                $resposta->corpo,
+                'O offcanvas do menu depende do bundle do Bootstrap em ' . $caminho
+            );
+            self::assertStringContainsString('src="/assets/js/app.js"', $resposta->corpo, $caminho);
+        }
+    }
+
+    public function testMarcaFicaNaBarraLateralEscuraELegivel(): void
+    {
+        foreach ($this->telasAutenticadas() as $caminho => $resposta) {
+            // A marca padrão (variante escura) só é legível sobre a barra lateral escura; fora dela,
+            // o texto branco some no cabeçalho claro.
+            self::assertMatchesRegularExpression(
+                '#<aside class="barra-lateral[^"]*".*?<a class="marca" href="[^"]+"><svg class="marca-simbolo".*?<span class="marca-nome">-Tributo</span></a>#s',
+                $resposta->corpo,
+                'Marca -Tributo ausente da barra lateral em ' . $caminho
+            );
+            self::assertDoesNotMatchRegularExpression(
+                '#<header class="cabecalho">(?:(?!</header>).)*class="marca[ "]#s',
+                $resposta->corpo,
+                'Marca de texto branco dentro do cabeçalho claro em ' . $caminho
+            );
+        }
+    }
+
+    public function testPortalEEscritorioUsamAMesmaEstruturaDeMenu(): void
+    {
+        $telas = $this->telasAutenticadas();
+
+        foreach (['/portal', '/avaliacao', '/painel', '/solicitacoes'] as $caminho) {
+            $corpo = $telas[$caminho]->corpo;
+            self::assertStringContainsString('id="barra-lateral"', $corpo, $caminho);
+            self::assertStringContainsString('data-bs-toggle="offcanvas" data-bs-target="#barra-lateral" aria-controls="barra-lateral"', $corpo, $caminho);
+            self::assertStringContainsString('data-barra-recolher aria-expanded="true"', $corpo, $caminho);
+            self::assertStringContainsString('aria-label="Navegação principal"', $corpo, $caminho);
+            self::assertGreaterThanOrEqual(1, preg_match_all('#<a class="menu-item" href="/[^"]+" title="[^"]+">#', $corpo), $caminho);
+            // O formulário de saída continua sendo POST com token CSRF.
+            self::assertMatchesRegularExpression('#<form method="post" action="/logout">\s*<input type="hidden" name="_csrf"#', $corpo, $caminho);
+        }
+    }
+
+    public function testNenhumaTelaTemRestosDoLayoutAntigo(): void
+    {
+        $restos = ['botao-menu-toggle', 'sidebar-principal', 'cabecalho-marca-area', 'menu-backdrop', 'badge-perfil', 'sidebar-rodape-usuario'];
+
+        foreach ($this->telasAutenticadas() as $caminho => $resposta) {
+            foreach ($restos as $resto) {
+                self::assertStringNotContainsString($resto, $resposta->corpo, $resto . ' em ' . $caminho);
+            }
+        }
+    }
+
+    public function testCspNaoFoiFlexibilizadaParaEsconderEstilosEmLinha(): void
+    {
+        foreach ($this->telas() as $caminho => $resposta) {
+            $csp = $resposta->header('Content-Security-Policy') ?? '';
+
+            self::assertStringContainsString("style-src 'self'", $csp, $caminho);
+            self::assertStringContainsString("script-src 'self'", $csp, $caminho);
+            self::assertStringNotContainsString('unsafe-inline', $csp, $caminho);
+            self::assertStringNotContainsString('unsafe-eval', $csp, $caminho);
+        }
+    }
+
     public function testFonteEIconesTemLicencaRegistrada(): void
     {
         $raiz = dirname(__DIR__, 2);
@@ -108,6 +179,7 @@ final class InterfaceTest extends E2ETestCase
     {
         $visitante = $this->cliente();
         $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
 
         return [
             '/' => $visitante->get('/'),
@@ -118,8 +190,27 @@ final class InterfaceTest extends E2ETestCase
             '/empresas/nova' => $admin->get('/empresas/nova'),
             '/obrigacoes' => $admin->get('/obrigacoes'),
             '/tipos-obrigacao' => $admin->get('/tipos-obrigacao'),
-            '/403' => $this->entrar('cliente.padaria@exemplo.test')->get('/painel'),
+            '/solicitacoes' => $admin->get('/solicitacoes'),
+            '/avaliacoes' => $admin->get('/avaliacoes'),
+            '/usuarios' => $admin->get('/usuarios'),
+            '/avaliacao (escritório)' => $admin->get('/avaliacao'),
+            '/portal' => $cliente->get('/portal'),
+            '/avaliacao' => $cliente->get('/avaliacao'),
+            '/403' => $cliente->get('/painel'),
         ];
+    }
+
+    /**
+     * Só as telas com a barra lateral (escritório e portal): sem página inicial, login nem erros.
+     *
+     * @return array<string, \Tests\Support\RespostaHttp>
+     */
+    private function telasAutenticadas(): array
+    {
+        return array_diff_key(
+            $this->telas(),
+            array_flip(['/', '/login', '/caminho-inexistente', '/403'])
+        );
     }
 
     private function entrar(string $email): ClienteHttp

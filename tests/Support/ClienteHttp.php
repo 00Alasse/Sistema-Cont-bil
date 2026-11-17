@@ -57,6 +57,26 @@ final class ClienteHttp
     }
 
     /**
+     * Envia um POST multipart/form-data (upload). Os campos comuns vão como texto e o arquivo
+     * como CURLFile; é o único jeito de testar rotas que recebem $_FILES.
+     *
+     * @param array<string, string> $campos
+     */
+    public function postarArquivo(
+        string $caminho,
+        array $campos,
+        string $campoArquivo,
+        string $arquivoLocal,
+        string $nomeEnviado,
+        string $mime
+    ): RespostaHttp {
+        $partes = $campos;
+        $partes[$campoArquivo] = new \CURLFile($arquivoLocal, $mime, $nomeEnviado);
+
+        return $this->enviar('POST', $caminho, $partes);
+    }
+
+    /**
      * Valor atual de um cookie guardado pelo cliente, ou null.
      */
     public function cookie(string $nome): ?string
@@ -87,7 +107,7 @@ final class ClienteHttp
     }
 
     /**
-     * @param array<string, string>|null $campos
+     * @param array<string, string|\CURLFile>|null $campos
      */
     private function enviar(string $metodo, string $caminho, ?array $campos): RespostaHttp
     {
@@ -121,7 +141,9 @@ final class ClienteHttp
             curl_setopt($curl, CURLOPT_COOKIE, implode('; ', $pares));
         }
         if ($campos !== null) {
-            curl_setopt($curl, CURLOPT_POSTFIELDS, http_build_query($campos));
+            // Com arquivo, o cURL precisa receber o array (monta o multipart); sem arquivo, urlencoded como antes.
+            $temArquivo = array_filter($campos, static fn ($valor): bool => $valor instanceof \CURLFile) !== [];
+            curl_setopt($curl, CURLOPT_POSTFIELDS, $temArquivo ? $campos : http_build_query($campos));
         }
 
         $corpo = curl_exec($curl);
