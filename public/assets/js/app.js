@@ -41,20 +41,6 @@ document.querySelectorAll('input[data-mascara="valor"]').forEach((campo) => {
     });
 });
 
-document.querySelectorAll("[data-preencher-login]").forEach((botao) => {
-    botao.addEventListener("click", () => {
-        const email = botao.getAttribute("data-email");
-        const senha = botao.getAttribute("data-senha");
-        const campoEmail = document.getElementById("email");
-        const campoSenha = document.getElementById("senha");
-        if (campoEmail && email) {
-            campoEmail.value = email;
-        }
-        if (campoSenha && senha) {
-            campoSenha.value = senha;
-        }
-    });
-});
 
 /* ==========================================================================
    Controle de Sidebar: Minimizar / Maximizar (Desktop e Mobile Drawer)
