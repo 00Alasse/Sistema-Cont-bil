@@ -47,6 +47,42 @@ final class AuthServiceTest extends IntegrationTestCase
         self::assertSame('0', $this->coluna('SELECT sucesso FROM tentativas_login WHERE email = \'ana@exemplo.test\''));
     }
 
+    /**
+     * @return array<string, array{string}>
+     */
+    public static function senhasAlternativasRejeitadas(): array
+    {
+        return [
+            'senha em minúsculas' => ['senha@123'],
+            'senha123' => ['senha123'],
+            'sequência curta' => ['123456'],
+            'sequência longa' => ['12345678'],
+            'admin123' => ['admin123'],
+            'admin' => ['admin'],
+            'teste' => ['teste'],
+            'tributo' => ['tributo'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('senhasAlternativasRejeitadas')]
+    public function testSenhaAlternativaNaoSubstituiASenhaCadastrada(string $alternativa): void
+    {
+        $this->criarUsuario($this->criarEscritorio(), 'ana@exemplo.test');
+
+        self::assertNull($this->servico()->autenticar('ana@exemplo.test', $alternativa, self::IP));
+        self::assertNotNull($this->servico()->autenticar('ana@exemplo.test', self::SENHA, self::IP));
+    }
+
+    public function testEspacosNasPontasDaSenhaNaoSaoIgnorados(): void
+    {
+        $this->criarUsuario($this->criarEscritorio(), 'ana@exemplo.test');
+        $servico = $this->servico();
+
+        self::assertNull($servico->autenticar('ana@exemplo.test', ' ' . self::SENHA, self::IP));
+        self::assertNull($servico->autenticar('ana@exemplo.test', self::SENHA . ' ', self::IP));
+        self::assertNull($servico->autenticar('ana@exemplo.test', ' ' . self::SENHA . ' ', self::IP));
+        self::assertNotNull($servico->autenticar('ana@exemplo.test', self::SENHA, self::IP));
+    }
     public function testEmailInexistenteNaoAutenticaERegistraFalha(): void
     {
         self::assertNull($this->servico()->autenticar('ninguem@exemplo.test', self::SENHA, self::IP));
