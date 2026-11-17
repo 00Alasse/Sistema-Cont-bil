@@ -27,11 +27,16 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
     <a class="pular-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>
     <header class="cabecalho">
         <div class="cabecalho-marca-area">
-            <button id="botao-toggle-menu" class="botao-menu-toggle" type="button" aria-label="Minimizar ou expandir menu" aria-expanded="true" title="Minimizar/Maximizar menu">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <line x1="3" y1="12" x2="21" y2="12"></line>
+            <button id="botao-toggle-menu" class="botao-menu-toggle" type="button" aria-label="Minimizar ou maximizar menu" aria-expanded="true" title="Minimizar/Maximizar menu">
+                <svg class="icone-horizontal" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
                     <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+                <svg class="icone-vertical" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <line x1="6" y1="3" x2="6" y2="21"></line>
+                    <line x1="12" y1="3" x2="12" y2="21"></line>
+                    <line x1="18" y1="3" x2="18" y2="21"></line>
                 </svg>
             </button>
             <a class="marca" href="<?= e(url('/portal')) ?>">-Tributo!</a>

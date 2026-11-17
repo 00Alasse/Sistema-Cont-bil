@@ -85,6 +85,23 @@ a:hover {
     transform: scale(0.96);
 }
 
+/* Ícones das 3 linhas (☰ quando maximizado, ||| quando minimizado) */
+.botao-menu-toggle .icone-horizontal {
+    display: block;
+}
+
+.botao-menu-toggle .icone-vertical {
+    display: none;
+}
+
+body.sidebar-colapsada .botao-menu-toggle .icone-horizontal {
+    display: none;
+}
+
+body.sidebar-colapsada .botao-menu-toggle .icone-vertical {
+    display: block;
+}
+
 .badge-perfil {
     font-size: 0.72rem;
     background: rgba(255, 255, 255, 0.18);
@@ -271,6 +288,16 @@ a[data-icone="usuarios"] .menu-icone::before {
 a[data-icone="avaliacao"] .menu-icone::before {
     -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
     mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+}
+
+a[data-icone="tipos"] .menu-icone::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z'/%3E%3C/svg%3E");
+}
+
+a[data-icone="portal"] .menu-icone::before {
+    -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/%3E%3C/svg%3E");
+    mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z'/%3E%3C/svg%3E");
 }
 
 .conteudo-principal {
@@ -835,6 +862,20 @@ tbody tr:hover {
 
     body.sidebar-colapsada .estrutura-aplicacao {
         grid-template-columns: minmax(0, 1fr);
+    }
+
+    /* No mobile: fechado (minimizado) mostra |||, aberto (maximizado) mostra ☰ */
+    .botao-menu-toggle .icone-horizontal {
+        display: none;
+    }
+    .botao-menu-toggle .icone-vertical {
+        display: block;
+    }
+    body.sidebar-aberta-mobile .botao-menu-toggle .icone-horizontal {
+        display: block;
+    }
+    body.sidebar-aberta-mobile .botao-menu-toggle .icone-vertical {
+        display: none;
     }
 
     .menu-backdrop {
