@@ -54,8 +54,12 @@ final class SolicitacaoDocumento extends Model
         }
 
         if (!empty($filtros['busca'])) {
-            $condicoes[] = '(s.titulo LIKE :busca OR e.razao_social LIKE :busca OR e.nome_fantasia LIKE :busca)';
-            $params['busca'] = '%' . QueryFiltros::like((string) $filtros['busca']) . '%';
+            // Um parâmetro por coluna: com prepares nativos, repetir :busca gera HY093.
+            $condicoes[] = '(s.titulo LIKE :busca1 OR e.razao_social LIKE :busca2 OR e.nome_fantasia LIKE :busca3)';
+            $termo = '%' . QueryFiltros::like((string) $filtros['busca']) . '%';
+            $params['busca1'] = $termo;
+            $params['busca2'] = $termo;
+            $params['busca3'] = $termo;
         }
 
         $where = implode(' AND ', $condicoes);

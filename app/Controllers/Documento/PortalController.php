@@ -64,7 +64,8 @@ final class PortalController extends Controller
         // Próximas obrigações/guias da empresa
         $filtrosObrigacoes = [
             'empresa_id' => (string) $empresaId,
-            'ordem' => 'vencimento_asc',
+            // Guias do portal em ordem cronológica de vencimento (a "prioridade" é só da listagem do escritório).
+            'ordem' => 'vencimento',
         ];
         $paginaObrigacoes = $this->obrigacoes->listar($usuario->escritorioId, $filtrosObrigacoes, Paginacao::deRequest($request, 10));
 

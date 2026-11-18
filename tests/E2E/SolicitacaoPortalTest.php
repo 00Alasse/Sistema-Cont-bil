@@ -6,6 +6,7 @@ namespace Tests\E2E;
 
 use DateTimeImmutable;
 use Tests\Support\ClienteHttp;
+use Tests\Support\FabricaFiscal;
 use Tests\Support\RespostaHttp;
 
 /**
@@ -473,6 +474,55 @@ final class SolicitacaoPortalTest extends E2ETestCase
         self::assertStringNotContainsString($prefixo . ' enviada vencida', $vencidas);
         // O filtro aparece selecionado no formulário.
         self::assertStringContainsString('<option value="vencida" selected>Prazo de envio vencido</option>', $vencidas);
+    }
+
+    public function testBuscaPorTextoNaListagemRespondeEFiltra(): void
+    {
+        // Regressão: ?q= respondia 500 (HY093, parâmetro :busca repetido).
+        $admin = $this->entrar('admin@exemplo.test');
+        $titulo = 'E2E Busca ' . bin2hex(random_bytes(4));
+        $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $titulo);
+        $outro = 'E2E Outra ' . bin2hex(random_bytes(4));
+        $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $outro);
+
+        $resposta = $admin->get('/solicitacoes?q=' . rawurlencode($titulo));
+
+        self::assertSame(200, $resposta->status);
+        self::assertStringContainsString($titulo, $resposta->corpo);
+        self::assertStringNotContainsString($outro, $resposta->corpo);
+        self::assertStringContainsString('value="' . $titulo . '"', $resposta->corpo);
+    }
+
+    public function testGuiasDoPortalSaoListadasEmOrdemCronologicaDeVencimento(): void
+    {
+        // Duas guias mais antigas que qualquer outra da empresa: uma entregue (vence antes) e uma em aberto,
+        // com atraso crítico. Pela prioridade do escritório, a aberta viria primeiro; no portal, vale o vencimento.
+        $fabrica = new FabricaFiscal($this->banco());
+        $adminId = (int) $this->banco()->query("SELECT id FROM usuarios WHERE email = 'admin@exemplo.test'")->fetchColumn();
+        $entregueNome = 'E2E Guia entregue ' . bin2hex(random_bytes(4));
+        $abertaNome = 'E2E Guia aberta ' . bin2hex(random_bytes(4));
+        $tipos = [$fabrica->criarTipo(1, ['nome' => $entregueNome]), $fabrica->criarTipo(1, ['nome' => $abertaNome])];
+        $obrigacoes = [
+            $fabrica->criarObrigacao(1, self::EMPRESA_OFICINA, $tipos[0], $adminId, ['competencia' => '2019-12-01', 'vencimento' => '2020-01-10', 'status' => 'ENTREGUE']),
+            $fabrica->criarObrigacao(1, self::EMPRESA_OFICINA, $tipos[1], $adminId, ['competencia' => '2020-01-01', 'vencimento' => '2020-02-10']),
+        ];
+
+        try {
+            $corpo = $this->entrar('cliente.oficina@exemplo.test')->get('/portal')->corpo;
+
+            $entregue = strpos($corpo, '<strong>' . $entregueNome . '</strong>');
+            $aberta = strpos($corpo, '<strong>' . $abertaNome . '</strong>');
+            self::assertNotFalse($entregue, 'guia entregue');
+            self::assertNotFalse($aberta, 'guia aberta');
+            self::assertLessThan($aberta, $entregue, 'a guia que vence antes aparece primeiro');
+        } finally {
+            foreach ($obrigacoes as $id) {
+                $this->banco()->prepare('DELETE FROM obrigacoes WHERE id = :id')->execute(['id' => $id]);
+            }
+            foreach ($tipos as $id) {
+                $this->banco()->prepare('DELETE FROM tipos_obrigacao WHERE id = :id')->execute(['id' => $id]);
+            }
+        }
     }
 
     // ---- Apoio ----
