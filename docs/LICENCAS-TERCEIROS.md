@@ -8,7 +8,7 @@ e aprovados na [ADR-024](DECISIONS.md). Qualquer outro item exige um novo ADR e 
 |---------|-----------|--------|---------|
 | Fonte **Inter** (variável, subconjunto latino, pesos 400 a 700) | `public/assets/fonts/inter-latin-variable.woff2` | https://github.com/rsms/inter, versão 4.1 | SIL Open Font License 1.1 |
 | **Bootstrap** 5.3.8 (CSS e JS, sem source maps) | `public/assets/vendor/bootstrap/` | https://getbootstrap.com, pacote npm `bootstrap@5.3.8` | MIT |
-| Ícones **Lucide** (22 desenhos) | `app/Views/partials/icone.php` | https://lucide.dev, versão 1.73.0 | ISC (parte dos desenhos, herdada do Feather, é MIT) |
+| Ícones **Lucide** (24 desenhos) | `app/Views/partials/icone.php` | https://lucide.dev, versão 1.73.0 | ISC; 12 dos 24 desenhos derivam do Feather e seguem a MIT (tabela na seção Lucide) |
 
 ## Bootstrap
 
@@ -33,6 +33,55 @@ vendida separadamente.
 Os desenhos dos ícones foram copiados do Lucide sem alteração, só reorganizados num mapa de nomes em
 português dentro de `app/Views/partials/icone.php`.
 
+### Conferência de procedência por ícone (17/11/2026)
+
+- **Versão:** os 24 SVGs de `icone.php` são idênticos (conteúdo normalizado) aos arquivos `icons/<nome>.svg` da
+  tag `1.73.0` de https://github.com/lucide-icons/lucide.
+- **Quem deriva do Feather:** o `LICENSE` do Lucide nessa tag lista os ícones derivados do Feather (MIT,
+  © 2013-present Cole Bemis). A lista usa nomes antigos; a ligação com o nome atual foi feita pelos *aliases* do
+  `icons/<nome>.json` do Lucide e **confirmada pela geometria**: cada desenho foi renderizado e comparado com os 287
+  ícones do Feather v4.29.2 (IoU, e cobertura mútua com tolerância de 0,5 unidade do grid de 24).
+- **Critério:** o titular do Lucide declara no `LICENSE` quais ícones derivam do Feather; os que não constam da lista
+  são tratados como desenho do Lucide (ISC). A autoria registrada nos metadados não foi usada como prova.
+
+| Desenho (`icone.php`) | Nome no Lucide 1.73.0 | Nome na lista do Feather | Licença | Evidência | Confiança |
+|---|---|---|---|---|---|
+| `sair` | `log-out` | `log-out` | MIT (Feather) | geometria idêntica ao Feather (IoU 1,00) | alta |
+| `fechar` | `x` | `x` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `adicionar` | `plus` | `plus` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `buscar` | `search` | `search` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `info` | `info` | `info` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `voltar` | `arrow-left` | `arrow-left` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `anterior` | `chevron-left` | `chevron-left` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `proximo` | `chevron-right` | `chevron-right` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `padrao` | `circle` | `circle` | MIT (Feather) | idêntica (IoU 1,00) | alta |
+| `erro` | `circle-x` | `x-circle` (alias) | MIT (Feather) | idêntica ao `x-circle` do Feather (IoU 1,00) | alta |
+| `excluir` | `trash` | `trash` e `trash-2` | MIT (Feather) | idêntica ao `trash-2` do Feather (IoU 1,00); o `trash` do Feather é outro desenho (IoU 0,83) | alta |
+| `aviso` | `triangle-exclamation-point` | `alert-triangle` (alias) | MIT (Feather) | melhor correspondência entre os 287 (cobertura 1,00); coordenadas levemente diferentes (IoU 0,87), ou seja, redesenho sobre a forma do Feather | média |
+| `painel` | `layout-dashboard` | — | ISC (Lucide) | fora da lista; sem correspondência no Feather (melhor IoU 0,59) | alta |
+| `empresa` | `building` | — | ISC (Lucide) | fora da lista; sem pictograma equivalente no Feather (melhor IoU 0,74, ícone sem relação) | alta |
+| `obrigacoes` | `calendar-check` | — | ISC (Lucide) | fora da lista; difere de `calendar` do Feather (IoU 0,52), mas reaproveita a moldura de calendário (caixa e linha de cabeçalho); a maior sobreposição entre os 287 é com `layout` (IoU 0,81, pictograma sem relação) | média |
+| `tipos` | `list-checks` | — | ISC (Lucide) | fora da lista; difere de `list` do Feather (IoU 0,31) | alta |
+| `sucesso` | `circle-check` | — | ISC (Lucide) | fora da lista; difere de `check-circle` do Feather (IoU 0,72); as maiores sobreposições com ícones da lista (`minus-circle`, IoU 0,85) vêm só do círculo base | alta |
+| `menu` | `menu` | — | ISC (Lucide) | fora da lista; redesenhado em relação ao `menu` do Feather (IoU 0,46) | alta |
+| `ver` | `eye` | — | ISC (Lucide) | fora da lista; difere do `eye` do Feather (IoU 0,59) | alta |
+| `usuarios` | `users` | — | ISC (Lucide) | fora da lista; parecido com o `users` do Feather, mas distinto (IoU 0,74, cobertura 0,93) | média |
+| `documentos` | `file-text` | — | ISC (Lucide), **origem inconclusiva** | fora da lista, mas geometria quase igual à do `file-text` do Feather (IoU 0,95; cobertura 0,99) | inconclusiva |
+| `avaliacao` | `star` | — | ISC (Lucide), **origem inconclusiva** | fora da lista, mas contorno da estrela dentro da tolerância do `star` do Feather (cobertura 1,00; IoU 0,77, pontas arredondadas) | inconclusiva |
+| `editar` | `pencil` | — | ISC (Lucide), **origem inconclusiva** | fora da lista, mas próxima do `edit-2` do Feather (IoU 0,90; cobertura 0,96) | inconclusiva |
+| `portal` | `house` | — (`home` no Feather) | ISC (Lucide), **origem inconclusiva** | fora da lista; o Lucide registra `home` como alias, mas `home` não consta da lista de derivados; próxima do `home` do Feather (IoU 0,78; cobertura 0,95) | inconclusiva |
+
+**Casos inconclusivos (`file-text`, `star`, `pencil`, `house`).** O `LICENSE` do Lucide não os declara derivados do
+Feather, então a atribuição adotada aqui é a do titular (ISC). Porém o desenho é muito próximo do ícone de mesmo
+pictograma do Feather. Semelhança geométrica, por si só, não prova cópia (dois desenhos do mesmo pictograma na mesma
+grade de 24 px costumam coincidir), e os metadados de autoria do Lucide também não resolvem a questão. Com os dados
+disponíveis não dá para afirmar nem descartar a ascendência no Feather. O texto da licença MIT do Feather já está
+neste arquivo, e as duas licenças exigem apenas manter os avisos de copyright.
+
+**Limites da conferência.** A comparação é visual/estrutural (renderização no Chromium, 96 a 240 px) e usa a lista e os
+aliases do Lucide 1.73.0; não houve acesso ao histórico completo de commits do Lucide. Os valores de IoU e cobertura
+indicam semelhança, não derivação jurídica.
+
 ```text
 ISC License
 
@@ -51,8 +100,9 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ```
 
-Os ícones herdados do Feather (entre os usados aqui: `log-out`, `x`, `plus`, `search`, `info`,
-`circle`, `arrow-left`, `chevron-left` e `chevron-right`) seguem esta licença:
+Os ícones herdados do Feather usados aqui são `log-out`, `x`, `plus`, `search`, `info`, `circle`, `arrow-left`,
+`chevron-left`, `chevron-right`, `trash` (`trash-2` no Feather), `circle-x` (`x-circle` na lista do Lucide) e
+`triangle-exclamation-point` (`alert-triangle` na lista do Lucide). Eles seguem esta licença:
 
 ```text
 The MIT License (MIT) (for the icons listed above)
