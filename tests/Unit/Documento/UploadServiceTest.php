@@ -98,6 +98,46 @@ final class UploadServiceTest extends TestCase
         }
     }
 
+    public function testRemoverEnvioNaoConfirmadoApagaSoOArquivoInformado(): void
+    {
+        $alvo = str_repeat('a', 32) . '.pdf';
+        $vizinho = str_repeat('b', 32) . '.pdf';
+        file_put_contents($this->pastaTemporaria . '/' . $alvo, 'x');
+        file_put_contents($this->pastaTemporaria . '/' . $vizinho, 'y');
+
+        self::assertTrue($this->servico->removerEnvioNaoConfirmado($alvo));
+        self::assertFileDoesNotExist($this->pastaTemporaria . '/' . $alvo);
+        self::assertFileExists($this->pastaTemporaria . '/' . $vizinho);
+        // Já apagado: não há o que remover.
+        self::assertFalse($this->servico->removerEnvioNaoConfirmado($alvo));
+    }
+
+    public function testRemoverEnvioNaoConfirmadoRecusaNomesForaDoFormatoGerado(): void
+    {
+        $externo = sys_get_temp_dir() . '/' . str_repeat('c', 32) . '.pdf';
+        file_put_contents($externo, 'fora da pasta');
+        $comum = $this->pastaTemporaria . '/documento.pdf';
+        file_put_contents($comum, 'nome comum');
+
+        try {
+            foreach ([
+                '../' . str_repeat('c', 32) . '.pdf',   // fora da pasta de uploads
+                'documento.pdf',                         // não é um nome gerado pelo salvarUpload
+                str_repeat('a', 32) . '.exe',            // extensão não permitida
+                strtoupper(str_repeat('a', 32)) . '.pdf',
+                'sub/' . str_repeat('a', 32) . '.pdf',
+                '',
+                '*',
+            ] as $nome) {
+                self::assertFalse($this->servico->removerEnvioNaoConfirmado($nome), $nome);
+            }
+            self::assertFileExists($externo);
+            self::assertFileExists($comum);
+        } finally {
+            @unlink($externo);
+        }
+    }
+
     public function testConstantesDeUploadCorretas(): void
     {
         $this->assertSame(5 * 1024 * 1024, UploadService::LIMITE_BYTES);

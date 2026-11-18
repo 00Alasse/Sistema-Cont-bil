@@ -525,7 +525,63 @@ final class SolicitacaoPortalTest extends E2ETestCase
         }
     }
 
+    // ---- Transições inválidas: 409 sem evento e sem arquivo novo ----
+
+    public function testAceitarOuRecusarSolicitacaoAbertaResponde409ComMensagemSemEvento(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, 'E2E 409 aberta ' . bin2hex(random_bytes(4)));
+
+        $aceite = $admin->post('/solicitacoes/' . $id . '/aceitar', ['_csrf' => $this->token($admin, '/solicitacoes')]);
+        self::assertSame(409, $aceite->status);
+        self::assertStringContainsString('Só é possível aceitar um documento que está aguardando conferência.', $aceite->corpo);
+
+        $recusa = $admin->post('/solicitacoes/' . $id . '/recusar', ['_csrf' => $this->token($admin, '/solicitacoes'), 'motivo_recusa' => 'Sem arquivo']);
+        self::assertSame(409, $recusa->status);
+        self::assertStringContainsString('Só é possível recusar um documento que está aguardando conferência.', $recusa->corpo);
+
+        self::assertSame('aberta', $this->coluna($id, 'status'));
+        self::assertSame(['criar'], $this->acoesDoHistorico($id));
+    }
+
+    public function testEnviarParaSolicitacaoAceitaResponde409SemDeixarArquivoNovo(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, 'E2E 409 aceita ' . bin2hex(random_bytes(4)));
+        $this->enviarArquivo($cliente, $id, 'aceito.pdf', self::PDF, 'application/pdf');
+        $admin->post('/solicitacoes/' . $id . '/aceitar', ['_csrf' => $this->token($admin, '/solicitacoes')]);
+        $arquivoAceito = $this->coluna($id, 'arquivo_path');
+        $pasta = dirname(__DIR__, 2) . '/storage/uploads';
+        $antes = scandir($pasta);
+
+        $resposta = $this->enviarArquivo($cliente, $id, 'tarde.pdf', self::PDF, 'application/pdf');
+
+        self::assertSame(409, $resposta->status);
+        self::assertStringContainsString('Esta solicitação não aceita novos arquivos no estado atual.', $resposta->corpo);
+        // Sem detalhes internos na resposta.
+        self::assertStringNotContainsString('storage', $resposta->corpo);
+        self::assertStringNotContainsString('Exception', $resposta->corpo);
+        // O arquivo gravado por esta requisição foi apagado; o aceito continua lá e referenciado.
+        self::assertSame($antes, scandir($pasta));
+        self::assertFileExists($pasta . '/' . $arquivoAceito);
+        self::assertSame('aceita', $this->coluna($id, 'status'));
+        self::assertSame($arquivoAceito, $this->coluna($id, 'arquivo_path'));
+        self::assertSame(['criar', 'enviar', 'aceitar'], $this->acoesDoHistorico($id));
+    }
+
     // ---- Apoio ----
+
+    /**
+     * @return list<string>
+     */
+    private function acoesDoHistorico(int $id): array
+    {
+        $consulta = $this->banco()->prepare("SELECT acao FROM logs_atividade WHERE entidade = 'solicitacao' AND entidade_id = :id ORDER BY id");
+        $consulta->execute(['id' => $id]);
+
+        return array_values(array_map('strval', $consulta->fetchAll(\PDO::FETCH_COLUMN)));
+    }
 
     /**
      * Percorre a listagem paginada até achar o texto. Não usa a busca "q" de propósito: ela responde 500

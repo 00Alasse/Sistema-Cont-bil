@@ -176,20 +176,26 @@ final class SolicitacaoDocumento extends Model
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Transições condicionais: o estado de origem faz parte do próprio UPDATE. Assim a regra vale
+     * mesmo com página desatualizada ou duas ações ao mesmo tempo (o InnoDB trava a linha e o segundo
+     * UPDATE reavalia o WHERE depois do primeiro). Retornam quantas linhas mudaram: 0 = transição inválida.
+     */
     public function anexarArquivo(
         int $escritorioId,
         int $id,
         string $arquivoPath,
         string $arquivoNomeOriginal,
         string $enviadoEm
-    ): bool {
+    ): int {
         $sql = "UPDATE solicitacoes_documentos
                 SET arquivo_path = :path,
                     arquivo_nome_original = :nome_original,
                     enviado_em = :enviado_em,
                     status = 'enviada',
                     motivo_recusa = NULL
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status IN ('aberta', 'recusada')";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':path', $arquivoPath);
@@ -197,37 +203,42 @@ final class SolicitacaoDocumento extends Model
         $stmt->bindValue(':enviado_em', $enviadoEm);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
     }
 
-    public function aceitar(int $escritorioId, int $id): bool
+    public function aceitar(int $escritorioId, int $id): int
     {
         $sql = "UPDATE solicitacoes_documentos
                 SET status = 'aceita',
                     motivo_recusa = NULL
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status = 'enviada'";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
     }
 
-    public function recusar(int $escritorioId, int $id, string $motivo): bool
+    public function recusar(int $escritorioId, int $id, string $motivo): int
     {
         $sql = "UPDATE solicitacoes_documentos
                 SET status = 'recusada',
                     motivo_recusa = :motivo
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status = 'enviada'";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':motivo', $motivo);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
     }
 
     /**

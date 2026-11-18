@@ -80,14 +80,19 @@ final class SolicitacaoDocumentoTest extends IntegrationTestCase
         $this->assertSame('arquivo_hash.xml', $enviada['arquivo_path']);
 
         // Contador recusa com motivo
-        $this->solicitacoes->recusar($this->escritorioA, $id, 'Falta a nota 1234');
+        $this->assertSame(1, $this->solicitacoes->recusar($this->escritorioA, $id, 'Falta a nota 1234'));
         $recusada = $this->solicitacoes->buscar($this->escritorioA, $id);
         $this->assertNotNull($recusada);
         $this->assertSame('recusada', $recusada['status']);
         $this->assertSame('Falta a nota 1234', $recusada['motivo_recusa']);
 
-        // Contador aceita
-        $this->solicitacoes->aceitar($this->escritorioA, $id);
+        // Aceitar só vale a partir de "enviada" (transições condicionais): direto de "recusada" não muda nada.
+        $this->assertSame(0, $this->solicitacoes->aceitar($this->escritorioA, $id));
+        $this->assertSame('recusada', $this->solicitacoes->buscar($this->escritorioA, $id)['status'] ?? null);
+
+        // Empresário reenvia e o contador aceita
+        $this->assertSame(1, $this->solicitacoes->anexarArquivo($this->escritorioA, $id, 'arquivo_hash2.xml', 'Notas_Outubro_v2.xml', date('Y-m-d H:i:s')));
+        $this->assertSame(1, $this->solicitacoes->aceitar($this->escritorioA, $id));
         $aceita = $this->solicitacoes->buscar($this->escritorioA, $id);
         $this->assertNotNull($aceita);
         $this->assertSame('aceita', $aceita['status']);

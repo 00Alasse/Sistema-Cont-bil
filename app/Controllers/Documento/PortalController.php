@@ -106,13 +106,17 @@ final class PortalController extends Controller
         }
 
         $agora = $this->relogio->agora()->format('Y-m-d H:i:s');
-        // Grava o arquivo e o evento do histórico na mesma transação (Melhoria 2).
+        $arquivoDestaRequisicao = $resultado['caminho_relativo'];
+        // Grava o arquivo e o evento do histórico na mesma transação. Se nada for confirmado, o service
+        // apaga só o arquivo gravado nesta requisição e relança a exceção: transição inválida vira 409
+        // (página de conflito do Kernel); qualquer outra falha vira a página genérica de erro.
         SolicitacaoService::padrao()->anexarArquivo(
             $usuario,
             $id,
-            $resultado['caminho_relativo'],
+            $arquivoDestaRequisicao,
             $resultado['nome_original'],
-            $agora
+            $agora,
+            fn (): bool => $this->uploadService->removerEnvioNaoConfirmado($arquivoDestaRequisicao)
         );
 
         Session::atual()->flash('sucesso', 'Documento enviado com sucesso! Aguarde a conferência do escritório.');
