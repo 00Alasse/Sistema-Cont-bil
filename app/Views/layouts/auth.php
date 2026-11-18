@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-$cssCompleto = file_exists(dirname(__DIR__, 2) . '/public/assets/css/app.css')
-    ? (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/css/app.css')
-    : '';
+$cssCaminho = dirname(__DIR__, 3) . '/public/assets/css/app.css';
+$cssCompleto = is_file($cssCaminho) ? (string) file_get_contents($cssCaminho) : '';
 ?>
 <!DOCTYPE html>
 <html lang="pt-BR">
