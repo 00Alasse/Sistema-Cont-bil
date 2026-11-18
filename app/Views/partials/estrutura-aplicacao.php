@@ -37,17 +37,16 @@ $conteudoPagina = is_string($conteudoPagina ?? null) ? $conteudoPagina : '';
             <div class="barra-interna">
                 <div class="barra-topo">
                     <?php require __DIR__ . '/marca.php'; ?>
+                    <?php /* Recolher/expandir fica no topo fixo: não rola com os itens do menu. Só aparece com JS e a partir de 992 px. */ ?>
+                    <button class="barra-recolher" type="button" data-barra-recolher aria-expanded="true" title="Recolher menu">
+                        <span class="recolher-icone recolher-icone-fechar" aria-hidden="true"><?php $icone = 'anterior'; require __DIR__ . '/icone.php'; ?></span>
+                        <span class="recolher-icone recolher-icone-abrir" aria-hidden="true"><?php $icone = 'proximo'; require __DIR__ . '/icone.php'; ?></span>
+                        <span class="barra-recolher-rotulo visually-hidden">Recolher menu</span>
+                    </button>
                     <button class="btn-close btn-close-white d-lg-none" type="button" data-bs-dismiss="offcanvas" data-bs-target="#barra-lateral" aria-label="Fechar menu"></button>
                 </div>
                 <div class="barra-menu">
                     <?php require __DIR__ . '/navegacao.php'; ?>
-                </div>
-                <div class="barra-rodape">
-                    <button class="barra-recolher" type="button" data-barra-recolher aria-expanded="true" title="Recolher menu">
-                        <span class="recolher-icone recolher-icone-fechar" aria-hidden="true"><?php $icone = 'anterior'; require __DIR__ . '/icone.php'; ?></span>
-                        <span class="recolher-icone recolher-icone-abrir" aria-hidden="true"><?php $icone = 'proximo'; require __DIR__ . '/icone.php'; ?></span>
-                        <span class="barra-recolher-rotulo">Recolher menu</span>
-                    </button>
                 </div>
             </div>
         </aside>

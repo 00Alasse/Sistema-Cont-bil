@@ -39,9 +39,18 @@ final class InterfaceTest extends E2ETestCase
         $css = (string) file_get_contents($raiz . '/css/app.css');
         preg_match_all('/url\("([^"]+)"\)/', $css, $referencias);
         foreach ($referencias[1] as $referencia) {
+            // Imagem incorporada no próprio CSS (ex.: ícone SVG em mask-image) não é recurso externo nem arquivo:
+            // só aceita data: de imagem, nunca de texto/HTML/script.
+            if (str_starts_with($referencia, 'data:')) {
+                self::assertMatchesRegularExpression('#^data:image/(?:svg\+xml|png|gif|webp)[;,]#', $referencia, 'Só data: de imagem é aceito no CSS.');
+                continue;
+            }
             self::assertFileExists(realpath($raiz . '/css') . '/' . $referencia, 'app.css referencia ' . $referencia);
             self::assertStringStartsNotWith('http', $referencia, 'Nada de recurso externo (CDN) no CSS.');
         }
+        // Qualquer url() ou @import que aponte para fora do site (http, https ou //) continua proibido.
+        self::assertDoesNotMatchRegularExpression('#url\(\s*["\']?(?:https?:)?//#i', $css, 'url() externa no CSS.');
+        self::assertDoesNotMatchRegularExpression('#@import\s+(?:url\()?\s*["\']?(?:https?:)?//#i', $css, '@import externo no CSS.');
     }
 
     public function testNenhumaTelaUsaEstiloEmLinhaNemRecursoExterno(): void
@@ -154,6 +163,33 @@ final class InterfaceTest extends E2ETestCase
             self::assertStringNotContainsString('unsafe-inline', $csp, $caminho);
             self::assertStringNotContainsString('unsafe-eval', $csp, $caminho);
         }
+    }
+
+    public function testPaginaInicialApresentaOProdutoELevaAoLoginSemRedirecionamentoAutomatico(): void
+    {
+        $resposta = $this->cliente()->get('/');
+
+        self::assertSame(200, $resposta->status);
+        // Nada de meta refresh: a pessoa escolhe entrar pelo botão.
+        self::assertStringNotContainsString('http-equiv="refresh"', $resposta->corpo);
+        self::assertMatchesRegularExpression('#<a class="btn btn-primary" href="/login">Entrar</a>#', $resposta->corpo);
+        self::assertStringContainsString('<span class="marca-nome">-Tributo</span>', $resposta->corpo);
+        self::assertStringContainsString('<title>Início - -Tributo</title>', $resposta->corpo);
+        self::assertStringContainsString('href="/assets/vendor/bootstrap/bootstrap.min.css"', $resposta->corpo);
+        self::assertStringContainsString('<link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">', $resposta->corpo);
+        self::assertStringContainsString('Não atesta regularidade fiscal', $resposta->corpo);
+    }
+
+    public function testPaginaInicialParaQuemJaEstaAutenticadoMantemOCaminhoParaOPainel(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+
+        self::assertSame(200, $admin->get('/')->status);
+        self::assertSame(200, $cliente->get('/')->status);
+        // O botão "Entrar" leva a /login, e quem já tem sessão segue direto para a própria área.
+        self::assertSame('/painel', $admin->get('/login')->location());
+        self::assertSame('/portal', $cliente->get('/login')->location());
     }
 
     public function testFonteEIconesTemLicencaRegistrada(): void

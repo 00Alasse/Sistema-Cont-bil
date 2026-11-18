@@ -6,12 +6,12 @@ $aguardando = (int) ($dados['aguardando_conferencia'] ?? 0);
 $atrasadas = (int) ($dados['atrasadas'] ?? 0);
 ?>
 <div>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
-        <p class="texto-mutado" style="margin: 0;">Status das solicitações de arquivos e documentos dos clientes.</p>
-        <a class="botao botao-pequeno botao-secundario" href="<?= e(url('/solicitacoes/nova')) ?>">+ Nova Solicitação</a>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+        <p class="texto-mutado mb-0">Status das solicitações de arquivos e documentos dos clientes.</p>
+        <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/solicitacoes/nova')) ?>">+ Nova Solicitação</a>
     </div>
 
-    <div class="grid-kpis" style="margin-bottom: 0;">
+    <div class="grid-kpis mb-0">
         <!-- Aguardando conferência -->
         <div class="kpi-card kpi-info">
             <div class="kpi-icone">📥</div>

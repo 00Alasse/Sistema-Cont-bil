@@ -9,7 +9,7 @@ declare(strict_types=1);
  * Variável do chamador: $itensMenu, lista de ['rotulo', 'url', 'icone'] já filtrada por perfil e módulo.
  */
 $itensNavegacao = is_array($itensMenu ?? null) ? $itensMenu : [];
-$iconesDoMenu = ['painel', 'empresa', 'obrigacoes', 'tipos', 'usuarios', 'portal'];
+$iconesDoMenu = ['painel', 'empresa', 'obrigacoes', 'tipos', 'usuarios', 'portal', 'documentos', 'avaliacao'];
 ?>
 <nav class="navegacao-principal" aria-label="Navegação principal">
     <ul>

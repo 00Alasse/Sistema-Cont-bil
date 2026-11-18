@@ -247,6 +247,103 @@ final class SolicitacaoPortalTest extends E2ETestCase
         );
     }
 
+    public function testRecusaAbreEmModalBootstrapComMotivoObrigatorioECancelamentoSemEnvio(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, 'E2E Modal de recusa');
+        $this->enviarArquivo($cliente, $id, 'extrato.pdf', self::PDF, 'application/pdf');
+
+        $corpo = $admin->get('/solicitacoes')->corpo;
+
+        // O botão da linha só abre o modal (type="button"): não envia nada por si só.
+        self::assertMatchesRegularExpression(
+            '#<button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="\#modal-recusa-' . $id . '">#',
+            $corpo
+        );
+        // O modal é acessível (título ligado por aria-labelledby) e o formulário mantém rota, método e CSRF.
+        self::assertStringContainsString('id="modal-recusa-' . $id . '" tabindex="-1" aria-labelledby="titulo-modal-recusa-' . $id . '"', $corpo);
+        self::assertStringContainsString('id="titulo-modal-recusa-' . $id . '"', $corpo);
+        self::assertMatchesRegularExpression(
+            '#<form class="modal-content" method="post" action="/solicitacoes/' . $id . '/recusar">\s*<input type="hidden" name="_csrf"#',
+            $corpo
+        );
+        // Motivo obrigatório, com rótulo associado.
+        self::assertMatchesRegularExpression('#<label[^>]*for="motivo_' . $id . '">Motivo da recusa:</label>#', $corpo);
+        self::assertMatchesRegularExpression('#<textarea[^>]*id="motivo_' . $id . '" name="motivo_recusa"[^>]*\srequired#', $corpo);
+        // Cancelar e X fecham o modal sem enviar (type="button" com data-bs-dismiss); só "Confirmar" envia.
+        self::assertStringContainsString('<button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>', $corpo);
+        self::assertStringContainsString('<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>', $corpo);
+        self::assertStringContainsString('<button type="submit" class="btn btn-danger">Confirmar Recusa</button>', $corpo);
+        // Abrir a listagem não recusa nada.
+        self::assertSame('enviada', $this->coluna($id, 'status'));
+    }
+
+    // Testes HTTP/HTML + leitura do CSS: provam a marcação e as regras que escondem/mostram cada caminho.
+    // Eles NÃO executam JavaScript nem renderizam a página; o comportamento visual foi conferido à parte no navegador.
+
+    public function testRecusaSemJsTemFormularioSimplesComMesmaRotaCampoECsrf(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, 'E2E Recusa sem JS');
+        $this->enviarArquivo($cliente, $id, 'extrato.pdf', self::PDF, 'application/pdf');
+
+        $corpo = $admin->get('/solicitacoes')->corpo;
+
+        // <details> nativo: abre sem JS e contém o formulário completo.
+        self::assertMatchesRegularExpression(
+            '#<details class="recusa-sem-js[^"]*">\s*<summary[^>]*>[^<]*Recusar</summary>\s*<form[^>]*method="post" action="/solicitacoes/' . $id . '/recusar">\s*<input type="hidden" name="_csrf"#',
+            $corpo
+        );
+        self::assertMatchesRegularExpression('#<label[^>]*for="motivo-simples-' . $id . '">#', $corpo);
+        self::assertMatchesRegularExpression('#<textarea[^>]*id="motivo-simples-' . $id . '" name="motivo_recusa"[^>]*\srequired#', $corpo);
+        self::assertStringContainsString('Confirmar Recusa</button>', $corpo);
+        // O modal continua na página para quem tem JS.
+        self::assertStringContainsString('id="modal-recusa-' . $id . '"', $corpo);
+        self::assertDoesNotMatchRegularExpression('/\sstyle\s*=/i', $corpo);
+        self::assertDoesNotMatchRegularExpression('/\son[a-z]+\s*=/i', $corpo);
+    }
+
+    public function testEnvioDoFormularioSemJsRecusaComOMotivoInformado(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, 'E2E Envio recusa sem JS');
+        $this->enviarArquivo($cliente, $id, 'extrato.pdf', self::PDF, 'application/pdf');
+
+        // Usa exatamente o que o formulário sem JS envia: o token do próprio <details> e o campo motivo_recusa.
+        $corpo = $admin->get('/solicitacoes')->corpo;
+        self::assertSame(1, preg_match(
+            '#<details class="recusa-sem-js.*?action="/solicitacoes/' . $id . '/recusar">\s*<input type="hidden" name="_csrf" value="([^"]+)"#s',
+            $corpo,
+            $m
+        ));
+
+        $resposta = $admin->post('/solicitacoes/' . $id . '/recusar', ['_csrf' => $m[1], 'motivo_recusa' => 'Sem JS: faltou a assinatura']);
+
+        self::assertSame(302, $resposta->status);
+        self::assertSame('recusada', $this->coluna($id, 'status'));
+        self::assertSame('Sem JS: faltou a assinatura', $this->coluna($id, 'motivo_recusa'));
+    }
+
+    public function testCssAlternaEntreModalComJsEDetailsSemJs(): void
+    {
+        $css = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/css/app.css');
+
+        // Sem JS, o botão que só abre o modal some (não fica controle inoperante)...
+        self::assertMatchesRegularExpression('/html:not\(\.js\) \[data-bs-toggle="modal"\]\s*\{\s*display:\s*none\s*!important/', $css);
+        // ...e com JS o formulário simples some, deixando só o modal.
+        self::assertMatchesRegularExpression('/\.js \.recusa-sem-js\s*\{\s*display:\s*none/', $css);
+    }
+
+    public function testAppJsMarcaAPaginaComAClasseJsQueAlternaOsDoisCaminhos(): void
+    {
+        $js = (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/js/app.js');
+
+        self::assertStringContainsString('document.documentElement.classList.add("js")', $js);
+    }
+
     public function testPortalComPendenciaAtrasadaEDocumentoRecusadoNaoUsaEstiloNemHandlerInline(): void
     {
         $admin = $this->entrar('admin@exemplo.test');

@@ -5,9 +5,11 @@ declare(strict_types=1);
 /*
  * Ícone SVG embutido (ADR-024). Sem arquivo externo e sem fonte de ícones: nada novo para a CSP.
  *
- * Os desenhos vêm do Lucide 1.73.0 (https://lucide.dev), licença ISC; os que descendem do
- * Feather (log-out, x, plus, search, info, circle, chevrons, arrow-left e outros) seguem a
- * licença MIT. Os textos das duas licenças estão em docs/LICENCAS-TERCEIROS.md.
+ * Os desenhos vêm do Lucide 1.73.0 (https://lucide.dev), licença ISC. Os que o LICENSE do Lucide lista como
+ * derivados do Feather seguem a licença MIT: log-out, x, plus, search, info, circle, arrow-left, chevron-left,
+ * chevron-right, trash, circle-x e triangle-exclamation-point (12 dos 24). Os demais são desenhos do Lucide, só ISC;
+ * em file-text, star, pencil e house a ascendência no Feather é inconclusiva. A conferência por ícone e os textos
+ * das duas licenças estão em docs/LICENCAS-TERCEIROS.md.
  *
  * Variáveis do chamador:
  *   $icone        nome em português (veja a lista abaixo); nome desconhecido usa "padrao".
@@ -24,6 +26,8 @@ $desenhosIcone = [
     'tipos' => '<path d="M13 5h8" /><path d="M13 12h8" /><path d="M13 19h8" /><path d="m3 17 2 2 4-4" /><path d="m3 7 2 2 4-4" />',  // lucide: list-checks
     'usuarios' => '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><path d="M16 3.128a4 4 0 0 1 0 7.744" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><circle cx="9" cy="7" r="4" />',  // lucide: users
     'portal' => '<path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" /><path d="M3 10a2 2 0 0 1 .709-1.528l7-6a2 2 0 0 1 2.582 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />',  // lucide: house
+    'documentos' => '<path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" />',  // lucide: file-text
+    'avaliacao' => '<path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />',  // lucide: star
     'sair' => '<path d="m16 17 5-5-5-5" /><path d="M21 12H9" /><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />',  // lucide: log-out
     'menu' => '<path d="M4 5h16" /><path d="M4 12h16" /><path d="M4 19h16" />',  // lucide: menu
     'fechar' => '<path d="M18 6 6 18" /><path d="m6 6 12 12" />',  // lucide: x
