@@ -178,13 +178,19 @@ php bin/db.php rebuild --test   # banco dos testes (tributo_test)
 - O `rebuild` é recusado quando `APP_ENV=production`.
 - Rode-o de novo depois de atualizar o código, se o schema tiver mudado.
 
-**Alternativa: importar `database/tributo.sql` (por exemplo, pelo phpMyAdmin).** Esse arquivo é gerado por `php bin/db.php build` a partir de `database/schema/` e `database/seeds/`; não o edite à mão.
+**Alternativa: importar um script SQL (por exemplo, pelo phpMyAdmin).** Os dois arquivos abaixo são gerados por `php bin/db.php build` a partir de `database/schema/` e `database/seeds/`; não os edite à mão.
 
-Ele **não cria o banco**: contém apenas a remoção e a criação das tabelas e os dados de demonstração. Antes de importar:
-1. Crie o banco `tributo` com `utf8mb4` / `utf8mb4_unicode_ci`.
-2. Selecione-o e só então importe o arquivo.
+| Arquivo | Cria o banco? | Quando usar |
+|---|---|---|
+| `database/tributo_instalacao.sql` | **Sim**: ``CREATE DATABASE IF NOT EXISTS `tributo` `` (`utf8mb4_unicode_ci`) e ``USE `tributo` `` | Instalação local, quando o banco ainda não existe |
+| `database/tributo.sql` | Não | Banco já criado (por exemplo, pelo painel de uma hospedagem, onde o nome do banco é definido pelo provedor) |
 
-A importação apaga as tabelas do -Tributo que já existirem nesse banco.
+Os dois contêm as mesmas 11 tabelas, os relacionamentos e os dados de demonstração.
+
+- **Para criar o banco e instalar tudo:** no phpMyAdmin, abra a aba **Importar** (sem selecionar banco) e importe `database/tributo_instalacao.sql`. O banco criado se chama `tributo`, o mesmo valor de `DB_DATABASE` no `.env.example`.
+- **Para usar um banco já existente:** selecione o banco e importe `database/tributo.sql`. Se o nome não for `tributo`, ajuste `DB_DATABASE` no `.env`.
+
+> **Atenção:** os dois scripts executam `DROP TABLE IF EXISTS` e recriam as tabelas do -Tributo. Importá-los em um banco que já tenha o sistema **apaga os dados existentes** nessas tabelas.
 
 ### 7.4 Iniciar e acessar
 
@@ -273,7 +279,7 @@ Antes dos testes:
 | `php bin/db.php rebuild` | Apaga e recria o banco `tributo` com schema e dados de demonstração |
 | `php bin/db.php rebuild --test` | Apaga e recria o banco `tributo_test` |
 | `php bin/db.php rebuild --sem-seed` | Recria o banco sem os dados de demonstração |
-| `php bin/db.php build` | Regenera `database/tributo.sql` a partir de `database/schema/` e `database/seeds/` |
+| `php bin/db.php build` | Regenera `database/tributo.sql` e `database/tributo_instalacao.sql` a partir de `database/schema/` e `database/seeds/` (só gera os arquivos; não acessa o banco) |
 
 ---
 
@@ -292,7 +298,7 @@ tributo/
 │   └── Views/            # Templates PHP, layouts e partials
 ├── bin/                  # db.php (build/rebuild do banco) e lint.php
 ├── config/               # app.php, regras e declaração dos módulos (modules/)
-├── database/             # schema/ e seeds/ por módulo; tributo.sql gerado
+├── database/             # schema/ e seeds/ por módulo; tributo.sql e tributo_instalacao.sql gerados
 ├── docs/                 # Documentação técnica, de produto e acadêmica
 ├── public/               # Raiz pública: index.php, CSS, JS, fontes e bibliotecas locais (vendor/)
 ├── storage/              # Logs, cache e uploads (fora da raiz pública; não versionados)
