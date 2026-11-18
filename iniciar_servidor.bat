@@ -23,6 +23,7 @@ if "%ERRORLEVEL%"=="0" (
 echo.
 echo [2/3] Iniciando Servidor Web PHP na porta 8000...
 cd /d "d:\IA\Antigravity\contabilidadeTributaria"
+set PHP_CLI_SERVER_WORKERS=4
 start "Servidor PHP -Tributo!" /MIN "C:\xampp\php\php.exe" -S 0.0.0.0:8000 -t public
 echo [OK] Servidor PHP rodando em http://localhost:8000
 
