@@ -18,7 +18,9 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
     ? (string) $filtros[$campo]
     : '';
 $selecionado = static fn (string $campo, string $valor): string => $valorFiltro($campo) === $valor ? ' selected' : '';
+// "prioridade" é o padrão: primeiro o que exige atenção (atraso crítico, atrasadas, vence hoje, vence em até 7 dias).
 $ordens = [
+    'prioridade' => 'Prioridade (o que exige atenção primeiro)',
     'vencimento' => 'Vencimento (mais próximo)',
     '-vencimento' => 'Vencimento (mais distante)',
     'competencia' => 'Competência (mais antiga)',
@@ -176,6 +178,11 @@ $ordens = [
                                 <span class="semaforo semaforo-vermelho" title="Atraso crítico: superior a 30 dias"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada (&gt; 30d)</span>
                             <?php elseif ($atrasada) : ?>
                                 <span class="semaforo semaforo-vermelho"><span class="semaforo-ponto" aria-hidden="true"></span>Atrasada</span>
+                            <?php elseif ($texto('vence_hoje') === '1') : ?>
+                                <span class="semaforo semaforo-amarelo"><span class="semaforo-ponto" aria-hidden="true"></span>Vence hoje</span>
+                            <?php elseif ($texto('vence_em_breve') === '1') : ?>
+                                <?php $dias = (int) $texto('dias_para_vencer'); ?>
+                                <span class="semaforo semaforo-amarelo"><span class="semaforo-ponto" aria-hidden="true"></span><?= e($dias === 1 ? 'Vence amanhã' : 'Vence em ' . $dias . ' dias') ?></span>
                             <?php elseif ($texto('entregue_com_atraso') === '1') : ?>
                                 <span class="semaforo semaforo-amarelo"><span class="semaforo-ponto" aria-hidden="true"></span>Entregue com atraso</span>
                             <?php else : ?>

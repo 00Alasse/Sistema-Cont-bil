@@ -346,6 +346,52 @@ final class ObrigacaoCrudTest extends E2ETestCase
         self::assertStringContainsString('Atraso crítico (&gt; 30 dias)', $respostaDetalhe->corpo);
     }
 
+    public function testListagemPadraoMostraPrimeiroOQueExigeAtencao(): void
+    {
+        $empresa = $this->criarEmpresa();
+        $hoje = $this->hoje();
+        $competencia = $hoje->modify('first day of -2 month')->format('Y-m-d');
+        $nomes = [];
+        foreach ([
+            'entregue' => ['vencimento' => $hoje->modify('-10 days')->format('Y-m-d'), 'status' => 'ENTREGUE'],
+            'futura' => ['vencimento' => $hoje->modify('+30 days')->format('Y-m-d')],
+            'em_breve' => ['vencimento' => $hoje->modify('+2 days')->format('Y-m-d')],
+            'hoje' => ['vencimento' => $hoje->format('Y-m-d')],
+            'atrasada' => ['vencimento' => $hoje->modify('-3 days')->format('Y-m-d')],
+            'critica' => ['vencimento' => $hoje->modify('-40 days')->format('Y-m-d')],
+        ] as $chave => $opcoes) {
+            $nomes[$chave] = $this->nomeUnico('Prioridade ' . $chave);
+            $competenciaDaObrigacao = min($competencia, (new DateTimeImmutable($opcoes['vencimento']))->modify('first day of this month')->format('Y-m-d'));
+            $this->criarObrigacao($empresa, ['competencia' => $competenciaDaObrigacao] + $opcoes, ['nome' => $nomes[$chave]]);
+        }
+        $cliente = $this->entrar(self::ADMIN);
+
+        // Sem "ordem" na URL: a fila de prioridade é o padrão.
+        $lista = $cliente->get('/obrigacoes?empresa_id=' . $empresa);
+        self::assertSame(200, $lista->status);
+        $posicoes = [];
+        foreach (['critica', 'atrasada', 'hoje', 'em_breve', 'futura', 'entregue'] as $chave) {
+            $posicao = strpos($lista->corpo, $this->celula($nomes[$chave]));
+            self::assertNotFalse($posicao, $chave);
+            $posicoes[] = $posicao;
+        }
+        $ordenadas = $posicoes;
+        sort($ordenadas);
+        self::assertSame($ordenadas, $posicoes, 'crítica, atrasada, vence hoje, vence em breve, futura, entregue');
+
+        self::assertStringContainsString('Vence hoje', $lista->corpo);
+        self::assertStringContainsString('Vence em 2 dias', $lista->corpo);
+        // A opção "Prioridade" é a primeira do select de ordenação (fica selecionada sem ?ordem).
+        self::assertMatchesRegularExpression('#<select class="form-select" id="ordem" name="ordem">\s*<option value="prioridade">#', $lista->corpo);
+
+        // A ordem por vencimento continua disponível e põe a entregue (mais antiga que a atrasada) antes dela.
+        $porVencimento = $cliente->get('/obrigacoes?empresa_id=' . $empresa . '&ordem=vencimento')->corpo;
+        self::assertLessThan(
+            strpos($porVencimento, $this->celula($nomes['atrasada'])),
+            strpos($porVencimento, $this->celula($nomes['entregue']))
+        );
+    }
+
     public function testFiltroMeusMostraSoAsObrigacoesDoUsuarioLogado(): void
     {
         $empresa = $this->criarEmpresa();
