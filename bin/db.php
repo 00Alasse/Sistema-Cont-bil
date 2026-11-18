@@ -203,6 +203,28 @@ function gerarSqlConsolidado(array $arquivosSchema, array $arquivosSeed): string
 }
 
 /**
+ * Versão para instalação local (ex.: phpMyAdmin do XAMPP): cria o banco e seleciona-o antes do SQL
+ * consolidado. O tributo.sql continua sem CREATE DATABASE (ADR de hospedagem compartilhada, em que o
+ * banco é criado pelo painel); este arquivo é só um acréscimo, com o mesmo conteúdo depois do USE.
+ */
+function gerarSqlInstalacao(string $sqlConsolidado, string $banco): string
+{
+    if (preg_match('/\A[a-z0-9_]+\z/', $banco) !== 1) {
+        throw new RuntimeException('Nome de banco inválido para o script de instalação.');
+    }
+
+    $cabecalho = [
+        '-- -Tributo - script de instalação gerado; não editar à mão.',
+        '-- Cria o banco `' . $banco . '` (se não existir), as tabelas e os dados de exemplo.',
+        '-- ATENÇÃO: recria as tabelas do -Tributo nesse banco (DROP TABLE IF EXISTS); dados existentes são perdidos.',
+        'CREATE DATABASE IF NOT EXISTS `' . $banco . '` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;',
+        'USE `' . $banco . '`;',
+    ];
+
+    return implode(PHP_EOL . PHP_EOL, $cabecalho) . PHP_EOL . PHP_EOL . $sqlConsolidado;
+}
+
+/**
  * @param list<string> $arquivosSchema
  * @param list<string> $arquivosSeed
  */
@@ -214,6 +236,13 @@ function construirSql(string $destino, array $arquivosSchema, array $arquivosSee
     }
 
     fwrite(STDOUT, 'SQL consolidado atualizado: ' . $destino . PHP_EOL);
+
+    $instalacao = dirname($destino) . DIRECTORY_SEPARATOR . 'tributo_instalacao.sql';
+    if (file_put_contents($instalacao, gerarSqlInstalacao($sql, destinoBanco(false)), LOCK_EX) === false) {
+        throw new RuntimeException('Não foi possível gravar database/tributo_instalacao.sql.');
+    }
+
+    fwrite(STDOUT, 'Script de instalação atualizado: ' . $instalacao . PHP_EOL);
 }
 
 /**

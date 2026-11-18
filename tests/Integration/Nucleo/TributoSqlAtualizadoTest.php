@@ -34,6 +34,10 @@ final class TributoSqlAtualizadoTest extends IntegrationTestCase
         $arquivo = $raiz . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'tributo.sql';
         $original = file_get_contents($arquivo);
         self::assertNotFalse($original);
+        // O build também regrava o script de instalação (com CREATE DATABASE); ele é restaurado no fim.
+        $arquivoInstalacao = $raiz . DIRECTORY_SEPARATOR . 'database' . DIRECTORY_SEPARATOR . 'tributo_instalacao.sql';
+        $originalInstalacao = file_get_contents($arquivoInstalacao);
+        self::assertNotFalse($originalInstalacao);
 
         try {
             $resultado = $this->executarComando(['build']);
@@ -46,6 +50,7 @@ final class TributoSqlAtualizadoTest extends IntegrationTestCase
             self::assertStringContainsString('SET FOREIGN_KEY_CHECKS=1;', $gerado);
         } finally {
             self::assertNotFalse(file_put_contents($arquivo, $original, LOCK_EX));
+            self::assertNotFalse(file_put_contents($arquivoInstalacao, $originalInstalacao, LOCK_EX));
         }
     }
 
