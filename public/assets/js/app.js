@@ -1,5 +1,78 @@
 "use strict";
 
+// Melhorias progressivas da interface: o menu e todos os links funcionam sem este arquivo.
+document.documentElement.classList.add("js");
+
+/**
+ * Marca (aria-current="page") o link cujo caminho é o da página atual ou o prefixo mais longo dele.
+ * Ex.: /empresas/12/editar destaca "Empresas". Em empate, o caminho mais específico vence.
+ */
+function marcarPaginaAtual(links) {
+    const atual = window.location.pathname.replace(/\/+$/, "") || "/";
+    let melhor = null;
+    let tamanhoMelhor = -1;
+
+    links.forEach((link) => {
+        const caminho = new URL(link.href, window.location.href).pathname.replace(/\/+$/, "") || "/";
+        const casa = atual === caminho || (caminho !== "/" && atual.startsWith(caminho + "/"));
+        if (casa && caminho.length > tamanhoMelhor) {
+            melhor = link;
+            tamanhoMelhor = caminho.length;
+        }
+    });
+
+    if (melhor !== null) {
+        melhor.setAttribute("aria-current", "page");
+    }
+}
+
+marcarPaginaAtual(document.querySelectorAll(".navegacao-principal a[href]"));
+
+// Abas da empresa: só uma pode ser a atual (mesmo caminho exato).
+document.querySelectorAll(".abas-empresa").forEach((abas) => {
+    const atual = window.location.pathname.replace(/\/+$/, "");
+    abas.querySelectorAll("a[href]").forEach((aba) => {
+        if (new URL(aba.href, window.location.href).pathname.replace(/\/+$/, "") === atual) {
+            aba.setAttribute("aria-current", "page");
+        }
+    });
+});
+
+// Menu em telas largas: o botão "Recolher menu" reduz a barra a ícones e lembra a escolha.
+// Em telas pequenas o menu é o offcanvas do Bootstrap (abre pelo botão Menu, fecha por X, Esc ou clique fora).
+const estrutura = document.querySelector(".estrutura-aplicacao");
+const botaoRecolher = document.querySelector("[data-barra-recolher]");
+if (estrutura !== null && botaoRecolher !== null) {
+    const chave = "tributo.barra-recolhida";
+    const guardar = (valor) => {
+        try {
+            window.localStorage.setItem(chave, valor ? "1" : "0");
+        } catch (erro) {
+            // Navegação privada ou armazenamento bloqueado: a escolha só vale nesta página.
+        }
+    };
+    const lembrada = () => {
+        try {
+            return window.localStorage.getItem(chave) === "1";
+        } catch (erro) {
+            return false;
+        }
+    };
+    const definirBarra = (recolhida) => {
+        estrutura.classList.toggle("barra-recolhida", recolhida);
+        botaoRecolher.setAttribute("aria-expanded", recolhida ? "false" : "true");
+        botaoRecolher.setAttribute("title", recolhida ? "Expandir menu" : "Recolher menu");
+        botaoRecolher.querySelector(".barra-recolher-rotulo").textContent = recolhida ? "Expandir menu" : "Recolher menu";
+    };
+
+    definirBarra(lembrada());
+    botaoRecolher.addEventListener("click", () => {
+        const recolher = botaoRecolher.getAttribute("aria-expanded") === "true";
+        definirBarra(recolher);
+        guardar(recolher);
+    });
+}
+
 document.querySelectorAll("form[data-confirmar]").forEach((form) => {
     form.addEventListener("submit", (event) => {
         const mensagem = form.getAttribute("data-confirmar");
@@ -40,71 +113,6 @@ document.querySelectorAll('input[data-mascara="valor"]').forEach((campo) => {
         campo.value = `R$ ${formatados},${centavos}`;
     });
 });
-
-
-/* ==========================================================================
-   Controle de Sidebar: Minimizar / Maximizar (Desktop e Mobile Drawer)
-   ========================================================================== */
-(function () {
-    const botaoToggle = document.getElementById("botao-toggle-menu");
-    const botaoFechar = document.getElementById("botao-fechar-menu-mobile");
-    const backdrop = document.getElementById("menu-backdrop");
-
-    function ehMobile() {
-        return window.innerWidth <= 768;
-    }
-
-    // Carrega preferência persistida de colapso no desktop
-    if (!ehMobile() && localStorage.getItem("tributo_sidebar_colapsada") === "1") {
-        document.body.classList.add("sidebar-colapsada");
-        if (botaoToggle) botaoToggle.setAttribute("aria-expanded", "false");
-    }
-
-    function alternarMenu() {
-        if (ehMobile()) {
-            const abrindo = !document.body.classList.contains("sidebar-aberta-mobile");
-            document.body.classList.toggle("sidebar-aberta-mobile", abrindo);
-            if (botaoToggle) botaoToggle.setAttribute("aria-expanded", abrindo ? "true" : "false");
-        } else {
-            const colapsado = document.body.classList.toggle("sidebar-colapsada");
-            localStorage.setItem("tributo_sidebar_colapsada", colapsado ? "1" : "0");
-            if (botaoToggle) botaoToggle.setAttribute("aria-expanded", colapsado ? "false" : "true");
-        }
-    }
-
-    function fecharMobile() {
-        document.body.classList.remove("sidebar-aberta-mobile");
-        if (botaoToggle) botaoToggle.setAttribute("aria-expanded", "false");
-    }
-
-    if (botaoToggle) {
-        botaoToggle.addEventListener("click", alternarMenu);
-    }
-
-    if (botaoFechar) {
-        botaoFechar.addEventListener("click", fecharMobile);
-    }
-
-    if (backdrop) {
-        backdrop.addEventListener("click", fecharMobile);
-    }
-
-    // Fecha o menu mobile ao navegar por um item
-    document.querySelectorAll(".navegacao-principal a").forEach((link) => {
-        link.addEventListener("click", () => {
-            if (ehMobile()) {
-                fecharMobile();
-            }
-        });
-    });
-
-    // Tecla Esc fecha menu no mobile
-    window.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && document.body.classList.contains("sidebar-aberta-mobile")) {
-            fecharMobile();
-        }
-    });
-})();
 
 /* ==========================================================================
    Filtros Dinâmicos por Cards no Portal do Empresário

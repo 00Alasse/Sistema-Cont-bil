@@ -67,7 +67,9 @@ final class KernelTest extends TestCase
         $response = $this->kernel($router)->tratar(new Request('GET', '/'));
 
         self::assertSame(200, $response->status);
-        self::assertStringContainsString('-Tributo!', $response->corpo);
+        self::assertStringContainsString('-Tributo', $response->corpo);
+        // O nome oficial não leva exclamação.
+        self::assertStringNotContainsString('-Tributo!', $response->corpo);
     }
 
     public function testCaminhoInexistenteRetorna404(): void

@@ -1,8 +1,8 @@
-# Instruções para o GitHub Copilot: projeto -Tributo!
+# Instruções para o GitHub Copilot: projeto -Tributo
 
 As regras completas estão em `AGENTS.md` na raiz do repositório. Resumo obrigatório:
 
-- **Stack:** PHP 8.2+ puro, MVC próprio (sem framework), PDO, MariaDB 10.4/MySQL 8, HTML/CSS/JS sem bibliotecas. Não sugira frameworks nem pacotes.
+- **Stack:** PHP 8.2+ puro, MVC próprio (sem framework), PDO, MariaDB 10.4/MySQL 8, interface com Bootstrap 5.3.8 local, fonte Inter e ícones Lucide locais (ADR-024), sem CDN. Não sugira frameworks PHP nem outros pacotes sem ADR.
 - Todo arquivo PHP começa com `declare(strict_types=1);` e tem tipos em parâmetros e retornos.
 - **Multi-tenant:** todo método de model recebe `int $escritorioId` como primeiro parâmetro e filtra `WHERE escritorio_id = :escritorio_id`. O `escritorio_id` vem de `UsuarioLogado`, nunca do formulário. Recurso de outro escritório → `NaoEncontradoException`.
 - **SQL:** somente prepared statements com parâmetros nomeados; `ORDER BY` apenas via `QueryFiltros::ordenacao()` (whitelist); `LIKE` com `QueryFiltros::like()`.

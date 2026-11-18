@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Integration\Documento;
 
 use App\Core\Paginacao;
+use App\Core\Request;
 use App\Models\Documento\SolicitacaoDocumento;
 use App\Support\Cnpj;
 use Tests\Integration\IntegrationTestCase;
@@ -79,18 +80,69 @@ final class SolicitacaoDocumentoTest extends IntegrationTestCase
         $this->assertSame('arquivo_hash.xml', $enviada['arquivo_path']);
 
         // Contador recusa com motivo
-        $this->solicitacoes->recusar($this->escritorioA, $id, 'Falta a nota 1234');
+        $this->assertSame(1, $this->solicitacoes->recusar($this->escritorioA, $id, 'Falta a nota 1234'));
         $recusada = $this->solicitacoes->buscar($this->escritorioA, $id);
         $this->assertNotNull($recusada);
         $this->assertSame('recusada', $recusada['status']);
         $this->assertSame('Falta a nota 1234', $recusada['motivo_recusa']);
 
-        // Contador aceita
-        $this->solicitacoes->aceitar($this->escritorioA, $id);
+        // Aceitar só vale a partir de "enviada" (transições condicionais): direto de "recusada" não muda nada.
+        $this->assertSame(0, $this->solicitacoes->aceitar($this->escritorioA, $id));
+        $this->assertSame('recusada', $this->solicitacoes->buscar($this->escritorioA, $id)['status'] ?? null);
+
+        // Empresário reenvia e o contador aceita
+        $this->assertSame(1, $this->solicitacoes->anexarArquivo($this->escritorioA, $id, 'arquivo_hash2.xml', 'Notas_Outubro_v2.xml', date('Y-m-d H:i:s')));
+        $this->assertSame(1, $this->solicitacoes->aceitar($this->escritorioA, $id));
         $aceita = $this->solicitacoes->buscar($this->escritorioA, $id);
         $this->assertNotNull($aceita);
         $this->assertSame('aceita', $aceita['status']);
         $this->assertNull($aceita['motivo_recusa']);
+    }
+
+    public function testBuscaPorTextoProcuraNoTituloRazaoSocialENomeFantasia(): void
+    {
+        // Regressão: :busca repetido três vezes gerava HY093 com prepares nativos.
+        $fantasia = $this->fabrica->criarEmpresa(
+            $this->escritorioA,
+            Cnpj::gerarFicticio(3333),
+            'Comércio Sem Termo Ltda',
+            ['nome_fantasia' => 'Padaria Girassol']
+        );
+        $porTitulo = $this->novaSolicitacao($this->empresaA, 'Extrato Girassol');
+        $porFantasia = $this->novaSolicitacao($fantasia, 'Balancete anual');
+        $porRazao = $this->novaSolicitacao($this->empresaA, 'Contrato social');
+        $this->novaSolicitacao($this->empresaA, 'Folha de pagamento');
+        $this->solicitacoes->criar($this->escritorioB, [
+            'empresa_id' => $this->empresaB, 'titulo' => 'Girassol de outro escritório',
+            'prazo' => date('Y-m-d'), 'criado_por' => $this->fabrica->criarUsuario($this->escritorioB),
+        ]);
+
+        $girassol = $this->solicitacoes->listar($this->escritorioA, ['busca' => 'Girassol'], $this->paginacao());
+        $ids = array_map(static fn (array $item): int => (int) $item['id'], $girassol->itens);
+        sort($ids);
+        $esperados = [$porTitulo, $porFantasia];
+        sort($esperados);
+        $this->assertSame($esperados, $ids);
+        $this->assertSame(2, $girassol->total);
+
+        $porRazaoSocial = $this->solicitacoes->listar($this->escritorioA, ['busca' => 'Empresa Teste A'], $this->paginacao());
+        $this->assertSame(3, $porRazaoSocial->total);
+        $this->assertContains($porRazao, array_map(static fn (array $item): int => (int) $item['id'], $porRazaoSocial->itens));
+
+        // Curingas do LIKE digitados pelo usuário são literais.
+        $this->assertSame(0, $this->solicitacoes->listar($this->escritorioA, ['busca' => '%'], $this->paginacao())->total);
+    }
+
+    private function novaSolicitacao(int $empresaId, string $titulo): int
+    {
+        return $this->solicitacoes->criar($this->escritorioA, [
+            'empresa_id' => $empresaId, 'titulo' => $titulo, 'prazo' => date('Y-m-d'), 'criado_por' => $this->usuarioA,
+        ]);
+    }
+
+    private function paginacao(): Paginacao
+    {
+        return Paginacao::deRequest(new Request('GET', '/solicitacoes', ['pagina' => 1]), 15);
     }
 
     public function testListarPorEmpresaFiltraApenasPropriaEmpresa(): void

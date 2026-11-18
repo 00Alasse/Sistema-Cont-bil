@@ -18,8 +18,12 @@ $mensagensFlash = is_array($mensagens ?? null)
                 : 'info';
             $papel = $tipo === 'erro' ? 'alert' : 'status';
             ?>
-            <p class="aviso aviso-<?= e($tipo) ?>" role="<?= e($papel) ?>">
-                <?= e($mensagem['mensagem']) ?>
+            <p class="alert alert-com-icone alert-<?= e(['sucesso' => 'success', 'erro' => 'danger', 'aviso' => 'warning'][$tipo] ?? 'info') ?>" role="<?= e($papel) ?>">
+                <?php
+                $icone = ['sucesso' => 'sucesso', 'erro' => 'erro', 'aviso' => 'aviso'][$tipo] ?? 'info';
+                require __DIR__ . '/icone.php';
+                ?>
+                <span><?= e($mensagem['mensagem']) ?></span>
             </p>
         <?php endforeach; ?>
     </div>

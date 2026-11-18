@@ -29,12 +29,12 @@ $numero = static function (array $item): string {
             <h1>Painel do escritório</h1>
             <p>Mostrando: <strong><?= e($escopos[$escopo] ?? $escopo) ?></strong></p>
         </div>
-        <nav aria-label="Escopo do painel" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+        <nav class="alternador" aria-label="Escopo do painel">
             <?php foreach ($escopos as $codigo => $rotulo) : ?>
                 <?php if ($codigo === $escopo) : ?>
-                    <span class="botao" aria-current="page"><?= e($rotulo) ?></span>
+                    <span aria-current="page"><?= e($rotulo) ?></span>
                 <?php else : ?>
-                    <a class="botao botao-secundario" href="<?= e(url('/painel', ['escopo' => $codigo])) ?>"><?= e($rotulo) ?></a>
+                    <a href="<?= e(url('/painel', ['escopo' => $codigo])) ?>"><?= e($rotulo) ?></a>
                 <?php endif; ?>
             <?php endforeach; ?>
         </nav>
@@ -49,13 +49,13 @@ $numero = static function (array $item): string {
     ?>
 
     <!-- Métricas Rápidas de Obrigações -->
-    <section class="cartao" aria-labelledby="titulo-obrigacoes">
+    <section class="card card-body" aria-labelledby="titulo-obrigacoes">
         <div class="cartao-cabecalho-flex">
             <div>
-                <h2 id="titulo-obrigacoes" style="margin: 0 0 0.25rem;">Obrigações</h2>
-                <p class="texto-mutado" style="margin: 0;">Monitoramento de prazos legais e cumprimento das rotinas fiscais.</p>
+                <h2 id="titulo-obrigacoes" class="mb-1">Obrigações</h2>
+                <p class="texto-mutado mb-0">Monitoramento de prazos legais e cumprimento das rotinas fiscais.</p>
             </div>
-            <a href="<?= e(url('/obrigacoes/nova')) ?>" class="botao botao-pequeno botao-secundario">+ Nova Obrigação</a>
+            <a href="<?= e(url('/obrigacoes/nova')) ?>" class="btn btn-outline-secondary btn-sm">+ Nova Obrigação</a>
         </div>
 
         <div class="grid-kpis">
@@ -112,11 +112,11 @@ $numero = static function (array $item): string {
     <?php endforeach; ?>
 
     <!-- Índice de Regularidade Fiscal -->
-    <section class="cartao" aria-labelledby="titulo-regularidade">
+    <section class="card card-body" aria-labelledby="titulo-regularidade">
         <h2 id="titulo-regularidade">Índice de Regularidade</h2>
         <p class="texto-mutado">Pontuação preventiva (0–100) baseada na adimplência fiscal das empresas.</p>
 
-        <div class="grid-kpis grid-kpis-interativos" style="margin: 1rem 0;">
+        <div class="grid-kpis grid-kpis-interativos">
             <?php
             $configSemaforo = [
                 'verde' => [
@@ -157,19 +157,19 @@ $numero = static function (array $item): string {
             <?php endforeach; ?>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1.75rem; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
-            <h3 style="margin: 0;">5 piores índices</h3>
-            <div id="barra-filtro-semaforo" class="barra-filtro-ativo" style="display: none; margin: 0; padding: 0.35rem 0.75rem;">
-                <span id="texto-filtro-semaforo" style="font-size: 0.85rem;"></span>
-                <button type="button" id="botao-limpar-filtro-semaforo" class="botao-limpar-filtro" style="font-size: 0.8rem;">✕ Ver todas</button>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mt-4 mb-3">
+            <h3 class="mb-0">5 piores índices</h3>
+            <div id="barra-filtro-semaforo" class="barra-filtro-ativo filtro-oculto mb-0 py-1 px-3">
+                <span id="texto-filtro-semaforo" class="small"></span>
+                <button type="button" id="botao-limpar-filtro-semaforo" class="botao-limpar-filtro small">✕ Ver todas</button>
             </div>
         </div>
 
         <?php if ($piores === []) : ?>
             <p class="texto-mutado">Nenhuma empresa com histórico para comparar.</p>
         <?php else : ?>
-            <div class="tabela-responsiva">
-                <table id="tabela-piores-indices">
+            <div class="table-responsive">
+                <table class="table align-middle" id="tabela-piores-indices">
                     <thead>
                         <tr>
                             <th scope="col">Empresa</th>
@@ -182,20 +182,20 @@ $numero = static function (array $item): string {
                     <tbody>
                         <?php foreach ($piores as $pior) : ?>
                             <tr class="linha-empresa-indice" data-semaforo-linha="<?= e((string) $pior['semaforo']) ?>">
-                                <th scope="row" data-rotulo="Empresa"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
-                                <td data-rotulo="Índice"><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
-                                <td data-rotulo="Situação"><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
-                                <td data-rotulo="Motivos">
-                                    <ul style="margin: 0; padding-left: 1.25rem;">
+                                <th scope="row"><a href="<?= e(url((string) $pior['caminho'])) ?>"><?= e((string) $pior['nome']) ?></a></th>
+                                <td><strong><?= e($pior['score'] === null ? '—' : (string) $pior['score']) ?></strong></td>
+                                <td><?php $nivel = (string) $pior['semaforo']; require dirname(__DIR__, 2) . '/partials/semaforo.php'; ?></td>
+                                <td>
+                                    <ul class="mb-0 ps-3">
                                         <?php foreach ($pior['motivos'] as $motivo) : ?>
                                             <li><?= e((string) $motivo) ?></li>
                                         <?php endforeach; ?>
                                     </ul>
                                 </td>
-                                <td data-rotulo="Recomendação">
+                                <td>
                                     <?php if (!empty($pior['recomendacao'])) : ?>
-                                        <p style="margin: 0 0 0.25rem;"><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
-                                        <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>" class="botao botao-pequeno botao-secundario">Ver pendências</a>
+                                        <p class="mb-1"><strong><?= e((string) $pior['recomendacao']) ?></strong></p>
+                                        <a href="<?= e(url('/obrigacoes', ['empresa_id' => (string) $pior['empresa_id'], 'situacao' => 'atrasada'])) ?>" class="btn btn-outline-secondary btn-sm">Ver pendências</a>
                                     <?php else : ?>
                                         —
                                     <?php endif; ?>
@@ -204,7 +204,7 @@ $numero = static function (array $item): string {
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <p id="aviso-sem-empresa-filtro" style="display: none; text-align: center; color: #64748b; padding: 1.5rem 0; font-style: italic;">
+                <p id="aviso-sem-empresa-filtro" class="filtro-oculto text-center text-muted fst-italic py-4">
                     Nenhuma empresa entre os 5 piores índices com esta situação.
                 </p>
             </div>
@@ -212,11 +212,11 @@ $numero = static function (array $item): string {
     </section>
 
     <!-- Carga por Responsável -->
-    <section class="cartao" aria-labelledby="titulo-carga">
+    <section class="card card-body" aria-labelledby="titulo-carga">
         <h2 id="titulo-carga">Carga por responsável</h2>
         <p class="texto-mutado">Distribuição de demandas na equipe (todo o escritório).</p>
-        <div class="tabela-responsiva">
-            <table>
+        <div class="table-responsive">
+            <table class="table align-middle">
                 <thead>
                     <tr>
                         <th scope="col">Responsável</th>

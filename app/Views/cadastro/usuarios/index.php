@@ -17,8 +17,8 @@ $rotulosPerfil = [
         </div>
     </header>
 
-    <div class="cartao tabela-responsiva">
-        <table>
+    <div class="card cartao-tabela"><div class="table-responsive">
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
                     <th scope="col">Nome</th>
@@ -57,5 +57,6 @@ $rotulosPerfil = [
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 </section>

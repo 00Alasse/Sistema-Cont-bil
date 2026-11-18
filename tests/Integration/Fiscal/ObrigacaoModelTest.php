@@ -363,12 +363,58 @@ final class ObrigacaoModelTest extends IntegrationTestCase
         $segunda = $this->nova(['competencia' => '2026-01-01', 'vencimento' => '2026-03-25']);
         $terceira = $this->nova(['competencia' => '2026-03-01', 'vencimento' => '2026-04-01']);
 
+        // Todas abertas e fora da janela de 7 dias: a prioridade padrão coincide com o vencimento.
         self::assertSame([$primeira, $segunda, $terceira], $this->ids($this->listar([])->itens));
+        self::assertSame([$primeira, $segunda, $terceira], $this->ids($this->listar(['ordem' => 'vencimento'])->itens));
         self::assertSame([$terceira, $segunda, $primeira], $this->ids($this->listar(['ordem' => '-vencimento'])->itens));
         self::assertSame([$segunda, $primeira, $terceira], $this->ids($this->listar(['ordem' => 'competencia'])->itens));
         self::assertSame([$terceira, $primeira, $segunda], $this->ids($this->listar(['ordem' => '-competencia'])->itens));
         self::assertSame($primeira, $this->ids($this->listar(['ordem' => '-empresa'])->itens)[0]);
         self::assertSame($primeira, $this->ids($this->listar(['ordem' => 'empresa'])->itens)[2]);
+    }
+
+    public function testOrdemPadraoEhAFilaDePrioridade(): void
+    {
+        // Hoje = 10/03/2026. Criadas fora de ordem de propósito.
+        $entregueAntiga = $this->nova(['competencia' => '2025-12-01', 'vencimento' => '2026-01-20', 'status' => 'ENTREGUE', 'entregue_em' => '2026-01-18 10:00:00']);
+        $futura = $this->nova(['vencimento' => '2026-04-20']);
+        $emBreve = $this->nova(['vencimento' => '2026-03-13']);
+        $atrasada = $this->nova(['vencimento' => '2026-03-05', 'status' => 'EM_ANDAMENTO']);
+        $entregueRecente = $this->nova(['vencimento' => '2026-03-01', 'status' => 'ENTREGUE', 'entregue_em' => '2026-02-28 10:00:00']);
+        $venceHoje = $this->nova(['vencimento' => self::HOJE, 'status' => 'AGUARDANDO_CLIENTE']);
+        $critica = $this->nova(['vencimento' => '2026-02-01']);
+
+        $esperado = [$critica, $atrasada, $venceHoje, $emBreve, $futura, $entregueRecente, $entregueAntiga];
+        self::assertSame($esperado, $this->ids($this->listar([])->itens));
+        self::assertSame($esperado, $this->ids($this->listar(['ordem' => 'prioridade'])->itens));
+        // Valor desconhecido (ou injeção) cai no padrão, sem erro.
+        self::assertSame($esperado, $this->ids($this->listar(['ordem' => 'CASE WHEN 1 THEN o.id END'])->itens));
+        // As outras ordens continuam disponíveis.
+        self::assertSame($entregueAntiga, $this->ids($this->listar(['ordem' => 'vencimento'])->itens)[0]);
+    }
+
+    public function testListagemInformaVenceHojeEVenceEmBreveSoParaAbertas(): void
+    {
+        $venceHoje = $this->nova(['vencimento' => self::HOJE]);
+        $emTres = $this->nova(['vencimento' => '2026-03-13']);
+        $emSete = $this->nova(['vencimento' => '2026-03-17']);
+        $emOito = $this->nova(['vencimento' => '2026-03-18']);
+        $entregueHoje = $this->nova(['vencimento' => self::HOJE, 'status' => 'ENTREGUE', 'entregue_em' => self::HOJE . ' 09:00:00']);
+
+        $porId = [];
+        foreach ($this->listar([])->itens as $item) {
+            $porId[(int) $item['id']] = $item;
+        }
+
+        self::assertSame([1, 0], [(int) $porId[$venceHoje]['vence_hoje'], (int) $porId[$venceHoje]['vence_em_breve']]);
+        self::assertSame([0, 1, 3], [(int) $porId[$emTres]['vence_hoje'], (int) $porId[$emTres]['vence_em_breve'], (int) $porId[$emTres]['dias_para_vencer']]);
+        self::assertSame([1, 7], [(int) $porId[$emSete]['vence_em_breve'], (int) $porId[$emSete]['dias_para_vencer']]);
+        self::assertSame(0, (int) $porId[$emOito]['vence_em_breve']);
+        self::assertSame([0, 0], [(int) $porId[$entregueHoje]['vence_hoje'], (int) $porId[$entregueHoje]['vence_em_breve']]);
+        // Coerente com o filtro "vence_7d" (hoje até hoje + 7): as mesmas três abertas.
+        $sete = $this->idsDaSituacao('vence_7d');
+        sort($sete);
+        self::assertSame([$venceHoje, $emTres, $emSete], $sete);
     }
 
     public function testOpcoesDeEmpresasETiposSaoDoProprioEscritorio(): void

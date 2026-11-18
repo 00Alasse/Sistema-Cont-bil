@@ -30,42 +30,45 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
             <p>Catálogo de obrigações acompanhadas pelo escritório.</p>
         </div>
         <?php if ($usuarioAdmin) : ?>
-            <a class="botao" href="<?= e(url('/tipos-obrigacao/novo')) ?>">Cadastrar tipo</a>
+            <a class="btn btn-primary" href="<?= e(url('/tipos-obrigacao/novo')) ?>">
+                <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Cadastrar tipo
+            </a>
         <?php endif; ?>
     </header>
 
-    <p class="aviso">
+    <p class="alert alert-info">
         Os prazos são cadastrados pelo escritório e não são conferidos pelo sistema:
         confira o prazo vigente na fonte oficial.
     </p>
 
-    <form class="cartao formulario-filtros" method="get" action="<?= e(url('/tipos-obrigacao')) ?>">
-        <div class="grade-formulario">
-            <div class="campo campo-largo">
-                <label for="q">Busca</label>
-                <input id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>" placeholder="Nome ou descrição">
+    <form class="card card-body formulario-filtros" method="get" action="<?= e(url('/tipos-obrigacao')) ?>">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label" for="q">Busca</label>
+                <input class="form-control" id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>" placeholder="Nome ou descrição">
             </div>
-            <div class="campo">
-                <label for="esfera">Esfera</label>
-                <select id="esfera" name="esfera">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="esfera">Esfera</label>
+                <select class="form-select" id="esfera" name="esfera">
                     <option value="">Todas</option>
                     <?php foreach ($esferas as $codigo => $rotulo) : ?>
                         <option value="<?= e($codigo) ?>"<?= $valorFiltro('esfera') === $codigo ? ' selected' : '' ?>><?= e($rotulo) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="periodicidade">Periodicidade</label>
-                <select id="periodicidade" name="periodicidade">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="periodicidade">Periodicidade</label>
+                <select class="form-select" id="periodicidade" name="periodicidade">
                     <option value="">Todas</option>
                     <?php foreach ($periodicidades as $codigo => $rotulo) : ?>
                         <option value="<?= e($codigo) ?>"<?= $valorFiltro('periodicidade') === $codigo ? ' selected' : '' ?>><?= e($rotulo) ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="ativo">Situação</label>
-                <select id="ativo" name="ativo">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="ativo">Situação</label>
+                <select class="form-select" id="ativo" name="ativo">
                     <option value="">Todos</option>
                     <option value="1"<?= $valorFiltro('ativo') === '1' ? ' selected' : '' ?>>Ativos</option>
                     <option value="0"<?= $valorFiltro('ativo') === '0' ? ' selected' : '' ?>>Inativos</option>
@@ -73,8 +76,8 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
             </div>
         </div>
         <div class="acoes-formulario">
-            <button class="botao" type="submit">Aplicar filtros</button>
-            <a class="botao botao-secundario" href="<?= e(url('/tipos-obrigacao')) ?>">Limpar</a>
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-secondary" href="<?= e(url('/tipos-obrigacao')) ?>">Limpar</a>
         </div>
     </form>
 
@@ -83,8 +86,8 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
     require dirname(__DIR__, 2) . '/partials/filtros-ativos.php';
     ?>
 
-    <div class="cartao tabela-responsiva">
-        <table>
+    <div class="card cartao-tabela"><div class="table-responsive">
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
                     <th scope="col">Nome</th>
@@ -120,9 +123,20 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
                         <td><?= e($periodicidades[$texto('periodicidade')] ?? $texto('periodicidade')) ?></td>
                         <td><?= e($vencimento) ?></td>
                         <td><?= e($texto('total_empresas')) ?></td>
-                        <td><?= e($texto('ativo') === '1' ? 'Ativo' : 'Inativo') ?></td>
+                        <td>
+                            <?php
+                            $seloRotulo = $texto('ativo') === '1' ? 'Ativo' : 'Inativo';
+                            $seloTom = $texto('ativo') === '1' ? 'sucesso' : 'neutro';
+                            require dirname(__DIR__, 2) . '/partials/status.php';
+                            ?>
+                        </td>
                         <?php if ($usuarioAdmin) : ?>
-                            <td><a href="<?= e(url('/tipos-obrigacao/' . $id . '/editar')) ?>">Editar</a></td>
+                            <td>
+                                <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/tipos-obrigacao/' . $id . '/editar')) ?>">
+                                    <?php $icone = 'editar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                                    Editar<span class="texto-acessivel"> <?= e($texto('nome')) ?></span>
+                                </a>
+                            </td>
                         <?php endif; ?>
                     </tr>
                 <?php endforeach; ?>
@@ -131,6 +145,7 @@ $periodicidades = ['MENSAL' => 'Mensal', 'TRIMESTRAL' => 'Trimestral', 'ANUAL' =
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
     </div>
 
     <?php

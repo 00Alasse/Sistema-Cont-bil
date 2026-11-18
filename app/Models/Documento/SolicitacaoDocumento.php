@@ -46,9 +46,20 @@ final class SolicitacaoDocumento extends Model
             $params['status'] = $filtros['status'];
         }
 
+        // "vencida" é o mesmo critério do indicador "Prazo de envio vencido" (contarAtrasadas):
+        // aberta ou recusada com prazo anterior a hoje. Parâmetro próprio porque a contagem não usa :hoje.
+        if (($filtros['situacao'] ?? null) === 'vencida') {
+            $condicoes[] = "s.status IN ('aberta', 'recusada') AND s.prazo < :hoje_vencida";
+            $params['hoje_vencida'] = $hoje;
+        }
+
         if (!empty($filtros['busca'])) {
-            $condicoes[] = '(s.titulo LIKE :busca OR e.razao_social LIKE :busca OR e.nome_fantasia LIKE :busca)';
-            $params['busca'] = '%' . QueryFiltros::like((string) $filtros['busca']) . '%';
+            // Um parâmetro por coluna: com prepares nativos, repetir :busca gera HY093.
+            $condicoes[] = '(s.titulo LIKE :busca1 OR e.razao_social LIKE :busca2 OR e.nome_fantasia LIKE :busca3)';
+            $termo = '%' . QueryFiltros::like((string) $filtros['busca']) . '%';
+            $params['busca1'] = $termo;
+            $params['busca2'] = $termo;
+            $params['busca3'] = $termo;
         }
 
         $where = implode(' AND ', $condicoes);
@@ -165,20 +176,26 @@ final class SolicitacaoDocumento extends Model
         return (int) $this->db->lastInsertId();
     }
 
+    /**
+     * Transições condicionais: o estado de origem faz parte do próprio UPDATE. Assim a regra vale
+     * mesmo com página desatualizada ou duas ações ao mesmo tempo (o InnoDB trava a linha e o segundo
+     * UPDATE reavalia o WHERE depois do primeiro). Retornam quantas linhas mudaram: 0 = transição inválida.
+     */
     public function anexarArquivo(
         int $escritorioId,
         int $id,
         string $arquivoPath,
         string $arquivoNomeOriginal,
         string $enviadoEm
-    ): bool {
+    ): int {
         $sql = "UPDATE solicitacoes_documentos
                 SET arquivo_path = :path,
                     arquivo_nome_original = :nome_original,
                     enviado_em = :enviado_em,
                     status = 'enviada',
                     motivo_recusa = NULL
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status IN ('aberta', 'recusada')";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':path', $arquivoPath);
@@ -186,37 +203,91 @@ final class SolicitacaoDocumento extends Model
         $stmt->bindValue(':enviado_em', $enviadoEm);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
     }
 
-    public function aceitar(int $escritorioId, int $id): bool
+    public function aceitar(int $escritorioId, int $id): int
     {
         $sql = "UPDATE solicitacoes_documentos
                 SET status = 'aceita',
                     motivo_recusa = NULL
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status = 'enviada'";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
     }
 
-    public function recusar(int $escritorioId, int $id, string $motivo): bool
+    public function recusar(int $escritorioId, int $id, string $motivo): int
     {
         $sql = "UPDATE solicitacoes_documentos
                 SET status = 'recusada',
                     motivo_recusa = :motivo
-                WHERE id = :id AND escritorio_id = :escritorio_id";
+                WHERE id = :id AND escritorio_id = :escritorio_id
+                  AND status = 'enviada'";
 
         $stmt = $this->db->prepare($sql);
         $stmt->bindValue(':motivo', $motivo);
         $stmt->bindValue(':id', $id, PDO::PARAM_INT);
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
+        $stmt->execute();
 
-        return $stmt->execute();
+        return $stmt->rowCount();
+    }
+
+    /**
+     * Histórico das solicitações (Melhoria 2), em ordem cronológica, agrupado por solicitação.
+     * Só lê eventos do próprio escritório e das solicitações pedidas.
+     *
+     * @param list<int> $ids
+     * @return array<int, list<array{acao: string, criado_em: string, usuario_nome: ?string, arquivo: ?string, motivo: ?string}>>
+     */
+    public function historico(int $escritorioId, array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+
+        // Um placeholder por ID: nada vindo de fora é concatenado ao SQL.
+        $marcadores = [];
+        $params = ['escritorio_id' => $escritorioId];
+        foreach ($ids as $posicao => $id) {
+            $marcadores[] = ':id' . $posicao;
+            $params['id' . $posicao] = $id;
+        }
+
+        $linhas = $this->buscarTodos(
+            "SELECT l.entidade_id, l.acao, l.criado_em, l.detalhes, u.nome AS usuario_nome
+             FROM logs_atividade l
+             LEFT JOIN usuarios u ON u.id = l.usuario_id AND u.escritorio_id = l.escritorio_id
+             WHERE l.escritorio_id = :escritorio_id
+               AND l.entidade = 'solicitacao'
+               AND l.entidade_id IN (" . implode(', ', $marcadores) . ')
+             ORDER BY l.criado_em ASC, l.id ASC',
+            $params
+        );
+
+        $historico = [];
+        foreach ($linhas as $linha) {
+            $detalhes = json_decode((string) ($linha['detalhes'] ?? ''), true);
+            $detalhes = is_array($detalhes) ? $detalhes : [];
+            $historico[(int) $linha['entidade_id']][] = [
+                'acao' => (string) $linha['acao'],
+                'criado_em' => (string) $linha['criado_em'],
+                'usuario_nome' => is_string($linha['usuario_nome'] ?? null) ? $linha['usuario_nome'] : null,
+                'arquivo' => is_string($detalhes['arquivo'] ?? null) ? $detalhes['arquivo'] : null,
+                'motivo' => is_string($detalhes['motivo'] ?? null) ? $detalhes['motivo'] : null,
+            ];
+        }
+
+        return $historico;
     }
 
     public function contarPendenciasEmpresa(int $escritorioId, int $empresaId): int

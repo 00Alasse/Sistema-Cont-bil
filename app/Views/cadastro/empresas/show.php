@@ -12,6 +12,7 @@ $valor = static fn (string $campo): string => is_scalar($empresa[$campo] ?? null
     ? (string) $empresa[$campo]
     : '';
 $cnpj = $valor('cnpj');
+$regimes = ['MEI' => 'MEI', 'SIMPLES_NACIONAL' => 'Simples Nacional', 'LUCRO_PRESUMIDO' => 'Lucro Presumido', 'LUCRO_REAL' => 'Lucro Real'];
 $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
 ?>
 <section class="pagina">
@@ -21,8 +22,14 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
             <p>Detalhes cadastrais da empresa.</p>
         </div>
         <div class="acoes-cabecalho">
-            <a class="botao" href="<?= e(url('/empresas/' . $empresaId . '/editar')) ?>">Editar</a>
-            <a class="botao botao-secundario" href="<?= e(url('/empresas')) ?>">Voltar à lista</a>
+            <a class="btn btn-primary" href="<?= e(url('/empresas/' . $empresaId . '/editar')) ?>">
+                <?php $icone = 'editar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Editar
+            </a>
+            <a class="btn btn-outline-secondary" href="<?= e(url('/empresas')) ?>">
+                <?php $icone = 'voltar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Voltar à lista
+            </a>
         </div>
     </header>
 
@@ -30,10 +37,10 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
     require dirname(__DIR__, 2) . '/partials/abas-empresa.php';
     ?>
 
-    <dl class="cartao detalhes-empresa">
+    <dl class="card card-body detalhes-empresa">
         <div><dt>Nome fantasia</dt><dd><?= e($valor('nome_fantasia') !== '' ? $valor('nome_fantasia') : '—') ?></dd></div>
         <div><dt>CNPJ</dt><dd><?= e(Cnpj::formatar($cnpj)) ?></dd></div>
-        <div><dt>Regime tributário</dt><dd><?= e($valor('regime_tributario')) ?></dd></div>
+        <div><dt>Regime tributário</dt><dd><?= e($regimes[$valor('regime_tributario')] ?? $valor('regime_tributario')) ?></dd></div>
         <div><dt>Segmento</dt><dd><?= e($valor('segmento') !== '' ? $valor('segmento') : '—') ?></dd></div>
         <div><dt>Contato</dt><dd><?= e($valor('contato_nome') !== '' ? $valor('contato_nome') : '—') ?></dd></div>
         <div><dt>E-mail</dt><dd><?= e($valor('email') !== '' ? $valor('email') : '—') ?></dd></div>
@@ -41,15 +48,25 @@ $usuarioAdmin = $usuario instanceof UsuarioLogado && $usuario->ehAdmin();
         <div><dt>Responsável</dt><dd><?= e($valor('responsavel_nome') !== '' ? $valor('responsavel_nome') : '—') ?></dd></div>
         <div><dt>BPO financeiro</dt><dd><?= e($valor('bpo_ativo') === '1' ? 'Ativo' : 'Inativo') ?></dd></div>
         <div><dt>Consultivo</dt><dd><?= e($valor('consultivo_ativo') === '1' ? 'Ativo' : 'Inativo') ?></dd></div>
-        <div><dt>Status</dt><dd><?= e($valor('status') === 'ATIVA' ? 'Ativa' : 'Inativa') ?></dd></div>
-        <div class="detalhe-largo"><dt>Observações</dt><dd><?= nl2br(e($valor('observacoes'))) ?></dd></div>
+        <div><dt>Status</dt><dd>
+                <?php
+                $seloRotulo = $valor('status') === 'ATIVA' ? 'Ativa' : 'Inativa';
+                $seloTom = $valor('status') === 'ATIVA' ? 'sucesso' : 'neutro';
+                require dirname(__DIR__, 2) . '/partials/status.php';
+                ?>
+            </dd></div>
+        <div class="detalhe-largo"><dt>Observações</dt><dd><?= $valor('observacoes') !== '' ? nl2br(e($valor('observacoes'))) : '—' ?></dd></div>
     </dl>
 
     <?php if ($usuarioAdmin) : ?>
-        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/empresas/' . $empresaId . '/excluir')) ?>">
+        <form class="card card-body acao-exclusao" method="post" action="<?= e(url('/empresas/' . $empresaId . '/excluir')) ?>"
+              data-confirmar="Excluir esta empresa? Essa ação não poderá ser desfeita.">
             <?= csrf_campo() ?>
             <p>Excluir esta empresa? Essa ação não poderá ser desfeita.</p>
-            <button class="botao botao-perigo" type="submit">Excluir empresa</button>
+            <button class="btn btn-outline-danger" type="submit">
+                <?php $icone = 'excluir'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Excluir empresa
+            </button>
         </form>
     <?php endif; ?>
 </section>

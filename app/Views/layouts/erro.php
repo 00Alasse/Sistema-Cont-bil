@@ -4,10 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= e($titulo ?? '-Tributo!') ?> - -Tributo!</title>
+    <meta name="theme-color" content="#0f2d57">
+    <title><?= e($titulo ?? '-Tributo') ?> - -Tributo</title>
+    <link rel="icon" type="image/svg+xml" href="<?= e(url('/assets/img/favicon.svg')) ?>">
+    <link rel="stylesheet" href="<?= e(url('/assets/vendor/bootstrap/bootstrap.min.css')) ?>">
+    <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
 </head>
-<body>
-    <main>
+<body class="acesso">
+    <main class="pagina-acesso">
         <?= $conteudo ?? '' ?>
     </main>
 </body>

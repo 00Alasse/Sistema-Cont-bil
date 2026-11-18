@@ -102,6 +102,29 @@ final class UploadService
         ];
     }
 
+    /**
+     * Apaga UM arquivo recém-gravado por salvarUpload, quando o registro no banco não foi confirmado.
+     *
+     * Só aceita exatamente o formato que salvarUpload gera (32 caracteres hexadecimais + extensão
+     * permitida), sem pastas, dentro do diretório de uploads. Não faz buscas no diretório: quem chama
+     * passa o nome devolvido pelo salvarUpload da mesma requisição. Retorna false se não apagou.
+     */
+    public function removerEnvioNaoConfirmado(string $caminhoRelativo): bool
+    {
+        $extensoes = implode('|', array_keys(self::EXTENSOES_PERMITIDAS));
+        if (preg_match('/\A[0-9a-f]{32}\.(?:' . $extensoes . ')\z/', $caminhoRelativo) !== 1) {
+            return false;
+        }
+
+        $base = realpath($this->diretorioUploads);
+        $arquivo = $base === false ? false : realpath($base . DIRECTORY_SEPARATOR . $caminhoRelativo);
+        if ($base === false || $arquivo === false || dirname($arquivo) !== $base || !is_file($arquivo)) {
+            return false;
+        }
+
+        return unlink($arquivo);
+    }
+
     public function caminhoAbsoluto(string $caminhoRelativo): string
     {
         // Evita directory traversal

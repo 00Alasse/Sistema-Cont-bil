@@ -1,4 +1,4 @@
-# Rotas do -Tributo!
+# Rotas do -Tributo
 
 > **Contrato de rotas.** Cada módulo declara suas rotas em `config/modules/<modulo>.php`
 > (ver [ARCHITECTURE.md §4](ARCHITECTURE.md#4-módulos-e-o-contrato-de-extensão)).
@@ -97,7 +97,7 @@ As flags `bpo_ativo` e `consultivo_ativo` são apenas gravadas pelo cadastro. A 
 
 | Método | Rota | Finalidade | Perfil | Payload / parâmetros | Respostas | Tarefa |
 |--------|------|------------|--------|----------------------|-----------|--------|
-| GET | `/obrigacoes` | Listar | A, C | `q` (empresa ou tipo), `empresa_id`, `tipo_id`, `status`, `situacao` (`atrasada`\|`vence_hoje`\|`vence_7d`\|`entregue_atraso`\|`entregue_no_prazo`), `responsavel` (ID ou `meus`), `competencia` (AAAA-MM), `de`, `ate` (vencimento), `entregue_de`, `entregue_ate` (data da entrega, AAAA-MM-DD, limites inclusivos), `ordem` (`vencimento`, `competencia`, `empresa`), `pagina` | 200 | FI03 |
+| GET | `/obrigacoes` | Listar | A, C | `q` (empresa ou tipo), `empresa_id`, `tipo_id`, `status`, `situacao` (`atrasada`\|`vence_hoje`\|`vence_7d`\|`entregue_atraso`\|`entregue_no_prazo`), `responsavel` (ID ou `meus`), `competencia` (AAAA-MM), `de`, `ate` (vencimento), `entregue_de`, `entregue_ate` (data da entrega, AAAA-MM-DD, limites inclusivos), `ordem` (`prioridade` — padrão: atraso crítico, atrasadas, vence hoje, vence em até 7 dias, demais abertas e, por último, encerradas; ou `vencimento`, `competencia`, `empresa`, com `-` para decrescente), `pagina` | 200 | FI03, Melhoria 1 |
 | GET | `/obrigacoes/nova` | Formulário avulso | A, C | `empresa_id` (pré-seleção) | 200 | FI03 |
 | POST | `/obrigacoes` | Criar | A, C | `empresa_id`*, `tipo_obrigacao_id`*, `competencia`* (AAAA-MM), `vencimento`* (≥ início da competência), `responsavel_id`, `observacao` | 302; 422 (incluindo "já existe obrigação deste tipo nesta competência") | FI03 |
 | GET | `/obrigacoes/{id}` | Detalhe + histórico de status | A, C | — | 200; 404 | FI03, FI04 |
@@ -135,6 +135,8 @@ Ao entrar em ENTREGUE: grava `entregue_em = agora` e `entregue_por = usuário`. 
 | POST | `/solicitacoes/{id}/documentos` | Enviar arquivo (`multipart/form-data`) | A, C, CL (da própria empresa) | `arquivo`* (pdf, jpg, jpeg, png, xml, csv, xlsx; até 10 MB) | 302; 422 (tipo, tamanho ou MIME); 404; 409 (ACEITA ou CANCELADA) | DO02 |
 | GET | `/documentos/{id}/download` | Baixar | A, C; CL (da própria empresa) | — | 200 (`attachment`); 404 | DO02 |
 | POST | `/documentos/{id}/excluir` | Remover arquivo enviado por engano | A; CL (próprio envio, solicitação ainda ENVIADA) | — | 302; 403; 404; 409 | DO02 |
+
+**Implementado na Melhoria 2:** em `GET /solicitacoes`, `situacao=vencida` lista as solicitações abertas ou recusadas com prazo anterior a hoje (o mesmo critério do indicador "Prazo de envio vencido" do painel, que agora aponta para esse filtro); `aguardando_analise` ainda não foi implementado. Criar, enviar, reenviar, recusar e aceitar gravam um evento em `logs_atividade` (`entidade = 'solicitacao'`) na mesma transação da operação, e a listagem mostra esse histórico por solicitação. Solicitações anteriores à implantação não têm eventos. Transições validadas no próprio `UPDATE`: aceitar e recusar só a partir de `enviada`; enviar ou reenviar só a partir de `aberta` ou `recusada`. Fora disso a resposta é **409**, sem evento; no envio, o arquivo gravado naquela requisição é apagado quando nada foi confirmado.
 
 **Estados da solicitação:** `ABERTA → ENVIADA` (primeiro upload) `→ ACEITA | RECUSADA`; `RECUSADA → ENVIADA` (novo upload); `ABERTA | RECUSADA → CANCELADA`.
 

@@ -18,11 +18,11 @@ $rotulosCampos = ['status' => 'Novo status', 'justificativa' => 'Justificativa',
 // O partial de erro por campo lê $erros e $campo.
 $erros = $errosStatus;
 ?>
-<section class="cartao" aria-labelledby="titulo-status">
+<section class="card card-body" aria-labelledby="titulo-status">
     <h2 id="titulo-status">Mudar status</h2>
 
     <?php if ($conflitoStatus !== null) : ?>
-        <div class="aviso aviso-erro" role="alert">
+        <div class="alert alert-danger" role="alert">
             <p><?= e($conflitoStatus) ?> Confira a situação atual antes de tentar de novo.</p>
         </div>
     <?php endif; ?>
@@ -35,7 +35,7 @@ $erros = $errosStatus;
             <input type="hidden" name="versao" value="<?= e($valorStatus('versao')) ?>">
 
             <?php if ($errosStatus !== []) : ?>
-                <div class="aviso aviso-erro" role="alert">
+                <div class="alert alert-danger" role="alert">
                     <p>Revise os campos indicados:</p>
                     <ul>
                         <?php foreach ($errosStatus as $campoErro => $mensagensErro) : ?>
@@ -49,10 +49,10 @@ $erros = $errosStatus;
                 </div>
             <?php endif; ?>
 
-            <div class="grade-formulario">
-                <div class="campo">
-                    <label for="status">Novo status <span aria-hidden="true">*</span></label>
-                    <select id="status" name="status" required<?= isset($errosStatus['status']) ? ' aria-invalid="true"' : '' ?>>
+            <div class="row g-3">
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="status">Novo status <span aria-hidden="true">*</span></label>
+                    <select class="form-select" id="status" name="status" required<?= isset($errosStatus['status']) ? ' aria-invalid="true"' : '' ?>>
                         <option value="">Selecione</option>
                         <?php foreach ($destinos as $destino) : ?>
                             <option value="<?= e((string) $destino) ?>"<?= $valorStatus('status') === $destino ? ' selected' : '' ?>><?= e((string) ($rotulosStatus[$destino] ?? $destino)) ?></option>
@@ -60,23 +60,23 @@ $erros = $errosStatus;
                     </select>
                     <?php $campo = 'status'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
-                <div class="campo">
-                    <label for="protocolo">Protocolo</label>
-                    <input id="protocolo" name="protocolo" type="text" maxlength="100"
+                <div class="col-md-6 col-xl-4">
+                    <label class="form-label" for="protocolo">Protocolo</label>
+                    <input class="form-control" id="protocolo" name="protocolo" type="text" maxlength="100"
                         value="<?= e($valorStatus('protocolo')) ?>"<?= isset($errosStatus['protocolo']) ? ' aria-invalid="true"' : '' ?>>
                     <small>Opcional; só na mudança para Entregue.</small>
                     <?php $campo = 'protocolo'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
-                <div class="campo campo-largo">
-                    <label for="justificativa">Justificativa</label>
-                    <textarea id="justificativa" name="justificativa" rows="3" maxlength="500"<?= isset($errosStatus['justificativa']) ? ' aria-invalid="true"' : '' ?>><?= e($valorStatus('justificativa')) ?></textarea>
+                <div class="col-12">
+                    <label class="form-label" for="justificativa">Justificativa</label>
+                    <textarea class="form-control" id="justificativa" name="justificativa" rows="3" maxlength="500"<?= isset($errosStatus['justificativa']) ? ' aria-invalid="true"' : '' ?>><?= e($valorStatus('justificativa')) ?></textarea>
                     <small>Obrigatória para dispensar e para reabrir; até 500 caracteres.</small>
                     <?php $campo = 'justificativa'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
                 </div>
             </div>
 
             <div class="acoes-formulario">
-                <button class="botao" type="submit">Mudar status</button>
+                <button class="btn btn-primary" type="submit">Mudar status</button>
             </div>
         </form>
     <?php endif; ?>

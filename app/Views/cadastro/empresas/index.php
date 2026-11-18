@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Core\Pagina;
+use App\Support\Cnpj;
 
 $resultado = $paginaEmpresas ?? null;
 $resultado = $resultado instanceof Pagina ? $resultado : new Pagina([], 0, 1, 20);
@@ -10,6 +11,7 @@ $filtros = is_array($filtros ?? null) ? $filtros : [];
 $responsaveis = is_array($responsaveis ?? null) ? $responsaveis : [];
 $filtrosAtivos = is_array($filtrosAtivos ?? null) ? $filtrosAtivos : [];
 $queryAtual = is_array($queryAtual ?? null) ? $queryAtual : [];
+$regimes = ['MEI' => 'MEI', 'SIMPLES_NACIONAL' => 'Simples Nacional', 'LUCRO_PRESUMIDO' => 'Lucro Presumido', 'LUCRO_REAL' => 'Lucro Real'];
 $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?? null)
     ? (string) $filtros[$campo]
     : '';
@@ -20,27 +22,30 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
             <h1>Empresas</h1>
             <p>Consulte e mantenha os cadastros do escritório.</p>
         </div>
-        <a class="botao" href="<?= e(url('/empresas/nova')) ?>">Cadastrar empresa</a>
+        <a class="btn btn-primary" href="<?= e(url('/empresas/nova')) ?>">
+            <?php $icone = 'adicionar'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+            Cadastrar empresa
+        </a>
     </header>
 
-    <form class="cartao formulario-filtros" method="get" action="<?= e(url('/empresas')) ?>">
-        <div class="grade-formulario">
-            <div class="campo campo-largo">
-                <label for="q">Busca</label>
-                <input id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>"
+    <form class="card card-body formulario-filtros" method="get" action="<?= e(url('/empresas')) ?>">
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label" for="q">Busca</label>
+                <input class="form-control" id="q" name="q" type="search" value="<?= e($valorFiltro('q')) ?>"
                     placeholder="Razão social, nome fantasia ou CNPJ">
             </div>
-            <div class="campo">
-                <label for="status">Status</label>
-                <select id="status" name="status">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="status">Status</label>
+                <select class="form-select" id="status" name="status">
                     <option value="">Todos</option>
                     <option value="ATIVA"<?= $valorFiltro('status') === 'ATIVA' ? ' selected' : '' ?>>Ativa</option>
                     <option value="INATIVA"<?= $valorFiltro('status') === 'INATIVA' ? ' selected' : '' ?>>Inativa</option>
                 </select>
             </div>
-            <div class="campo">
-                <label for="regime">Regime tributário</label>
-                <select id="regime" name="regime">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="regime">Regime tributário</label>
+                <select class="form-select" id="regime" name="regime">
                     <option value="">Todos</option>
                     <?php foreach ([
                         'MEI' => 'MEI',
@@ -54,9 +59,9 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="responsavel_id">Responsável</label>
-                <select id="responsavel_id" name="responsavel_id">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="responsavel_id">Responsável</label>
+                <select class="form-select" id="responsavel_id" name="responsavel_id">
                     <option value="">Todos</option>
                     <?php foreach ($responsaveis as $responsavel) : ?>
                         <?php if (is_array($responsavel)) : ?>
@@ -69,17 +74,17 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
                     <?php endforeach; ?>
                 </select>
             </div>
-            <div class="campo">
-                <label for="servico">Serviço</label>
-                <select id="servico" name="servico">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="servico">Serviço</label>
+                <select class="form-select" id="servico" name="servico">
                     <option value="">Todos</option>
                     <option value="bpo"<?= $valorFiltro('servico') === 'bpo' ? ' selected' : '' ?>>BPO financeiro</option>
                     <option value="consultivo"<?= $valorFiltro('servico') === 'consultivo' ? ' selected' : '' ?>>Consultivo</option>
                 </select>
             </div>
-            <div class="campo">
-                <label for="ordem">Ordenar por</label>
-                <select id="ordem" name="ordem">
+            <div class="col-md-4 col-xl-3">
+                <label class="form-label" for="ordem">Ordenar por</label>
+                <select class="form-select" id="ordem" name="ordem">
                     <option value="razao_social"<?= $valorFiltro('ordem') !== 'criado_em' ? ' selected' : '' ?>>
                         Razão social
                     </option>
@@ -90,8 +95,8 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
             </div>
         </div>
         <div class="acoes-formulario">
-            <button class="botao" type="submit">Aplicar filtros</button>
-            <a class="botao botao-secundario" href="<?= e(url('/empresas')) ?>">Limpar</a>
+            <button class="btn btn-primary" type="submit">Aplicar filtros</button>
+            <a class="btn btn-outline-secondary" href="<?= e(url('/empresas')) ?>">Limpar</a>
         </div>
     </form>
 
@@ -100,8 +105,8 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
     require dirname(__DIR__, 2) . '/partials/filtros-ativos.php';
     ?>
 
-    <div class="cartao tabela-responsiva">
-        <table>
+    <div class="card cartao-tabela"><div class="table-responsive">
+        <table class="table table-hover align-middle">
             <thead>
                 <tr>
                     <th scope="col">Razão social</th>
@@ -128,11 +133,22 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
                     ?>
                     <tr>
                         <th scope="row"><a href="<?= e(url('/empresas/' . $id)) ?>"><?= e($razaoSocial) ?></a></th>
-                        <td><?= e($cnpj) ?></td>
-                        <td><?= e($regime) ?></td>
+                        <td class="text-nowrap"><?= e(Cnpj::formatar($cnpj)) ?></td>
+                        <td><?= e($regimes[$regime] ?? $regime) ?></td>
                         <td><?= e($responsavelNome) ?></td>
-                        <td><?= e($status === 'ATIVA' ? 'Ativa' : 'Inativa') ?></td>
-                        <td><a href="<?= e(url('/empresas/' . $id)) ?>">Ver</a></td>
+                        <td>
+                            <?php
+                            $seloRotulo = $status === 'ATIVA' ? 'Ativa' : 'Inativa';
+                            $seloTom = $status === 'ATIVA' ? 'sucesso' : 'neutro';
+                            require dirname(__DIR__, 2) . '/partials/status.php';
+                            ?>
+                        </td>
+                        <td>
+                            <a class="btn btn-outline-secondary btn-sm" href="<?= e(url('/empresas/' . $id)) ?>">
+                                <?php $icone = 'ver'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                                Ver<span class="texto-acessivel"> <?= e($razaoSocial) ?></span>
+                            </a>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($resultado->itens === []) : ?>
@@ -140,6 +156,7 @@ $valorFiltro = static fn (string $campo): string => is_scalar($filtros[$campo] ?
                 <?php endif; ?>
             </tbody>
         </table>
+    </div>
     </div>
 
     <?php

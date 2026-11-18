@@ -1,4 +1,4 @@
-# Arquitetura do -Tributo!
+# Arquitetura do -Tributo
 
 > **Fonte de verdade técnica.** Toda implementação (humana ou por IA) segue este documento.
 > Mudanças aqui exigem aprovação e registro em [DECISIONS.md](DECISIONS.md).
@@ -110,7 +110,7 @@ tributo/
 ├── public/                      # ÚNICA pasta acessível pelo navegador
 │   ├── index.php                # front controller
 │   ├── .htaccess
-│   └── assets/{css,js}/         # (F09)
+│   └── assets/{css,js,fonts,img,vendor}/  # identidade em CSS, JS progressivo, Inter, favicon e Bootstrap local (ADR-024)
 ├── app/
 │   ├── Core/                    # infraestrutura: Router, Request, Response, Kernel, Container, View,
 │   │                            #   Session, Csrf, Validator, Database, Config, Env, Model, Controller,
@@ -124,8 +124,8 @@ tributo/
 │   ├── Models/<Modulo>/         #          Financeiro, Gestao, Consultivo
 │   ├── Services/<Modulo>/
 │   └── Views/
-│       ├── layouts/             # app.php, portal.php, auth.php, impressao.php
-│       ├── partials/            # flash, paginacao, campo-erro, semaforo, abas-empresa, aviso-gerencial
+│       ├── layouts/             # app.php, portal.php, auth.php, erro.php, impressao.php
+│       ├── partials/            # flash, paginacao, campo-erro, semaforo, abas-empresa, aviso-gerencial, marca, icone, status
 │       ├── erros/               # 403, 404, 405, 409, 419, 500, modulo-inativo
 │       └── <modulo>/<recurso>/  # pastas em minúsculas: nucleo, cadastro, fiscal, documentos, portal,
 │                                #   financeiro, gestao, consultivo → index.php, form.php, show.php ...
@@ -317,6 +317,7 @@ Assim, a assinatura pública permanece `Validator::validar(array $dados, array $
 11. **PRG:** toda mutação bem-sucedida termina em redirecionamento.
 12. **Comentários** explicam o *porquê*, não o *o quê*. Métodos com mais de cerca de 30 linhas devem ser divididos.
 13. Mensagens ao usuário em português claro, sem jargão técnico.
+14. **Interface (ADR-024):** Bootstrap 5.3.8 local (`public/assets/vendor/bootstrap/`) para os componentes; identidade e componentes próprios só em `public/assets/css/app.css`, com as variáveis `--cor-*`; sem `style=` e sem CSS por tela. O layout das áreas autenticadas vem de `partials/estrutura-aplicacao.php` (offcanvas no celular, barra recolhível no desktop). Ícones por `partials/icone.php`; ícone decorativo leva `aria-hidden="true"` e ícone que sozinho tem significado leva texto alternativo. O nome do produto é **-Tributo** e vem de `partials/marca.php`. O menu funciona sem JS; o destaque do item ativo e o recolhimento da barra são melhoria progressiva. Contraste mínimo WCAG AA, foco visível, `prefers-reduced-motion` respeitado e impressão sem menu.
 
 ## 7. Multi-tenant e autorização
 

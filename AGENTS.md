@@ -1,12 +1,12 @@
-# AGENTS.md: regras para quem implementa ou revisa o -Tributo!
+# AGENTS.md: regras para quem implementa ou revisa o -Tributo
 
 Este arquivo vale para **qualquer IA** (Claude, Copilot, Gemini, ChatGPT...) e para qualquer pessoa.
 Ele é a fonte única de regras de trabalho; `CLAUDE.md` e `.github/copilot-instructions.md` apontam para cá.
 
 ## 1. O projeto em poucas linhas
 
-- **-Tributo!:** plataforma web para escritórios de contabilidade (obrigações, documentos, BPO financeiro, indicadores e consultivo). Projeto acadêmico (Programação Web II) com potencial comercial.
-- **Stack fixa:** PHP 8.2+ puro, MVC próprio, PDO, MariaDB 10.4 / MySQL 8, HTML + CSS + JS sem framework, sessões PHP, PHPUnit 11, PHPStan, Composer (só autoload e ferramentas de desenvolvimento). **Não introduza frameworks nem bibliotecas.**
+- **-Tributo:** plataforma web para escritórios de contabilidade (obrigações, documentos, BPO financeiro, indicadores e consultivo). Projeto acadêmico (Programação Web II) com potencial comercial.
+- **Stack fixa:** PHP 8.2+ puro, MVC próprio, PDO, MariaDB 10.4 / MySQL 8, HTML + CSS + JS sem framework, sessões PHP, PHPUnit 11, PHPStan, Composer (só autoload e ferramentas de desenvolvimento). **Não introduza frameworks PHP.** Na interface, a ADR-024 (revisada) aprova o **Bootstrap 5.3.8**, a fonte Inter e os ícones SVG do Lucide, todos hospedados no projeto (`public/assets/vendor/`). Outras bibliotecas pequenas só com benefício concreto, versão fixa e licença registrada em `docs/LICENCAS-TERCEIROS.md`; nunca de CDN.
 - **Ambiente local:** XAMPP (Windows). Produção: hospedagem compartilhada.
 - Quem desenvolve é **estudante** e precisa entender e apresentar o código: prefira clareza a esperteza.
 
@@ -42,6 +42,7 @@ Ele é a fonte única de regras de trabalho; `CLAUDE.md` e `.github/copilot-inst
 - Domínio em português, infraestrutura com nomes técnicos (`Router`, `Kernel`). Banco: português, `snake_case`, sem acento.
 - Métodos curtos (≈ 30 linhas). Comentários explicam o **porquê**.
 - Sem JS inline (CSP). Tudo funciona sem JS.
+- **Interface (ADR-024):** use as classes do Bootstrap para botões, formulários, tabelas, alertas, selos e paginação, e as variáveis de `public/assets/css/app.css` para a identidade; sem `style=` nem CSS avulso por tela; ícones só por `partials/icone.php` (decorativos com `aria-hidden`); o nome do produto é **-Tributo** (hífen inicial, sem exclamação) e vem de `partials/marca.php`.
 
 ## 5. Checklist de segurança (obrigatório em tarefas 🔒; desejável em todas)
 
@@ -82,7 +83,7 @@ composer check                   # lint + analyse + test: OBRIGATÓRIO antes de 
 ## 8. Prompt de execução (copie para a IA implementadora)
 
 ```text
-Você vai implementar UMA tarefa do projeto -Tributo!.
+Você vai implementar UMA tarefa do projeto -Tributo.
 1. Leia AGENTS.md (regras), o cartão <ID> em docs/ROADMAP.md e as seções que ele indica em "Ler".
 2. Altere SOMENTE os arquivos listados no cartão. Se precisar de outro, pare e escreva "PEDIDO DE MUDANÇA".
 3. Entregue nesta ordem:
@@ -99,7 +100,7 @@ Cartão:
 ## 9. Prompt de revisão (copie para a IA revisora: Gemini, ChatGPT, Opus...)
 
 ```text
-Revise a implementação da tarefa <ID> do projeto -Tributo! (diff ou arquivos abaixo).
+Revise a implementação da tarefa <ID> do projeto -Tributo (diff ou arquivos abaixo).
 Contexto: AGENTS.md e o cartão <ID> de docs/ROADMAP.md (colados abaixo).
 Verifique e classifique cada problema como CRÍTICO, ALTO, MÉDIO ou BAIXO:
 1. Critérios de aceite do cartão: cada um atendido? Aponte os que faltam.
@@ -109,7 +110,7 @@ Verifique e classifique cada problema como CRÍTICO, ALTO, MÉDIO ou BAIXO:
 5. Arquivos alterados fora do cartão? Contratos alterados?
 6. Complexidade desnecessária ou código difícil de explicar para uma estudante.
 Para cada problema: arquivo:linha, explicação, correção sugerida (só o trecho).
-Não reescreva arquivos inteiros. Não proponha bibliotecas ou frameworks.
+Não reescreva arquivos inteiros. Não proponha bibliotecas ou frameworks além dos aprovados na ADR-024 (Bootstrap, Inter, Lucide).
 ```
 
 ## 10. Quando parar e perguntar

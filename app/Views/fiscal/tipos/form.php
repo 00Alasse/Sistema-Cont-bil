@@ -29,13 +29,13 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
             <h1><?= e($emEdicao ? 'Editar tipo de obrigação' : 'Cadastrar tipo de obrigação') ?></h1>
             <p>O prazo é informado pelo escritório e não é conferido pelo sistema: confira o prazo vigente na fonte oficial.</p>
         </div>
-        <a class="botao botao-secundario" href="<?= e(url('/tipos-obrigacao')) ?>">Cancelar</a>
+        <a class="btn btn-outline-secondary" href="<?= e(url('/tipos-obrigacao')) ?>">Cancelar</a>
     </header>
 
-    <form class="cartao formulario" method="post" action="<?= e(url($acao)) ?>">
+    <form class="card card-body formulario" method="post" action="<?= e(url($acao)) ?>">
         <?= csrf_campo() ?>
         <?php if ($erros !== []) : ?>
-            <div class="aviso aviso-erro" role="alert">
+            <div class="alert alert-danger" role="alert">
                 <p>Revise os campos indicados:</p>
                 <ul>
                     <?php foreach ($erros as $campoErro => $mensagensErro) : ?>
@@ -49,22 +49,22 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
             </div>
         <?php endif; ?>
 
-        <div class="grade-formulario">
-            <div class="campo campo-largo">
-                <label for="nome">Nome <span aria-hidden="true">*</span></label>
-                <input id="nome" name="nome" type="text" maxlength="100" required
+        <div class="row g-3">
+            <div class="col-12">
+                <label class="form-label" for="nome">Nome <span aria-hidden="true">*</span></label>
+                <input class="form-control" id="nome" name="nome" type="text" maxlength="100" required
                     value="<?= e($valor('nome')) ?>"<?= $invalido('nome') ?>>
                 <?php $campo = 'nome'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo campo-largo">
-                <label for="descricao">Descrição</label>
-                <input id="descricao" name="descricao" type="text" maxlength="255"
+            <div class="col-12">
+                <label class="form-label" for="descricao">Descrição</label>
+                <input class="form-control" id="descricao" name="descricao" type="text" maxlength="255"
                     value="<?= e($valor('descricao')) ?>"<?= $invalido('descricao') ?>>
                 <?php $campo = 'descricao'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
-                <label for="esfera">Esfera <span aria-hidden="true">*</span></label>
-                <select id="esfera" name="esfera" required<?= $invalido('esfera') ?>>
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="esfera">Esfera <span aria-hidden="true">*</span></label>
+                <select class="form-select" id="esfera" name="esfera" required<?= $invalido('esfera') ?>>
                     <?php foreach ([
                         'FEDERAL' => 'Federal',
                         'ESTADUAL' => 'Estadual',
@@ -77,9 +77,9 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
                 </select>
                 <?php $campo = 'esfera'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
-                <label for="periodicidade">Periodicidade <span aria-hidden="true">*</span></label>
-                <select id="periodicidade" name="periodicidade" required<?= $invalido('periodicidade') ?>>
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="periodicidade">Periodicidade <span aria-hidden="true">*</span></label>
+                <select class="form-select" id="periodicidade" name="periodicidade" required<?= $invalido('periodicidade') ?>>
                     <?php foreach ([
                         'MENSAL' => 'Mensal',
                         'TRIMESTRAL' => 'Trimestral',
@@ -91,23 +91,23 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
                 </select>
                 <?php $campo = 'periodicidade'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
-                <label for="dia_vencimento">Dia de vencimento</label>
-                <input id="dia_vencimento" name="dia_vencimento" type="number" min="1" max="31"
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="dia_vencimento">Dia de vencimento</label>
+                <input class="form-control" id="dia_vencimento" name="dia_vencimento" type="number" min="1" max="31"
                     value="<?= e($valor('dia_vencimento')) ?>"<?= $invalido('dia_vencimento') ?>>
                 <small>Obrigatório para tipos mensais e trimestrais. Em meses mais curtos, vale o último dia.</small>
                 <?php $campo = 'dia_vencimento'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
-                <label for="meses_apos_competencia">Meses após a competência <span aria-hidden="true">*</span></label>
-                <input id="meses_apos_competencia" name="meses_apos_competencia" type="number" min="0" max="12" required
+            <div class="col-md-6 col-xl-4">
+                <label class="form-label" for="meses_apos_competencia">Meses após a competência <span aria-hidden="true">*</span></label>
+                <input class="form-control" id="meses_apos_competencia" name="meses_apos_competencia" type="number" min="0" max="12" required
                     value="<?= e($valor('meses_apos_competencia')) ?>"<?= $invalido('meses_apos_competencia') ?>>
                 <?php $campo = 'meses_apos_competencia'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
             </div>
-            <div class="campo">
+            <div class="col-md-6 col-xl-4">
                 <label class="opcao">
                     <input type="hidden" name="ativo" value="0">
-                    <input type="checkbox" name="ativo" value="1"<?= $valor('ativo') === '1' ? ' checked' : '' ?><?= $invalido('ativo') ?>>
+                    <input class="form-check-input" type="checkbox" name="ativo" value="1"<?= $valor('ativo') === '1' ? ' checked' : '' ?><?= $invalido('ativo') ?>>
                     Ativo (disponível para novos vínculos)
                 </label>
                 <?php $campo = 'ativo'; require dirname(__DIR__, 2) . '/partials/campo-erro.php'; ?>
@@ -115,18 +115,22 @@ $invalido = static fn (string $campo): string => isset($erros[$campo]) ? ' aria-
         </div>
 
         <div class="acoes-formulario">
-            <button class="botao" type="submit"><?= e($emEdicao ? 'Salvar alterações' : 'Cadastrar tipo') ?></button>
+            <button class="btn btn-primary" type="submit"><?= e($emEdicao ? 'Salvar alterações' : 'Cadastrar tipo') ?></button>
         </div>
     </form>
 
     <?php if ($emEdicao) : ?>
-        <form class="cartao acao-exclusao" method="post" action="<?= e(url('/tipos-obrigacao/' . $tipoId . '/excluir')) ?>">
+        <form class="card card-body acao-exclusao" method="post" action="<?= e(url('/tipos-obrigacao/' . $tipoId . '/excluir')) ?>"
+              data-confirmar="Excluir este tipo? Os vínculos dele com empresas também serão removidos.">
             <?= csrf_campo() ?>
             <p>
                 Excluir este tipo? Os vínculos deste tipo com empresas também serão removidos.
                 Se já existirem obrigações deste tipo, a exclusão será bloqueada: nesse caso, inative o tipo.
             </p>
-            <button class="botao botao-perigo" type="submit">Excluir tipo</button>
+            <button class="btn btn-outline-danger" type="submit">
+                <?php $icone = 'excluir'; require dirname(__DIR__, 2) . '/partials/icone.php'; ?>
+                Excluir tipo
+            </button>
         </form>
     <?php endif; ?>
 </section>

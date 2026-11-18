@@ -12,15 +12,15 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
     <header class="pagina-cabecalho">
         <div>
             <h1>Avaliações dos Usuários</h1>
-            <p>Feedback e notas coletados no teste com usuários reais da plataforma.</p>
+            <p>Espaço destinado à avaliação da experiência de uso e à coleta de feedback dos usuários da plataforma.</p>
         </div>
         <div>
-            <a href="<?= e(url('/avaliacao')) ?>" class="botao botao-secundario">+ Registrar Nova Avaliação</a>
+            <a href="<?= e(url('/avaliacao')) ?>" class="btn btn-outline-secondary">+ Registrar Nova Avaliação</a>
         </div>
     </header>
 
     <!-- Indicadores de Satisfação -->
-    <div class="grid-kpis" style="margin-bottom: 1.5rem;">
+    <div class="grid-kpis">
         <div class="kpi-card">
             <div class="kpi-icone">📋</div>
             <div class="kpi-dados">
@@ -34,7 +34,7 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
             <div class="kpi-icone">⭐</div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Média Geral</span>
-                <span class="kpi-valor" style="color: #d97706;"><?= e(number_format((float) $estatisticas['media_nota'], 1, ',', '.')) ?></span>
+                <span class="kpi-valor text-warning-emphasis"><?= e(number_format((float) $estatisticas['media_nota'], 1, ',', '.')) ?></span>
                 <span class="kpi-subtexto">escala de 1 a 5 estrelas</span>
             </div>
         </div>
@@ -43,20 +43,20 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
             <div class="kpi-icone">👍</div>
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Facilidade de Uso</span>
-                <span class="kpi-valor" style="color: #16a34a;"><?= e(number_format((float) $estatisticas['media_facilidade'], 1, ',', '.')) ?></span>
+                <span class="kpi-valor text-success-emphasis"><?= e(number_format((float) $estatisticas['media_facilidade'], 1, ',', '.')) ?></span>
                 <span class="kpi-subtexto">índice de usabilidade (até 5,0)</span>
             </div>
         </div>
     </div>
 
     <!-- Lista de Comentários / Feedbacks -->
-    <div class="cartao">
-        <h2 style="font-size: 1.15rem; margin-bottom: 1rem;">Comentários e Feedbacks Recebidos</h2>
+    <div class="card card-body">
+        <h2 class="h5 mb-3">Comentários e Feedbacks Recebidos</h2>
 
         <?php if ($itens === []) : ?>
-            <p style="color: #64748b; text-align: center; padding: 2rem 0;">Nenhuma avaliação registrada até o momento.</p>
+            <p class="text-body-secondary text-center py-4">Nenhuma avaliação registrada até o momento.</p>
         <?php else : ?>
-            <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <div class="d-flex flex-column gap-3">
                 <?php foreach ($itens as $av) : ?>
                     <?php
                         $nota = (int) $av['nota'];
@@ -68,36 +68,36 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
                             default => 'Colaborador do Escritório'
                         };
                     ?>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1.25rem;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.5rem;">
+                    <div class="p-3 border rounded bg-body-tertiary">
+                        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                             <div>
                                 <strong><?= e((string) $av['usuario_nome']) ?></strong>
-                                <span class="badge <?= $perfil === 'CLIENTE' ? 'badge-info' : 'badge-sucesso' ?>" style="margin-left: 0.35rem;">
-                                    <?= e($perfilRotulo) ?>
+                                <span class="ms-1">
+                                    <?php $seloRotulo = $perfilRotulo; $seloTom = $perfil === 'CLIENTE' ? 'info' : 'sucesso'; require dirname(__DIR__) . '/partials/status.php'; ?>
                                 </span>
                                 <?php if (!empty($av['empresa_nome'])) : ?>
-                                    <small style="color: #64748b; margin-left: 0.25rem;">(<?= e((string) $av['empresa_nome']) ?>)</small>
+                                    <small class="text-body-secondary ms-1">(<?= e((string) $av['empresa_nome']) ?>)</small>
                                 <?php endif; ?>
                             </div>
-                            <div style="font-size: 0.875rem; color: #64748b;">
+                            <div class="small text-body-secondary">
                                 <?= e(date('d/m/Y H:i', strtotime((string) $av['criado_em']))) ?>
                             </div>
                         </div>
 
-                        <div style="margin-bottom: 0.5rem;">
-                            <span style="font-size: 1.1rem; color: #eab308;"><?= str_repeat('⭐', $nota) ?></span>
-                            <span style="font-size: 0.9rem; color: #475569; margin-left: 0.5rem;">
+                        <div class="mb-2">
+                            <span class="fs-5"><?= str_repeat('⭐', $nota) ?></span>
+                            <span class="small text-body-secondary ms-2">
                                 (Nota: <?= e((string) $nota) ?>/5)
                             </span>
                             <?php if ($facilidade !== null) : ?>
-                                <span style="font-size: 0.85rem; color: #16a34a; margin-left: 0.75rem;">
+                                <span class="small text-success ms-3">
                                     • Facilidade de uso: <?= e((string) $facilidade) ?>/5
                                 </span>
                             <?php endif; ?>
                         </div>
 
                         <?php if (!empty($av['comentario'])) : ?>
-                            <blockquote style="margin: 0.5rem 0 0; background: #ffffff; border-left: 4px solid #3b82f6; padding: 0.75rem 1rem; border-radius: 4px; color: #334155; font-style: italic;">
+                            <blockquote class="mb-0 mt-2 bg-body border-start border-4 border-primary rounded py-2 px-3 fst-italic text-body-secondary">
                                 "<?= e((string) $av['comentario']) ?>"
                             </blockquote>
                         <?php endif; ?>
@@ -107,8 +107,9 @@ $estatisticas = is_array($estatisticas ?? null) ? $estatisticas : ['total' => 0,
         <?php endif; ?>
 
         <?php
-            $paginaAtual = $pagina->pagina;
+            // O partial lê $pagina como número; aqui $pagina é o objeto Pagina, então ele é trocado pelo número.
             $totalPaginas = max(1, $pagina->totalPaginas);
+            $pagina = $pagina->pagina;
             $caminho = '/avaliacoes';
             $queryAtual = [];
             require dirname(__DIR__) . '/partials/paginacao.php';

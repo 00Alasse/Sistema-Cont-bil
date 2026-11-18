@@ -29,14 +29,14 @@ foreach ($parametrosRecebidos as $chave => $valor) {
 <?php if ($totalPaginas > 1) : ?>
     <nav class="paginacao" aria-label="Paginação">
         <span>Página <?= e((string) $paginaAtual) ?> de <?= e((string) $totalPaginas) ?></span>
-        <ul>
+        <ul class="pagination">
             <?php if ($paginaAtual > 1) : ?>
                 <?php $parametros['pagina'] = $paginaAtual - 1; ?>
-                <li><a href="<?= e(url($caminho, $parametros)) ?>">Anterior</a></li>
+                <li class="page-item"><a class="page-link" href="<?= e(url($caminho, $parametros)) ?>">Anterior</a></li>
             <?php endif; ?>
             <?php if ($paginaAtual < $totalPaginas) : ?>
                 <?php $parametros['pagina'] = $paginaAtual + 1; ?>
-                <li><a href="<?= e(url($caminho, $parametros)) ?>">Próxima</a></li>
+                <li class="page-item"><a class="page-link" href="<?= e(url($caminho, $parametros)) ?>">Próxima</a></li>
             <?php endif; ?>
         </ul>
     </nav>

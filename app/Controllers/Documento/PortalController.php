@@ -18,6 +18,7 @@ use App\Exceptions\NaoEncontradoException;
 use App\Models\Cadastro\Empresa;
 use App\Models\Documento\SolicitacaoDocumento;
 use App\Models\Fiscal\Obrigacao;
+use App\Services\Documento\SolicitacaoService;
 use App\Services\Documento\UploadService;
 use App\Support\Relogio;
 use App\Support\RelogioSistema;
@@ -63,7 +64,8 @@ final class PortalController extends Controller
         // Próximas obrigações/guias da empresa
         $filtrosObrigacoes = [
             'empresa_id' => (string) $empresaId,
-            'ordem' => 'vencimento_asc',
+            // Guias do portal em ordem cronológica de vencimento (a "prioridade" é só da listagem do escritório).
+            'ordem' => 'vencimento',
         ];
         $paginaObrigacoes = $this->obrigacoes->listar($usuario->escritorioId, $filtrosObrigacoes, Paginacao::deRequest($request, 10));
 
@@ -104,12 +106,17 @@ final class PortalController extends Controller
         }
 
         $agora = $this->relogio->agora()->format('Y-m-d H:i:s');
-        $this->solicitacoes->anexarArquivo(
-            $usuario->escritorioId,
+        $arquivoDestaRequisicao = $resultado['caminho_relativo'];
+        // Grava o arquivo e o evento do histórico na mesma transação. Se nada for confirmado, o service
+        // apaga só o arquivo gravado nesta requisição e relança a exceção: transição inválida vira 409
+        // (página de conflito do Kernel); qualquer outra falha vira a página genérica de erro.
+        SolicitacaoService::padrao()->anexarArquivo(
+            $usuario,
             $id,
-            $resultado['caminho_relativo'],
+            $arquivoDestaRequisicao,
             $resultado['nome_original'],
-            $agora
+            $agora,
+            fn (): bool => $this->uploadService->removerEnvioNaoConfirmado($arquivoDestaRequisicao)
         );
 
         Session::atual()->flash('sucesso', 'Documento enviado com sucesso! Aguarde a conferência do escritório.');

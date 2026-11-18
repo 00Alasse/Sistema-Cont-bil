@@ -50,10 +50,35 @@ final class Obrigacao extends Model
         LEFT JOIN usuarios u ON u.id = o.responsavel_id AND u.escritorio_id = o.escritorio_id
         CROSS JOIN (SELECT CAST(:hoje AS DATE) AS hoje) ref';
 
+    private const VENCE_HOJE = self::ABERTA . ' AND o.vencimento = ref.hoje';
+
+    /** De amanhã até hoje + 7 dias: junto com VENCE_HOJE, cobre a situação "vence_7d". */
+    private const VENCE_EM_BREVE = self::ABERTA . ' AND o.vencimento BETWEEN DATE_ADD(ref.hoje, INTERVAL 1 DAY) AND DATE_ADD(ref.hoje, INTERVAL 7 DAY)';
+
+    /**
+     * Ordem "prioridade" (padrão da listagem): primeiro o que exige atenção. Grupos:
+     * 0 atraso crítico, 1 atrasada, 2 vence hoje, 3 vence em até 7 dias, 4 demais abertas,
+     * 5 encerradas (entregues e dispensadas). Abertas por vencimento mais próximo; encerradas
+     * pela mais recente. Expressão fixa, escolhida no código (nunca vem da requisição).
+     */
+    private const ORDEM_PRIORIDADE = 'CASE
+            WHEN ' . self::ATRASO_CRITICO . ' THEN 0
+            WHEN ' . self::ATRASADA . ' THEN 1
+            WHEN ' . self::VENCE_HOJE . ' THEN 2
+            WHEN ' . self::VENCE_EM_BREVE . ' THEN 3
+            WHEN ' . self::ABERTA . ' THEN 4
+            ELSE 5
+        END ASC,
+        CASE WHEN ' . self::ABERTA . ' THEN o.vencimento END ASC,
+        o.vencimento DESC';
+
     private const COLUNAS = 'SELECT o.*, e.razao_social AS empresa_nome, t.nome AS tipo_nome,
         u.nome AS responsavel_nome,
         (' . self::ATRASADA . ') AS atrasada,
         (' . self::ATRASO_CRITICO . ') AS atraso_critico,
+        (' . self::VENCE_HOJE . ') AS vence_hoje,
+        (' . self::VENCE_EM_BREVE . ') AS vence_em_breve,
+        DATEDIFF(o.vencimento, ref.hoje) AS dias_para_vencer,
         (' . self::ENTREGUE_COM_ATRASO . ') AS entregue_com_atraso ';
 
     private readonly Relogio $relogio;
@@ -399,7 +424,7 @@ final class Obrigacao extends Model
     {
         return match ($situacao) {
             'atrasada' => self::ATRASADA,
-            'vence_hoje' => self::ABERTA . ' AND o.vencimento = ref.hoje',
+            'vence_hoje' => self::VENCE_HOJE,
             'vence_7d' => self::ABERTA . ' AND o.vencimento BETWEEN ref.hoje AND DATE_ADD(ref.hoje, INTERVAL 7 DAY)',
             'entregue_atraso' => self::ENTREGUE_COM_ATRASO,
             'entregue_no_prazo' => self::ENTREGUE_NO_PRAZO,
@@ -449,11 +474,17 @@ final class Obrigacao extends Model
     }
 
     /**
-     * `?ordem=campo` ou `?ordem=-campo` (decrescente), só entre os campos da API.
+     * `?ordem=prioridade` (padrão), ou `?ordem=campo` / `?ordem=-campo` (decrescente) entre os campos
+     * da API. A ordenação por campo continua passando pela whitelist de QueryFiltros.
      */
     private function ordenacao(mixed $ordem): string
     {
         $ordem = is_string($ordem) ? $ordem : '';
+        // Sem ordem, com "prioridade" ou com valor desconhecido: a fila de prioridade é o padrão.
+        if (!in_array(ltrim($ordem, '-'), ['vencimento', 'competencia', 'empresa'], true)) {
+            return self::ORDEM_PRIORIDADE;
+        }
+
         $direcao = str_starts_with($ordem, '-') ? 'DESC' : 'ASC';
         $coluna = match (ltrim($ordem, '-')) {
             'competencia' => 'o.competencia',

@@ -30,7 +30,7 @@ final class AvaliacaoController extends Controller
         $usuario = $request->usuario();
         $layout = $usuario->ehCliente() ? 'portal' : 'app';
 
-        $dados = array_merge($this->contextoLayout($request, 'Avaliar o Sistema -Tributo!'), [
+        $dados = array_merge($this->contextoLayout($request, 'Avaliar o Sistema'), [
             'antigos' => ['nota' => '5', 'facilidade' => '5', 'comentario' => ''],
             'erros' => [],
         ]);
@@ -68,7 +68,7 @@ final class AvaliacaoController extends Controller
 
         if ($erros !== []) {
             $layout = $usuario->ehCliente() ? 'portal' : 'app';
-            $dados = array_merge($this->contextoLayout($request, 'Avaliar o Sistema -Tributo!'), [
+            $dados = array_merge($this->contextoLayout($request, 'Avaliar o Sistema'), [
                 'antigos' => $dadosInput,
                 'erros' => $erros,
             ]);

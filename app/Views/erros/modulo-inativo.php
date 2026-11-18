@@ -1,5 +1,9 @@
-<?php declare(strict_types=1); ?>
-<section>
-    <h1><?= e($titulo ?? 'Módulo não contratado') ?></h1>
-    <p><?= e($mensagem ?? 'Este módulo não está ativo para o escritório.') ?></p>
-</section>
+<?php
+
+declare(strict_types=1);
+
+$erroTitulo = is_string($titulo ?? null) ? $titulo : 'Módulo não contratado';
+$erroMensagem = is_string($mensagem ?? null) ? $mensagem : 'Este módulo não está ativo para o escritório.';
+$erroIcone = 'aviso';
+$erroTom = 'aviso';
+require dirname(__DIR__) . '/partials/pagina-erro.php';

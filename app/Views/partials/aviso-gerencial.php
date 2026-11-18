@@ -14,7 +14,7 @@ $rotuloAcao = is_string($rotuloAcao ?? null) ? $rotuloAcao : '';
         <?php endif; ?>
         <p><?= e($mensagemAviso) ?></p>
         <?php if ($urlAcao !== '' && $rotuloAcao !== '') : ?>
-            <a class="botao botao-secundario" href="<?= e(url($urlAcao)) ?>"><?= e($rotuloAcao) ?></a>
+            <a class="btn btn-outline-secondary" href="<?= e(url($urlAcao)) ?>"><?= e($rotuloAcao) ?></a>
         <?php endif; ?>
     </aside>
 <?php endif; ?>
