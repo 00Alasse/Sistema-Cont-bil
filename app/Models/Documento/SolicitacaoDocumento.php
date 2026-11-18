@@ -46,6 +46,13 @@ final class SolicitacaoDocumento extends Model
             $params['status'] = $filtros['status'];
         }
 
+        // "vencida" é o mesmo critério do indicador "Prazo de envio vencido" (contarAtrasadas):
+        // aberta ou recusada com prazo anterior a hoje. Parâmetro próprio porque a contagem não usa :hoje.
+        if (($filtros['situacao'] ?? null) === 'vencida') {
+            $condicoes[] = "s.status IN ('aberta', 'recusada') AND s.prazo < :hoje_vencida";
+            $params['hoje_vencida'] = $hoje;
+        }
+
         if (!empty($filtros['busca'])) {
             $condicoes[] = '(s.titulo LIKE :busca OR e.razao_social LIKE :busca OR e.nome_fantasia LIKE :busca)';
             $params['busca'] = '%' . QueryFiltros::like((string) $filtros['busca']) . '%';
@@ -217,6 +224,55 @@ final class SolicitacaoDocumento extends Model
         $stmt->bindValue(':escritorio_id', $escritorioId, PDO::PARAM_INT);
 
         return $stmt->execute();
+    }
+
+    /**
+     * Histórico das solicitações (Melhoria 2), em ordem cronológica, agrupado por solicitação.
+     * Só lê eventos do próprio escritório e das solicitações pedidas.
+     *
+     * @param list<int> $ids
+     * @return array<int, list<array{acao: string, criado_em: string, usuario_nome: ?string, arquivo: ?string, motivo: ?string}>>
+     */
+    public function historico(int $escritorioId, array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter($ids, static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+
+        // Um placeholder por ID: nada vindo de fora é concatenado ao SQL.
+        $marcadores = [];
+        $params = ['escritorio_id' => $escritorioId];
+        foreach ($ids as $posicao => $id) {
+            $marcadores[] = ':id' . $posicao;
+            $params['id' . $posicao] = $id;
+        }
+
+        $linhas = $this->buscarTodos(
+            "SELECT l.entidade_id, l.acao, l.criado_em, l.detalhes, u.nome AS usuario_nome
+             FROM logs_atividade l
+             LEFT JOIN usuarios u ON u.id = l.usuario_id AND u.escritorio_id = l.escritorio_id
+             WHERE l.escritorio_id = :escritorio_id
+               AND l.entidade = 'solicitacao'
+               AND l.entidade_id IN (" . implode(', ', $marcadores) . ')
+             ORDER BY l.criado_em ASC, l.id ASC',
+            $params
+        );
+
+        $historico = [];
+        foreach ($linhas as $linha) {
+            $detalhes = json_decode((string) ($linha['detalhes'] ?? ''), true);
+            $detalhes = is_array($detalhes) ? $detalhes : [];
+            $historico[(int) $linha['entidade_id']][] = [
+                'acao' => (string) $linha['acao'],
+                'criado_em' => (string) $linha['criado_em'],
+                'usuario_nome' => is_string($linha['usuario_nome'] ?? null) ? $linha['usuario_nome'] : null,
+                'arquivo' => is_string($detalhes['arquivo'] ?? null) ? $detalhes['arquivo'] : null,
+                'motivo' => is_string($detalhes['motivo'] ?? null) ? $detalhes['motivo'] : null,
+            ];
+        }
+
+        return $historico;
     }
 
     public function contarPendenciasEmpresa(int $escritorioId, int $empresaId): int

@@ -18,6 +18,7 @@ use App\Exceptions\NaoEncontradoException;
 use App\Models\Cadastro\Empresa;
 use App\Models\Documento\SolicitacaoDocumento;
 use App\Models\Fiscal\Obrigacao;
+use App\Services\Documento\SolicitacaoService;
 use App\Services\Documento\UploadService;
 use App\Support\Relogio;
 use App\Support\RelogioSistema;
@@ -104,8 +105,9 @@ final class PortalController extends Controller
         }
 
         $agora = $this->relogio->agora()->format('Y-m-d H:i:s');
-        $this->solicitacoes->anexarArquivo(
-            $usuario->escritorioId,
+        // Grava o arquivo e o evento do histórico na mesma transação (Melhoria 2).
+        SolicitacaoService::padrao()->anexarArquivo(
+            $usuario,
             $id,
             $resultado['caminho_relativo'],
             $resultado['nome_original'],

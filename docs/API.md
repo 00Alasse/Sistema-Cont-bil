@@ -136,6 +136,8 @@ Ao entrar em ENTREGUE: grava `entregue_em = agora` e `entregue_por = usuário`. 
 | GET | `/documentos/{id}/download` | Baixar | A, C; CL (da própria empresa) | — | 200 (`attachment`); 404 | DO02 |
 | POST | `/documentos/{id}/excluir` | Remover arquivo enviado por engano | A; CL (próprio envio, solicitação ainda ENVIADA) | — | 302; 403; 404; 409 | DO02 |
 
+**Implementado na Melhoria 2:** em `GET /solicitacoes`, `situacao=vencida` lista as solicitações abertas ou recusadas com prazo anterior a hoje (o mesmo critério do indicador "Prazo de envio vencido" do painel, que agora aponta para esse filtro); `aguardando_analise` ainda não foi implementado. Criar, enviar, reenviar, recusar e aceitar gravam um evento em `logs_atividade` (`entidade = 'solicitacao'`) na mesma transação da operação, e a listagem mostra esse histórico por solicitação. Solicitações anteriores à implantação não têm eventos.
+
 **Estados da solicitação:** `ABERTA → ENVIADA` (primeiro upload) `→ ACEITA | RECUSADA`; `RECUSADA → ENVIADA` (novo upload); `ABERTA | RECUSADA → CANCELADA`.
 
 ## 6. Portal do cliente (`config/modules/portal.php`)

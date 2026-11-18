@@ -8,6 +8,16 @@ use App\Core\Pagina;
 $itens = $pagina->itens;
 $empresas = is_array($empresas ?? null) ? $empresas : [];
 $filtros = is_array($filtros ?? null) ? $filtros : [];
+$historicos = is_array($historicos ?? null) ? $historicos : [];
+
+// Histórico (Melhoria 2): eventos gravados em logs_atividade a partir da implantação do recurso.
+$rotulosEvento = [
+    'criar' => 'Solicitação criada',
+    'enviar' => 'Arquivo enviado pelo cliente',
+    'reenviar' => 'Arquivo reenviado pelo cliente',
+    'recusar' => 'Documento recusado',
+    'aceitar' => 'Documento aceito',
+];
 
 $statusLabels = [
     'aberta' => ['rotulo' => 'Pendente de Envio', 'tom' => 'aviso'],
@@ -27,7 +37,7 @@ $statusLabels = [
 
     <form class="card card-body formulario-filtros" method="get" action="<?= e(url('/solicitacoes')) ?>">
         <div class="row g-3">
-            <div class="col-md-6">
+            <div class="col-md-4">
                 <label class="form-label" for="q">Busca</label>
                 <input class="form-control" id="q" name="q" type="search" value="<?= e((string) ($filtros['busca'] ?? '')) ?>" placeholder="Título ou nome da empresa">
             </div>
@@ -50,6 +60,13 @@ $statusLabels = [
                     <option value="enviada" <?= (($filtros['status'] ?? '') === 'enviada') ? 'selected' : '' ?>>Aguardando Conferência</option>
                     <option value="aceita" <?= (($filtros['status'] ?? '') === 'aceita') ? 'selected' : '' ?>>Conferido e Aceito</option>
                     <option value="recusada" <?= (($filtros['status'] ?? '') === 'recusada') ? 'selected' : '' ?>>Recusado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label" for="situacao">Prazo</label>
+                <select class="form-select" id="situacao" name="situacao">
+                    <option value="">Todos</option>
+                    <option value="vencida" <?= (($filtros['situacao'] ?? '') === 'vencida') ? 'selected' : '' ?>>Prazo de envio vencido</option>
                 </select>
             </div>
         </div>
@@ -102,6 +119,37 @@ $statusLabels = [
                                 <?php if (!empty($s['motivo_recusa'])) : ?>
                                     <br><small class="text-danger"><strong>Motivo da recusa:</strong> <?= e($s['motivo_recusa']) ?></small>
                                 <?php endif; ?>
+                                <?php
+                                $eventos = $historicos[(int) $s['id']] ?? [];
+                                $temCriacao = in_array('criar', array_column($eventos, 'acao'), true);
+                                ?>
+                                <details class="historico-solicitacao mt-2">
+                                    <summary class="small">Histórico</summary>
+                                    <?php if ($eventos === []) : ?>
+                                        <p class="small text-body-secondary mb-0 mt-1">Histórico não disponível: esta solicitação é anterior à implantação do registro de eventos.</p>
+                                    <?php else : ?>
+                                        <?php if (!$temCriacao) : ?>
+                                            <p class="small text-body-secondary mb-1 mt-1">Eventos anteriores à implantação do histórico não foram registrados.</p>
+                                        <?php endif; ?>
+                                        <ol class="list-unstyled small mb-0 mt-1">
+                                            <?php foreach ($eventos as $evento) : ?>
+                                                <li>
+                                                    <time datetime="<?= e(date('Y-m-d\TH:i:s', strtotime($evento['criado_em']))) ?>"><?= e(date('d/m/Y H:i', strtotime($evento['criado_em']))) ?></time>
+                                                    — <?= e($rotulosEvento[$evento['acao']] ?? $evento['acao']) ?>
+                                                    <?php if ($evento['usuario_nome'] !== null) : ?>
+                                                        por <?= e($evento['usuario_nome']) ?>
+                                                    <?php endif; ?>
+                                                    <?php if ($evento['arquivo'] !== null) : ?>
+                                                        <br><span class="text-body-secondary">Arquivo: <?= e($evento['arquivo']) ?></span>
+                                                    <?php endif; ?>
+                                                    <?php if ($evento['motivo'] !== null) : ?>
+                                                        <br><span class="text-danger">Motivo: <?= e($evento['motivo']) ?></span>
+                                                    <?php endif; ?>
+                                                </li>
+                                            <?php endforeach; ?>
+                                        </ol>
+                                    <?php endif; ?>
+                                </details>
                             </td>
                             <td>
                                 <?= e(date('d/m/Y', strtotime((string) $s['prazo']))) ?>

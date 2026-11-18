@@ -32,7 +32,7 @@ $atrasadas = (int) ($dados['atrasadas'] ?? 0);
             <div class="kpi-dados">
                 <span class="kpi-rotulo">Prazo de envio vencido</span>
                 <span class="kpi-valor">
-                    <a class="indicador-valor" href="<?= e(url('/solicitacoes', ['status' => 'aberta'])) ?>">
+                    <a class="indicador-valor" href="<?= e(url('/solicitacoes', ['situacao' => 'vencida'])) ?>">
                         <?= e((string) $atrasadas) ?>
                     </a>
                 </span>

@@ -381,7 +381,136 @@ final class SolicitacaoPortalTest extends E2ETestCase
         self::assertDoesNotMatchRegularExpression('/\son[a-z]+\s*=/i', $resposta->corpo);
     }
 
+    // ---- Melhoria 2: histórico das solicitações e link de vencidas ----
+
+    public function testHistoricoMostraCriacaoEnvioRecusaEReenvioEscapadosEmOrdem(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $titulo = 'E2E Histórico ' . bin2hex(random_bytes(4));
+        $id = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $titulo);
+        $this->enviarArquivo($cliente, $id, 'versao1.pdf', self::PDF, 'application/pdf');
+        $primeiroArquivo = $this->coluna($id, 'arquivo_path');
+        $admin->post('/solicitacoes/' . $id . '/recusar', [
+            '_csrf' => $this->token($admin, '/solicitacoes'),
+            'motivo_recusa' => '<script>alert(1)</script> ilegível',
+        ]);
+        $this->enviarArquivo($cliente, $id, 'versao2.pdf', self::PDF, 'application/pdf');
+        // O reenvio substitui o arquivo da solicitação; o anterior é apagado na limpeza do teste.
+        $this->temporarios[] = dirname(__DIR__, 2) . '/storage/uploads/' . basename($primeiroArquivo);
+
+        $corpo = $this->paginaQueContem($admin, '/solicitacoes?empresa_id=' . self::EMPRESA_PADARIA, $titulo);
+
+        // Só o trecho da linha desta solicitação (a página tem outras solicitações com histórico).
+        $inicio = strpos($corpo, $titulo);
+        self::assertNotFalse($inicio);
+        $fim = strpos($corpo, '</details>', $inicio);
+        self::assertNotFalse($fim);
+        // XSS e caminho físico: conferidos na página inteira, não só no trecho.
+        self::assertStringNotContainsString('<script>alert(1)', $corpo);
+        self::assertStringNotContainsString(basename($primeiroArquivo), $corpo);
+        $corpo = substr($corpo, $inicio, $fim - $inicio);
+        self::assertStringContainsString('<summary class="small">Histórico</summary>', $corpo);
+        $posicoes = [];
+        foreach (['Solicitação criada', 'Arquivo enviado pelo cliente', 'Arquivo: versao1.pdf', 'Documento recusado', 'Arquivo reenviado pelo cliente', 'Arquivo: versao2.pdf'] as $trecho) {
+            $posicao = strpos($corpo, $trecho);
+            self::assertNotFalse($posicao, $trecho);
+            $posicoes[] = $posicao;
+        }
+        $ordenadas = $posicoes;
+        sort($ordenadas);
+        self::assertSame($ordenadas, $posicoes, 'eventos em ordem cronológica');
+        // Motivo da recusa preservado no histórico mesmo após o reenvio, e escapado.
+        self::assertStringContainsString('Motivo: &lt;script&gt;alert(1)&lt;/script&gt; ilegível', $corpo);
+        self::assertStringNotContainsString('<script>alert(1)', $corpo);
+        self::assertNull($this->colunaOuNulo($id, 'motivo_recusa'));
+        // O caminho físico do arquivo nunca aparece.
+        self::assertStringNotContainsString(basename($primeiroArquivo), $corpo);
+    }
+
+    public function testSolicitacaoAnteriorAoRecursoMostraQueOHistoricoNaoEstaDisponivel(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $titulo = 'E2E Antiga ' . bin2hex(random_bytes(4));
+        // Inserida direto no banco, como as solicitações criadas antes da implantação do histórico.
+        $adminId = (int) $this->banco()->query("SELECT id FROM usuarios WHERE email = 'admin@exemplo.test'")->fetchColumn();
+        $this->banco()->prepare(
+            "INSERT INTO solicitacoes_documentos (escritorio_id, empresa_id, titulo, prazo, status, criado_por)
+             VALUES (1, :empresa, :titulo, :prazo, 'aberta', :criador)"
+        )->execute(['empresa' => self::EMPRESA_PADARIA, 'titulo' => $titulo, 'prazo' => (new DateTimeImmutable('+5 days'))->format('Y-m-d'), 'criador' => $adminId]);
+        $this->criadas[] = (int) $this->banco()->lastInsertId();
+
+        $corpo = $this->paginaQueContem($admin, '/solicitacoes?empresa_id=' . self::EMPRESA_PADARIA, $titulo);
+
+        self::assertStringContainsString($titulo, $corpo);
+        self::assertStringContainsString('Histórico não disponível: esta solicitação é anterior à implantação do registro de eventos.', $corpo);
+        self::assertStringNotContainsString('Solicitação criada', $corpo);
+    }
+
+    public function testIndicadorDePrazoVencidoLevaAsAbertasERecusadasVencidas(): void
+    {
+        $admin = $this->entrar('admin@exemplo.test');
+        $cliente = $this->entrar('cliente.padaria@exemplo.test');
+        $prefixo = 'E2E Vencidas ' . bin2hex(random_bytes(4));
+        $ontem = (new DateTimeImmutable('-1 day'))->format('Y-m-d');
+        $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $prefixo . ' aberta vencida', $ontem);
+        $recusada = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $prefixo . ' recusada vencida', $ontem);
+        $this->enviarArquivo($cliente, $recusada, 'r.pdf', self::PDF, 'application/pdf');
+        $admin->post('/solicitacoes/' . $recusada . '/recusar', ['_csrf' => $this->token($admin, '/solicitacoes'), 'motivo_recusa' => 'Refazer']);
+        $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $prefixo . ' aberta no prazo');
+        $enviada = $this->criarSolicitacao($admin, self::EMPRESA_PADARIA, $prefixo . ' enviada vencida', $ontem);
+        $this->enviarArquivo($cliente, $enviada, 'e.pdf', self::PDF, 'application/pdf');
+
+        // O indicador do painel aponta para o filtro com o mesmo critério da contagem.
+        $painel = $admin->get('/painel')->corpo;
+        self::assertStringContainsString('href="/solicitacoes?situacao=vencida"', $painel);
+        self::assertStringNotContainsString('href="/solicitacoes?status=aberta"', $painel);
+
+        $vencidas = $this->todasAsPaginas($admin, '/solicitacoes?situacao=vencida&empresa_id=' . self::EMPRESA_PADARIA);
+        self::assertStringContainsString($prefixo . ' aberta vencida', $vencidas);
+        self::assertStringContainsString($prefixo . ' recusada vencida', $vencidas);
+        self::assertStringNotContainsString($prefixo . ' aberta no prazo', $vencidas);
+        self::assertStringNotContainsString($prefixo . ' enviada vencida', $vencidas);
+        // O filtro aparece selecionado no formulário.
+        self::assertStringContainsString('<option value="vencida" selected>Prazo de envio vencido</option>', $vencidas);
+    }
+
     // ---- Apoio ----
+
+    /**
+     * Percorre a listagem paginada até achar o texto. Não usa a busca "q" de propósito: ela responde 500
+     * (parâmetro :busca repetido com prepares nativos), defeito anterior a esta tarefa e fora do seu escopo.
+     */
+    private function paginaQueContem(ClienteHttp $cliente, string $caminho, string $texto): string
+    {
+        for ($pagina = 1; $pagina <= 30; $pagina++) {
+            $resposta = $cliente->get($caminho . '&pagina=' . $pagina);
+            self::assertSame(200, $resposta->status, $caminho);
+            if (str_contains($resposta->corpo, $texto)) {
+                return $resposta->corpo;
+            }
+            if (!str_contains($resposta->corpo, 'pagina=' . ($pagina + 1))) {
+                break;
+            }
+        }
+        self::fail('Texto não encontrado na listagem: ' . $texto);
+    }
+
+    /** Concatena todas as páginas da listagem (para conferir presença e ausência). */
+    private function todasAsPaginas(ClienteHttp $cliente, string $caminho): string
+    {
+        $corpos = '';
+        for ($pagina = 1; $pagina <= 30; $pagina++) {
+            $resposta = $cliente->get($caminho . '&pagina=' . $pagina);
+            self::assertSame(200, $resposta->status, $caminho);
+            $corpos .= $resposta->corpo;
+            if (!str_contains($resposta->corpo, 'pagina=' . ($pagina + 1))) {
+                break;
+            }
+        }
+
+        return $corpos;
+    }
 
     private function entrar(string $email): ClienteHttp
     {
@@ -482,6 +611,7 @@ final class SolicitacaoPortalTest extends E2ETestCase
                     unlink($arquivo);
                 }
             }
+            $banco->prepare("DELETE FROM logs_atividade WHERE entidade = 'solicitacao' AND entidade_id = :id")->execute(['id' => $id]);
             $banco->prepare('DELETE FROM solicitacoes_documentos WHERE id = :id')->execute(['id' => $id]);
         }
         $this->criadas = [];

@@ -15,6 +15,7 @@ use App\Core\View;
 use App\Exceptions\NaoEncontradoException;
 use App\Models\Cadastro\Empresa;
 use App\Models\Documento\SolicitacaoDocumento;
+use App\Services\Documento\SolicitacaoService;
 use App\Services\Documento\UploadService;
 
 final class SolicitacaoController extends Controller
@@ -22,6 +23,7 @@ final class SolicitacaoController extends Controller
     private readonly SolicitacaoDocumento $solicitacoes;
     private readonly Empresa $empresas;
     private readonly UploadService $uploadService;
+    private readonly SolicitacaoService $servico;
 
     public function __construct(View $viewEngine)
     {
@@ -29,6 +31,7 @@ final class SolicitacaoController extends Controller
         $this->solicitacoes = new SolicitacaoDocumento();
         $this->empresas = new Empresa();
         $this->uploadService = new UploadService();
+        $this->servico = SolicitacaoService::padrao();
     }
 
     public function index(Request $request): Response
@@ -38,13 +41,16 @@ final class SolicitacaoController extends Controller
             'empresa_id' => $request->query('empresa_id'),
             'status' => $request->query('status'),
             'busca' => $request->query('q'),
+            'situacao' => $request->query('situacao') === 'vencida' ? 'vencida' : '',
         ];
         $paginacao = \App\Core\Paginacao::deRequest($request, 15);
         $resultado = $this->solicitacoes->listar($usuario->escritorioId, $filtros, $paginacao);
         $empresas = $this->empresas->listarTodas($usuario->escritorioId);
+        $ids = array_map(static fn (array $item): int => (int) $item['id'], $resultado->itens);
 
         $dados = array_merge($this->contextoLayout($request, 'Solicitações de Documentos'), [
             'pagina' => $resultado,
+            'historicos' => $this->solicitacoes->historico($usuario->escritorioId, $ids),
             'empresas' => $empresas,
             'filtros' => $filtros,
         ]);
@@ -98,12 +104,11 @@ final class SolicitacaoController extends Controller
             return $this->view('documentos/solicitacoes/nova', $dados, 422);
         }
 
-        $this->solicitacoes->criar($usuario->escritorioId, [
+        $this->servico->criar($usuario, [
             'empresa_id' => $empresaId,
             'titulo' => $dadosInput['titulo'],
             'descricao' => $dadosInput['descricao'],
             'prazo' => $dadosInput['prazo'],
-            'criado_por' => $usuario->id,
         ]);
 
         return $this->redirecionar('/solicitacoes', 'Solicitação de documento criada com sucesso.');
@@ -117,7 +122,7 @@ final class SolicitacaoController extends Controller
             throw new NaoEncontradoException('Solicitação não encontrada.');
         }
 
-        $this->solicitacoes->aceitar($usuario->escritorioId, $id);
+        $this->servico->aceitar($usuario, $id);
 
         return $this->redirecionar('/solicitacoes', 'Documento aceito e conferido.');
     }
@@ -135,7 +140,7 @@ final class SolicitacaoController extends Controller
             $motivo = 'Documento ilegível ou incompleto. Favor enviar novamente.';
         }
 
-        $this->solicitacoes->recusar($usuario->escritorioId, $id, $motivo);
+        $this->servico->recusar($usuario, $id, $motivo);
 
         return $this->redirecionar('/solicitacoes', 'Documento recusado com aviso registrado para o cliente.');
     }
