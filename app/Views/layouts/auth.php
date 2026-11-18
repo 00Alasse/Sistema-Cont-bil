@@ -1,4 +1,11 @@
-<?php declare(strict_types=1); ?>
+<?php
+
+declare(strict_types=1);
+
+$cssCompleto = file_exists(dirname(__DIR__, 2) . '/public/assets/css/app.css')
+    ? (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/css/app.css')
+    : '';
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,7 +13,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#153e75">
     <title><?= e($titulo ?? 'Entrar') ?> - -Tributo!</title>
-    <link rel="stylesheet" href="<?= e(url('/assets/css/app.css')) ?>">
+    <?php if ($cssCompleto !== '') : ?>
+        <style><?= $cssCompleto ?></style>
+    <?php else : ?>
+        <link rel="stylesheet" href="<?= e(url('/assets/css/app.css?v=2.3')) ?>">
+    <?php endif; ?>
 </head>
 <body class="corpo-auth">
     <main class="pagina-auth">

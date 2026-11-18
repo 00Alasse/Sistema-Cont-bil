@@ -12,6 +12,9 @@ $conteudoPagina = is_string($conteudo ?? null) ? $conteudo : '';
 /** @var list<array{rotulo: string, url: string, icone: string, ordem: int}> $itensMenu */
 $itensMenu = is_array($itensMenu ?? null) ? $itensMenu : [];
 $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
+$cssCompleto = file_exists(dirname(__DIR__, 2) . '/public/assets/css/app.css')
+    ? (string) file_get_contents(dirname(__DIR__, 2) . '/public/assets/css/app.css')
+    : '';
 ?>
 <!doctype html>
 <html lang="pt-BR">
@@ -20,35 +23,12 @@ $caminhoAtual = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?: '';
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
     <meta name="theme-color" content="#153e75">
     <title><?= e($tituloPagina) ?> - -Tributo!</title>
-    <style>
-        /* CSS Crítico anti-FOUC (renderização instantânea sem flash em transições de página) */
-        *, *::before, *::after { box-sizing: border-box; }
-        body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f8fafc; color: #172b4d; }
-        .cabecalho { background: #153e75; min-height: 3.5rem; display: flex; align-items: center; padding: 0.5rem 1.25rem; color: #fff; }
-        .cabecalho-marca-area { display: flex; align-items: center; gap: 0.75rem; }
-        .marca { color: #fff; text-decoration: none; font-weight: 700; font-size: 1.25rem; }
-        .botao-menu-toggle { display: inline-flex; align-items: center; justify-content: center; width: 2.3rem; height: 2.3rem; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); border-radius: 0.375rem; color: #fff; cursor: pointer; }
-        .botao-menu-toggle .icone-vertical { display: none; }
-        .pular-conteudo { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
-        .estrutura-aplicacao { display: grid; grid-template-columns: 16rem minmax(0, 1fr); min-height: calc(100vh - 3.5rem); }
-        .navegacao-principal { background: #f8fafc; border-right: 1px solid #e2e8f0; }
-        .navegacao-principal ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.35rem; }
-        .navegacao-principal a { text-decoration: none; color: inherit; display: flex; align-items: center; }
-        .menu-icone { font-size: 0 !important; color: transparent !important; }
-        .sidebar-topo-mobile { display: none; }
-        @media (max-width: 768px) {
-            .cabecalho { min-height: 3.25rem; padding: 0.5rem 0.75rem; }
-            .estrutura-aplicacao { grid-template-columns: 3.8rem minmax(0, 1fr); }
-            .navegacao-principal { width: 3.8rem; padding: 0.65rem 0; display: flex; flex-direction: column; align-items: center; }
-            .navegacao-principal a { font-size: 0 !important; width: 2.5rem; height: 2.5rem; justify-content: center; }
-            .sidebar-rodape-usuario .usuario-textos-sidebar { display: none; }
-            .botao-sair-sidebar .rotulo-sair { display: none; }
-            .botao-menu-toggle .icone-horizontal { display: none; }
-            .botao-menu-toggle .icone-vertical { display: block; }
-        }
-    </style>
-    <link rel="stylesheet" href="<?= e(url('/assets/css/app.css?v=2.2')) ?>">
-    <script src="<?= e(url('/assets/js/app.js?v=2.2')) ?>" defer></script>
+    <?php if ($cssCompleto !== '') : ?>
+        <style><?= $cssCompleto ?></style>
+    <?php else : ?>
+        <link rel="stylesheet" href="<?= e(url('/assets/css/app.css?v=2.3')) ?>">
+    <?php endif; ?>
+    <script src="<?= e(url('/assets/js/app.js?v=2.3')) ?>" defer></script>
 </head>
 <body>
     <a class="pular-conteudo" href="#conteudo-principal">Pular para o conteúdo</a>
